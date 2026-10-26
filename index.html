@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KEYBAKERY | Repostería Artesanal Dominicana</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Krub:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">KEYBAKERY</a>
+            <ul class="nav-links">
+                <li><a href="#nosotros">Nosotros</a></li>
+                <li><a href="#filosofia">Filosofía</a></li>
+                <li><a href="#menu">Menú</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+                <li><a href="#ubicacion">Ubicación</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="cart-btn" id="open-cart">
+                    <i data-lucide="shopping-basket"></i>
+                    <span id="cart-count">0</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero reveal">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1>Sabor que se nota, <br><span class="highlight">dulzura que se recuerda</span></h1>
+            <p><i data-lucide="map-pin"></i> Santo Domingo, República Dominicana</p>
+            <a href="#menu" class="btn-primary uppercase tracking-wide">Explorar Menú</a>
+        </div>
+    </header>
+
+    <section id="nosotros" class="section bg-cream reveal">
+        <div class="container grid-2">
+            <div class="about-text">
+                <h2 class="section-title left">Sobre Nosotros</h2>
+                <p>En KeyBakery, nos apasiona crear momentos dulces e inolvidables. Utilizamos ingredientes locales de la más alta calidad y recetas tradicionales con un toque moderno.</p>
+                <p>Lo que comenzó como un pequeño sueño familiar se ha convertido en el rincón favorito de quienes buscan calidad y sabor auténtico.</p>
+            </div>
+            <div class="about-image">
+                <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?q=80&w=600" alt="Nuestra repostería" class="rounded-img shadow-lg" referrerPolicy="no-referrer">
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección Misión, Visión y Valores -->
+    <section id="filosofia" class="section reveal">
+        <div class="container">
+            <div class="text-center mb-12">
+                <h2 class="section-title">Nuestra Esencia</h2>
+                <p class="section-subtitle">Los pilares que endulzan y dan sentido a cada una de nuestras creaciones.</p>
+            </div>
+            <div class="philosophy-grid">
+                <div class="philosophy-card">
+                    <div class="philosophy-icon">
+                        <i data-lucide="target"></i>
+                    </div>
+                    <h3>Nuestra Misión</h3>
+                    <p>Brindar a nuestros clientes experiencias dulces inolvidables a través de productos artesanales de alta calidad, elaborados con devoción, materias primas de primera y un toque familiar dominicano.</p>
+                </div>
+                <div class="philosophy-card">
+                    <div class="philosophy-icon">
+                        <i data-lucide="eye"></i>
+                    </div>
+                    <h3>Nuestra Visión</h3>
+                    <p>Ser la repostería artesanal referente en Santo Domingo y todo el país, reconocida por nuestra creatividad dulce, frescura diaria y la alegría que llevamos a cada hogar y celebración.</p>
+                </div>
+                <div class="philosophy-card">
+                    <div class="philosophy-icon">
+                        <i data-lucide="gem"></i>
+                    </div>
+                    <h3>Nuestros Valores</h3>
+                    <ul class="philosophy-values-list">
+                        <li><strong>✨ Pasión Artesanal:</strong> Amor por el detalle en cada receta.</li>
+                        <li><strong>🍰 Calidad Innegociable:</strong> Solo ingredientes frescos y seleccionados.</li>
+                        <li><strong>🇩🇴 Orgullo Dominicano:</strong> Rescatando nuestros sabores autóctonos.</li>
+                        <li><strong>🤝 Cercanía y Confianza:</strong> Trato cálido y personalizado siempre.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="menu" class="section bg-cream reveal">
+        <div class="container">
+            <div class="text-center mb-12">
+                <h2 class="section-title">Nuestro Menú</h2>
+                <p class="section-subtitle">Descubre nuestras delicias preparadas diariamente.</p>
+            </div>
+            <div class="products-grid" id="products-container"></div>
+        </div>
+    </section>
+
+    <section id="ubicacion" class="section reveal">
+        <div class="container">
+            <div class="text-center mb-12">
+                <h2 class="section-title">Nuestro Taller</h2>
+                <p class="section-subtitle">Preparamos cada pedido con amor desde nuestro taller artesanal. Retira tu pedido o solicita envío.</p>
+            </div>
+            <div class="location-container">
+                <div class="map-placeholder">
+                    <!-- Mapa general de la zona de Santo Domingo -->
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d121058.9283652613!2d-70.0169213876953!3d18.4801920876953!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8eaf89f1107ea5ab%3A0x8a753d7454f0683a!2sSanto%20Domingo!5e0!3m2!1ses!2sdo!4v1625000000000!5m2!1ses!2sdo" 
+                        width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+                <div class="location-info-card">
+                    <div class="info-block">
+                        <i data-lucide="map-pin"></i>
+                        <h4>Ubicación</h4>
+                        <p>Santo Domingo, RD<br><span class="text-sm opacity-70">(Dirección exacta al confirmar tu pedido)</span></p>
+                    </div>
+                    <div class="info-block">
+                        <i data-lucide="clock"></i>
+                        <h4>Horario de Entregas</h4>
+                        <p><strong>Lun - Vie:</strong> 6:00 PM - 9:00 PM<br>
+                           <strong>Sáb - Dom:</strong> 9:00 AM - 8:00 PM<br>
+                           <span class="text-sm opacity-70">* Tomamos pedidos todos los días en horario regular.</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contacto" class="section bg-cream reveal">
+        <div class="container">
+            <div class="grid-2">
+                <div class="contact-form-container">
+                    <h2 class="section-title left">Escríbenos</h2>
+                    <p class="mb-6">¿Tienes un evento especial o una duda? Estamos aquí para ayudarte.</p>
+                    <form id="contact-form" class="contact-form">
+                        <input type="text" id="contact-name" placeholder="Tu Nombre" required>
+                        <input type="tel" id="contact-phone" placeholder="Tu Teléfono (Ej: 809-000-0000)" maxlength="12" required>
+                        <textarea id="contact-message" rows="4" placeholder="¿En qué podemos ayudarte?" required></textarea>
+                        <button type="submit" class="btn-primary w-full">Enviar Mensaje por WhatsApp</button>
+                    </form>
+                </div>
+                <div class="contact-info">
+                    <img src="https://images.unsplash.com/photo-1558961363-fa8fdf82db35?q=80&w=800" alt="Contacto" class="rounded-img shadow-xl" referrerPolicy="no-referrer">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="cart-sidebar" class="cart-sidebar">
+        <div class="cart-header">
+            <h3><i data-lucide="shopping-basket"></i> Tu Carrito</h3>
+            <button id="close-cart" class="close-btn"><i data-lucide="x"></i></button>
+        </div>
+        <div id="cart-items" class="cart-items"></div>
+        <div class="cart-footer">
+            <div class="total">Total: <span id="cart-total">DOP$ 0</span></div>
+            <button class="btn-checkout w-full" id="checkout-btn">Finalizar Compra <i data-lucide="check-circle"></i></button>
+        </div>
+    </div>
+
+    <div id="payment-modal" class="modal-overlay" style="display: none;">
+        <div class="payment-content">
+            <button id="close-payment" class="close-modal-btn">×</button>
+
+            <div id="step-upsell">
+                <h2 class="section-title">¿Deseas algo más?</h2>
+                <p class="text-center mb-6">Nuestros clientes también agregaron:</p>
+                <div id="upsell-products" class="upsell-grid"></div>
+                <button id="go-to-payment" class="btn-primary w-full mt-6">Continuar al Pago</button>
+            </div>
+
+            <div id="step-payment" class="hidden">
+                <h2 class="section-title">Confirmar Pedido</h2>
+                <p class="text-center mb-6">Total del pedido: <span id="modal-total" class="font-bold color-gold"></span></p>
+                <form id="payment-form" class="contact-form">
+                    <input type="text" id="card-name" placeholder="Tu Nombre Completo" required>
+                    <input type="tel" id="customer-phone" placeholder="Tu Teléfono (Ej: 809-000-0000)" maxlength="12" required>
+                    
+                    <div class="delivery-options mt-6">
+                        <p class="font-bold mb-2">Método de Entrega:</p>
+                        <p id="delivery-notice" class="text-sm mb-4 color-gold hidden">* Pedidos menores a DOP$ 600 solo están disponibles para retirar en taller.</p>
+                        <div class="radio-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="radio" name="delivery-method" value="pickup" checked> Recoger en Taller (Gratis)
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="radio" name="delivery-method" value="metro"> Parada del Metro (DOP$ 100)
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="radio" name="delivery-method" value="delivery"> Envío a Domicilio (Costo varía)
+                            </label>
+                        </div>
+                    </div>
+
+                    <textarea id="customer-address" class="hidden" placeholder="Dirección de Entrega o Notas Especiales" rows="3"></textarea>
+                    
+                    <div id="delivery-warning" class="text-sm color-gold mt-4 hidden">
+                        * El costo del envío a domicilio se acordará por WhatsApp según tu ubicación.
+                    </div>
+
+                    <div class="text-sm text-center opacity-70 mt-4">
+                        <i data-lucide="info" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i> 
+                        Al confirmar, se abrirá WhatsApp. Recuerda volver aquí para tu factura.
+                    </div>
+                    <button type="submit" class="btn-primary w-full mt-2">Confirmar Pedido por WhatsApp <i data-lucide="message-circle"></i></button>
+                </form>
+            </div>
+
+            <div id="success-message" class="hidden">
+                <div style="text-align: center; padding: 20px;">
+                    <i data-lucide="check-circle" style="color: #28a745; width: 80px; height: 80px; margin: 0 auto;"></i>
+                    <h2 class="color-gold mt-6">¡Pedido Confirmado!</h2>
+                    <p class="mb-4">Tu orden ha sido registrada en el sistema.</p>
+                    
+                    <div style="background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.95rem;">
+                        <strong>⚠️ IMPORTANTE:</strong> Se abrirá WhatsApp para enviar tu pedido. <br>
+                        <strong>Debes volver a esta página</strong> para descargar tu factura oficial.
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem;">
+                        <button id="download-invoice" class="btn-secondary w-full">Descargar Factura <i data-lucide="download"></i></button>
+                        <button id="close-success" class="btn-primary w-full">Volver al Inicio</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid mb-12">
+                <div class="footer-section reveal">
+                    <h3 class="footer-title">Nuestra Misión</h3>
+                    <p class="text-sm opacity-80">Brindar a nuestros clientes experiencias dulces inolvidables a través de productos artesanales de alta calidad, elaborados con pasión y los mejores ingredientes dominicanos.</p>
+                </div>
+                <div class="footer-section reveal">
+                    <h3 class="footer-title">Nuestra Visión</h3>
+                    <p class="text-sm opacity-80">Ser la repostería artesanal referente en Santo Domingo, reconocida por nuestra innovación, sabor auténtico y el compromiso con la felicidad de nuestros clientes.</p>
+                </div>
+                <div class="footer-section reveal">
+                    <h3 class="footer-title">Nuestros Valores</h3>
+                    <ul class="text-sm opacity-80 list-none">
+                        <li>✨ Pasión por la Calidad</li>
+                        <li>🤝 Compromiso Familiar</li>
+                        <li>🇩🇴 Orgullo Dominicano</li>
+                        <li>🍰 Innovación Dulce</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="text-center border-t border-white/10 pt-8">
+                <p class="logo mb-4">KEYBAKERY</p>
+                <p class="text-sm opacity-70">© <span id="year"></span> KeyBakery. Todos los derechos reservados.</p>
+                <div class="admin-access mt-6">
+                    <button id="admin-panel-btn" class="btn-admin-footer">
+                        <i data-lucide="shield-check"></i> Panel de Administración (Pedidos e Inventario)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <button id="scroll-top" class="scroll-top-btn"><i data-lucide="chevron-up"></i></button>
+
+    <!-- Admin Panel Modal -->
+    <div id="admin-panel-modal" class="modal-overlay" style="display: none;">
+        <div class="admin-content">
+            <div class="admin-header">
+                <h2><i data-lucide="settings"></i> Panel Administrativo</h2>
+                <button id="close-admin" class="close-modal-btn">×</button>
+            </div>
+            
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="inventory">Inventario</button>
+                <button class="admin-tab" data-tab="orders">Pedidos</button>
+            </div>
+
+            <div id="admin-inventory-tab" class="admin-tab-content">
+                <div class="inventory-actions mb-6">
+                    <button id="add-product-btn" class="btn-primary" style="padding: 0.8rem 1.5rem; font-size: 0.9rem;">
+                        <i data-lucide="plus"></i> Añadir Producto
+                    </button>
+                    <button id="reset-catalog-btn" class="btn-reset-catalog">
+                        <i data-lucide="refresh-cw"></i> Restablecer Fotos y Catálogo
+                    </button>
+                </div>
+                <div id="admin-products-list" class="admin-grid"></div>
+            </div>
+
+            <div id="admin-orders-tab" class="admin-tab-content hidden">
+                <div id="admin-orders-list" class="admin-orders-list"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Barra de Navegación Inferior para Móvil -->
+    <nav class="mobile-bottom-nav">
+        <a href="#" class="nav-item">
+            <i data-lucide="home"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="#menu" class="nav-item">
+            <i data-lucide="cake"></i>
+            <span>Menú</span>
+        </a>
+        <a href="#" class="nav-item" id="mobile-open-cart">
+            <div class="cart-icon-wrapper">
+                <i data-lucide="shopping-basket"></i>
+                <span class="mobile-cart-count">0</span>
+            </div>
+            <span>Carrito</span>
+        </a>
+        <a href="#contacto" class="nav-item">
+            <i data-lucide="message-square"></i>
+            <span>Contacto</span>
+        </a>
+    </nav>
+
+    <script type="module" src="script.js"></script>
+    <script>
+        // Inicializar iconos y fecha
+        window.addEventListener('load', () => {
+            if(window.lucide) lucide.createIcons();
+            const yearSpan = document.getElementById('year');
+            if(yearSpan) yearSpan.textContent = new Date().getFullYear();
+        });
+    </script>
+</body>
+</html>

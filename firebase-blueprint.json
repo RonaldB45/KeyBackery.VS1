@@ -1,0 +1,48 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "A bakery product available for purchase.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the product." },
+        "nombre": { "type": "string", "description": "Name of the product." },
+        "precio": { "type": "number", "description": "Price of the product in DOP." },
+        "imagen": { "type": "string", "description": "URL of the product image." },
+        "stock": { "type": "number", "description": "Current inventory count." },
+        "activo": { "type": "boolean", "description": "Whether the product is visible in the shop." },
+        "categoria": { "type": "string", "description": "Category of the product (e.g., Dulces, Salados)." }
+      },
+      "required": ["nombre", "precio", "imagen"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A customer order.",
+      "type": "object",
+      "properties": {
+        "cliente": { "type": "string", "description": "Name of the customer." },
+        "total": { "type": "number", "description": "Total amount of the order." },
+        "fecha": { "type": "string", "format": "date-time", "description": "When the order was placed." },
+        "items": { "type": "array", "items": { "type": "object" }, "description": "List of items purchased." },
+        "status": { "type": "string", "enum": ["pending", "completed", "cancelled"], "description": "Current status of the order." }
+      },
+      "required": ["cliente", "total", "items", "fecha"]
+    },
+    "User": {
+      "title": "User",
+      "description": "A user of the application.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "customer"] }
+      },
+      "required": ["uid", "email", "role"]
+    }
+  },
+  "firestore": {
+    "products": { "schema": "Product", "description": "Collection of products." },
+    "orders": { "schema": "Order", "description": "Collection of orders." },
+    "users": { "schema": "User", "description": "Collection of users and their roles." }
+  }
+}
