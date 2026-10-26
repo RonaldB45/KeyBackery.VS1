@@ -254,47 +254,11 @@
             <div class="text-center border-t border-white/10 pt-8">
                 <p class="logo mb-4">KEYBAKERY</p>
                 <p class="text-sm opacity-70">© <span id="year"></span> KeyBakery. Todos los derechos reservados.</p>
-                <div class="admin-access mt-6">
-                    <button id="admin-panel-btn" class="btn-admin-footer">
-                        <i data-lucide="shield-check"></i> Panel de Administración (Pedidos e Inventario)
-                    </button>
-                </div>
             </div>
         </div>
     </footer>
 
     <button id="scroll-top" class="scroll-top-btn"><i data-lucide="chevron-up"></i></button>
-
-    <!-- Admin Panel Modal -->
-    <div id="admin-panel-modal" class="modal-overlay" style="display: none;">
-        <div class="admin-content">
-            <div class="admin-header">
-                <h2><i data-lucide="settings"></i> Panel Administrativo</h2>
-                <button id="close-admin" class="close-modal-btn">×</button>
-            </div>
-            
-            <div class="admin-tabs">
-                <button class="admin-tab active" data-tab="inventory">Inventario</button>
-                <button class="admin-tab" data-tab="orders">Pedidos</button>
-            </div>
-
-            <div id="admin-inventory-tab" class="admin-tab-content">
-                <div class="inventory-actions mb-6">
-                    <button id="add-product-btn" class="btn-primary" style="padding: 0.8rem 1.5rem; font-size: 0.9rem;">
-                        <i data-lucide="plus"></i> Añadir Producto
-                    </button>
-                    <button id="reset-catalog-btn" class="btn-reset-catalog">
-                        <i data-lucide="refresh-cw"></i> Restablecer Fotos y Catálogo
-                    </button>
-                </div>
-                <div id="admin-products-list" class="admin-grid"></div>
-            </div>
-
-            <div id="admin-orders-tab" class="admin-tab-content hidden">
-                <div id="admin-orders-list" class="admin-orders-list"></div>
-            </div>
-        </div>
-    </div>
 
 
     <!-- Barra de Navegación Inferior para Móvil -->

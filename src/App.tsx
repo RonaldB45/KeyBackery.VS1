@@ -308,24 +308,7 @@ export default function App() {
       <footer className="footer">
         <div className="container text-center">
           <p className="logo mb-4">KEYBAKERY</p>
-          <p className="text-sm opacity-70 mb-6">© {new Date().getFullYear()} KeyBakery. Todos los derechos reservados.</p>
-          
-          <div className="flex justify-center gap-4 mt-4">
-            <button 
-              onClick={() => setIsAdminPanelOpen(true)}
-              className="bg-gold text-white px-6 py-2 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center gap-2 font-bold text-sm"
-            >
-              <Settings size={18} /> Panel Admin
-            </button>
-            {user && (
-              <button 
-                onClick={() => signOut(auth)}
-                className="bg-white text-red-500 px-6 py-2 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center gap-2 border border-gray-200 font-bold text-sm"
-              >
-                <LogOut size={18} /> Salir
-              </button>
-            )}
-          </div>
+          <p className="text-sm opacity-70">© {new Date().getFullYear()} KeyBakery. Todos los derechos reservados.</p>
         </div>
       </footer>
 
