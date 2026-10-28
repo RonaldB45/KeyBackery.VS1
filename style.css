@@ -58,6 +58,8 @@ html {
     scroll-behavior: smooth;
     font-size: 16px;
     -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
+    width: 100%;
 }
 
 body {
@@ -416,7 +418,7 @@ img {
 }
 
 /* Botón Hamburguesa */
-.hamburger-btn {
+.hamburger-btn, .mobile-menu-btn {
     display: none;
     background: var(--cream);
     color: var(--text-dark);
@@ -425,9 +427,12 @@ img {
     font-size: 1.5rem;
     align-items: center;
     justify-content: center;
+    border: 1px solid var(--border-color);
+    width: 44px;
+    height: 44px;
 }
 
-.hamburger-btn:hover {
+.hamburger-btn:hover, .mobile-menu-btn:hover {
     background: var(--pink-subtle);
     color: var(--pink);
 }
@@ -436,7 +441,7 @@ img {
     .nav-links {
         display: none;
     }
-    .hamburger-btn {
+    .hamburger-btn, .mobile-menu-btn {
         display: flex;
     }
 }
@@ -515,9 +520,9 @@ img {
 
 /* --- 5. Hero Section (Inmediatamente Visible) --- */
 .hero {
-    min-height: 85vh;
-    background-image: linear-gradient(to bottom, rgba(20, 15, 12, 0.65) 0%, rgba(20, 15, 12, 0.45) 50%, rgba(20, 15, 12, 0.75) 100%), 
-                      url('https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=1920');
+    min-height: 80vh;
+    background-image: linear-gradient(to bottom, rgba(20, 15, 12, 0.72) 0%, rgba(20, 15, 12, 0.45) 50%, rgba(20, 15, 12, 0.8) 100%), 
+                      url('/assets/images/hero_brownies.jpg');
     background-size: cover;
     background-position: center;
     display: flex;
@@ -536,6 +541,7 @@ img {
     max-width: 880px;
     margin: 0 auto;
     z-index: 2;
+    width: 100%;
 }
 
 .hero-tag {
@@ -555,9 +561,9 @@ img {
 }
 
 .hero h1 {
-    font-size: 3.8rem;
-    line-height: 1.12;
-    margin-bottom: 1.5rem;
+    font-size: clamp(2rem, 5.5vw, 3.8rem);
+    line-height: 1.15;
+    margin-bottom: 1.2rem;
     color: #FFFFFF;
     text-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
 }
@@ -568,13 +574,14 @@ img {
 }
 
 .hero p {
-    font-size: 1.3rem;
-    margin-bottom: 2.5rem;
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    margin-bottom: 2rem;
     color: rgba(255, 255, 255, 0.92);
     font-weight: 400;
     max-width: 720px;
     margin-left: auto;
     margin-right: auto;
+    line-height: 1.6;
 }
 
 .hero-ctas {
@@ -582,7 +589,7 @@ img {
     gap: 1.2rem;
     justify-content: center;
     flex-wrap: wrap;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2.2rem;
 }
 
 /* Franja Informativa del Hero */
@@ -610,20 +617,31 @@ img {
 
 @media (max-width: 768px) {
     .hero {
-        min-height: 75vh;
-        padding: 3rem 1rem;
+        min-height: 70vh;
+        padding: 3rem 1.2rem 2.5rem;
     }
-    .hero h1 {
-        font-size: 2.4rem;
+    .hero-tag {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.8rem;
+        margin-bottom: 1rem;
     }
-    .hero p {
-        font-size: 1.05rem;
+    .hero-ctas {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.75rem;
+    }
+    .hero-ctas .btn-primary,
+    .hero-ctas .btn-hero-whatsapp {
+        width: 100%;
+        justify-content: center;
     }
     .hero-banner-strip {
-        gap: 0.8rem;
-        padding: 0.75rem 1.2rem;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.85rem 1.2rem;
         font-size: 0.85rem;
         border-radius: var(--radius-md);
+        width: 100%;
     }
 }
 
@@ -633,7 +651,28 @@ img {
     justify-content: center;
     gap: 0.75rem;
     flex-wrap: wrap;
-    margin-bottom: 3rem;
+    margin-bottom: 2.5rem;
+}
+
+@media (max-width: 768px) {
+    .menu-categories {
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 0.5rem 0.5rem 0.8rem;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        gap: 0.6rem;
+    }
+    .menu-categories::-webkit-scrollbar {
+        display: none;
+    }
+    .category-tab {
+        flex-shrink: 0;
+        white-space: nowrap;
+        font-size: 0.88rem;
+        padding: 0.6rem 1.2rem;
+    }
 }
 
 .category-tab {
@@ -666,14 +705,14 @@ img {
 /* Grid de Productos */
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
     gap: 2rem;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
     .products-grid {
         grid-template-columns: 1fr;
-        gap: 1.5rem;
+        gap: 1.4rem;
     }
 }
 
@@ -688,6 +727,7 @@ img {
     display: flex;
     flex-direction: column;
     position: relative;
+    width: 100%;
 }
 
 .product-card:hover {
@@ -701,7 +741,13 @@ img {
     height: 240px;
     overflow: hidden;
     position: relative;
-    background: var(--cream);
+    background: linear-gradient(135deg, #FAF3ED 0%, #F5E8DE 50%, #FAF3ED 100%);
+}
+
+@media (max-width: 640px) {
+    .product-image-wrapper {
+        height: 220px;
+    }
 }
 
 .product-card img {
@@ -1143,6 +1189,18 @@ img {
     gap: 2rem;
 }
 
+@media (max-width: 768px) {
+    .delivery-details {
+        padding: 1.8rem 1.2rem;
+        gap: 1.4rem;
+    }
+    .delivery-map-wrapper,
+    .delivery-map-wrapper iframe {
+        min-height: 280px !important;
+        height: 280px !important;
+    }
+}
+
 .delivery-zone-card {
     display: flex;
     gap: 1.2rem;
@@ -1245,6 +1303,12 @@ img {
     box-shadow: var(--shadow-lg);
     padding: 3rem;
     border: 1px solid var(--border-color);
+}
+
+@media (max-width: 768px) {
+    .contact-container {
+        padding: 1.8rem 1.2rem;
+    }
 }
 
 .contact-card-info {
@@ -1355,7 +1419,7 @@ img {
     padding: 5rem 1rem 2.5rem;
 }
 
-.footer-top-grid {
+.footer-grid, .footer-top-grid {
     display: grid;
     grid-template-columns: 2fr 1fr 1.2fr 1.2fr;
     gap: 3rem;
@@ -1363,15 +1427,16 @@ img {
 }
 
 @media (max-width: 900px) {
-    .footer-top-grid {
+    .footer-grid, .footer-top-grid {
         grid-template-columns: 1fr 1fr;
         gap: 2rem;
     }
 }
 
 @media (max-width: 550px) {
-    .footer-top-grid {
+    .footer-grid, .footer-top-grid {
         grid-template-columns: 1fr;
+        gap: 2rem;
     }
 }
 
@@ -1464,49 +1529,629 @@ img {
     color: rgba(255, 255, 255, 0.6);
 }
 
-/* --- 15. Botón Flotante de WhatsApp --- */
-.floating-whatsapp {
+/* --- 15. Botón Flotante de Repostera Animada & Chatbot Completo --- */
+.repostera-chat-container {
     position: fixed;
     bottom: 30px;
     right: 30px;
-    background: var(--whatsapp);
-    color: var(--white);
-    padding: 0.8rem 1.4rem;
-    border-radius: var(--radius-full);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    font-weight: 700;
-    font-size: 0.95rem;
-    box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45);
-    z-index: 1800;
-    transition: var(--transition-fast);
-}
-
-.floating-whatsapp:hover {
-    background: var(--whatsapp-dark);
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 12px 28px rgba(37, 211, 102, 0.55);
-    color: var(--white);
-}
-
-.floating-whatsapp-icon {
-    width: 24px;
-    height: 24px;
+    z-index: 2100;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    pointer-events: none;
 }
 
 @media (max-width: 768px) {
-    .floating-whatsapp {
-        bottom: 85px;
-        right: 15px;
-        padding: 0.75rem;
+    .repostera-chat-container {
+        bottom: 82px;
+        right: 14px;
+    }
+}
+
+/* Globo de Saludo Animado (Speech Bubble) */
+.repostera-speech-bubble {
+    pointer-events: auto;
+    position: relative;
+    background: var(--white);
+    color: var(--text-dark);
+    padding: 0.9rem 1.1rem;
+    border-radius: 18px 18px 4px 18px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.15), 0 0 0 1.5px var(--pink-light);
+    max-width: 290px;
+    animation: speechPopIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    cursor: pointer;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.repostera-speech-bubble:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 32px rgba(216, 27, 96, 0.22);
+}
+
+.repostera-speech-bubble.hidden {
+    display: none !important;
+}
+
+.repostera-speech-close {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 50%;
+}
+
+.repostera-speech-close:hover {
+    color: var(--pink);
+    background: var(--pink-subtle);
+}
+
+.repostera-speech-tag {
+    display: inline-block;
+    font-size: 0.76rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--pink);
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.repostera-speech-text {
+    font-size: 0.86rem;
+    line-height: 1.4;
+    color: var(--text-body);
+    margin: 0;
+}
+
+/* Botón Flotante Principal de la Repostera */
+.repostera-float-btn {
+    pointer-events: auto;
+    background: linear-gradient(135deg, #d81b60 0%, #ad1457 100%);
+    color: var(--white);
+    border: none;
+    padding: 6px 18px 6px 6px;
+    border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.85rem;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(216, 27, 96, 0.42), 0 0 0 3px rgba(255, 255, 255, 0.85);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    animation: chefFloat 4s ease-in-out infinite;
+}
+
+.repostera-float-btn:hover {
+    transform: translateY(-5px) scale(1.04);
+    box-shadow: 0 16px 36px rgba(216, 27, 96, 0.55), 0 0 0 4px rgba(255, 255, 255, 0.95);
+}
+
+.repostera-float-btn:active {
+    transform: scale(0.97);
+}
+
+.repostera-avatar-box {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    position: relative;
+    flex-shrink: 0;
+    background: #FFF8F3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+}
+
+.repostera-avatar-svg {
+    width: 58px;
+    height: 58px;
+    display: block;
+    transform-origin: center bottom;
+}
+
+/* Animaciones del Avatar SVG */
+.chef-toque-animated {
+    transform-origin: 50px 35px;
+    animation: toqueSway 3s ease-in-out infinite;
+}
+
+.chef-sparkle.s1 {
+    animation: sparkleTwinkle 2.2s ease-in-out infinite;
+}
+
+.chef-sparkle.s2 {
+    animation: sparkleTwinkle 2.2s ease-in-out infinite 1.1s;
+}
+
+.repostera-online-dot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: #00E676;
+    border: 2.5px solid var(--white);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+.repostera-unread-pill {
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    background: var(--gold);
+    color: var(--white);
+    font-size: 0.72rem;
+    font-weight: 800;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--white);
+    animation: bounceBadge 2s infinite;
+}
+
+.repostera-unread-pill.hidden {
+    display: none;
+}
+
+.repostera-float-caption {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    line-height: 1.25;
+}
+
+.repostera-name {
+    font-weight: 800;
+    font-size: 0.98rem;
+    color: var(--white);
+    letter-spacing: -0.2px;
+}
+
+.repostera-hint {
+    font-size: 0.76rem;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+@media (max-width: 600px) {
+    .repostera-float-btn {
+        padding: 4px;
         border-radius: 50%;
-        width: 52px;
-        height: 52px;
+        width: 58px;
+        height: 58px;
         justify-content: center;
     }
-    .floating-whatsapp span {
+    .repostera-float-caption {
         display: none;
+    }
+}
+
+/* --- Ventana / Drawer del Chatbot --- */
+.repostera-chat-window {
+    pointer-events: auto;
+    position: fixed;
+    bottom: 105px;
+    right: 30px;
+    width: 390px;
+    max-width: calc(100vw - 30px);
+    height: 560px;
+    max-height: calc(100vh - 130px);
+    background: var(--white);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 2200;
+    transform-origin: bottom right;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+.repostera-chat-window[hidden] {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .repostera-chat-window {
+        bottom: 80px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+        max-width: calc(100vw - 20px);
+        height: min(540px, calc(100dvh - 95px));
+        max-height: calc(100vh - 95px);
+        border-radius: 18px;
+    }
+}
+
+/* Cabecera del Chat */
+.repostera-chat-header {
+    background: linear-gradient(135deg, var(--pink) 0%, var(--pink-hover) 100%);
+    color: var(--white);
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(216, 27, 96, 0.2);
+}
+
+.repostera-header-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.repostera-header-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #FFF8F3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.repostera-header-dot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #00E676;
+    border: 2px solid var(--white);
+}
+
+.repostera-header-title {
+    font-size: 0.98rem;
+    font-weight: 800;
+    margin: 0;
+    color: var(--white);
+}
+
+.repostera-header-sub {
+    font-size: 0.74rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+}
+
+.repostera-header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.repostera-btn-icon {
+    background: rgba(255, 255, 255, 0.18);
+    color: var(--white);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.repostera-btn-icon:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: scale(1.05);
+}
+
+/* Franja Informativa de Horarios */
+.repostera-chat-banner {
+    background: var(--pink-subtle);
+    border-bottom: 1px solid rgba(216, 27, 96, 0.15);
+    padding: 0.6rem 1rem;
+    font-size: 0.78rem;
+    color: var(--pink-hover);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    line-height: 1.35;
+}
+
+/* Contenedor de Mensajes */
+.repostera-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: #FFFDFB;
+    scroll-behavior: smooth;
+}
+
+.chat-bubble-row {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    animation: messageFadeUp 0.3s ease both;
+}
+
+.chat-bubble-row.user {
+    flex-direction: row-reverse;
+}
+
+.chat-bubble-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--pink-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    flex-shrink: 0;
+}
+
+.chat-bubble {
+    max-width: 82%;
+    padding: 0.75rem 1rem;
+    border-radius: 16px 16px 16px 4px;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    word-break: break-word;
+}
+
+.chat-bubble-row.bot .chat-bubble {
+    background: var(--white);
+    color: var(--text-dark);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border-color);
+}
+
+.chat-bubble-row.user .chat-bubble {
+    background: linear-gradient(135deg, var(--pink) 0%, var(--pink-hover) 100%);
+    color: var(--white);
+    border-radius: 16px 16px 4px 16px;
+    box-shadow: 0 4px 12px rgba(216, 27, 96, 0.25);
+}
+
+.chat-bubble p {
+    margin: 0 0 0.5rem 0;
+}
+
+.chat-bubble p:last-child {
+    margin-bottom: 0;
+}
+
+/* Tarjeta Interactiva de Producto dentro del Chat */
+.chat-product-card {
+    background: #FFF8F3;
+    border: 1.5px solid var(--pink-light);
+    border-radius: 12px;
+    padding: 0.8rem;
+    margin-top: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.chat-product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-weight: 800;
+}
+
+.chat-product-title {
+    font-size: 0.88rem;
+    color: var(--text-dark);
+}
+
+.chat-product-price {
+    font-size: 0.95rem;
+    color: var(--pink);
+}
+
+.chat-product-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.35;
+    margin: 0;
+}
+
+.chat-btn-add {
+    background: var(--pink);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 0.8rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.chat-btn-add:hover {
+    background: var(--pink-hover);
+}
+
+.chat-btn-add.added {
+    background: #00C853;
+}
+
+/* Chips de Respuestas Rápidas (Adaptadas para que ninguna opción quede oculta a la derecha) */
+.repostera-quick-chips {
+    padding: 0.7rem 0.9rem;
+    background: #FFFDFB;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    align-items: center;
+    justify-content: flex-start;
+    max-height: 130px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(216, 27, 96, 0.3) transparent;
+}
+
+.repostera-quick-chips::-webkit-scrollbar {
+    width: 4px;
+}
+
+.repostera-quick-chips::-webkit-scrollbar-thumb {
+    background: rgba(216, 27, 96, 0.3);
+    border-radius: 4px;
+}
+
+.repostera-chip {
+    background: var(--white);
+    border: 1.5px solid var(--border-color);
+    border-radius: 9999px;
+    padding: 0.42rem 0.82rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: normal;
+    text-align: left;
+}
+
+.repostera-chip:hover, .repostera-chip:focus-visible {
+    background: var(--pink-subtle);
+    border-color: var(--pink);
+    color: var(--pink);
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(216, 27, 96, 0.15);
+}
+
+/* Formulario de Entrada de Texto */
+.repostera-chat-form {
+    padding: 0.8rem 1rem;
+    background: var(--white);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.repostera-chat-input {
+    flex: 1;
+    border: 1.5px solid var(--border-color);
+    border-radius: 9999px;
+    padding: 0.65rem 1rem;
+    font-size: 0.88rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.repostera-chat-input:focus {
+    border-color: var(--pink);
+    box-shadow: 0 0 0 3px var(--pink-subtle);
+}
+
+.repostera-chat-send-btn {
+    background: var(--pink);
+    color: var(--white);
+    border: none;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.repostera-chat-send-btn:hover {
+    background: var(--pink-hover);
+    transform: scale(1.05);
+}
+
+/* Keyframes de la Repostera Animada */
+@keyframes chefFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
+@keyframes toqueSway {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(-4deg);
+    }
+    75% {
+        transform: rotate(3deg);
+    }
+}
+
+@keyframes sparkleTwinkle {
+    0%, 100% {
+        opacity: 0.25;
+        transform: scale(0.85);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+@keyframes speechPopIn {
+    0% {
+        opacity: 0;
+        transform: translateY(12px) scale(0.92);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes messageFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounceBadge {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.22);
     }
 }
 
@@ -1917,18 +2562,55 @@ img {
 }
 
 .weekly-drop-section::before {
-    content: "ESPECIAL DE LA SEMANA";
+    display: none;
+}
+
+/* Cinta / Etiqueta Animada Diagonal en la Esquina (Especial de la Semana en Movimiento) */
+.ribbon-semana-animated {
     position: absolute;
-    top: 15px;
-    right: -45px;
-    background: var(--pink);
-    color: #fff;
-    font-size: 0.7rem;
+    top: 22px;
+    right: -48px;
+    background: linear-gradient(115deg, #B71550 0%, #D81B60 28%, #FF80AB 50%, #D81B60 72%, #B71550 100%);
+    background-size: 260% 100%;
+    color: #FFFFFF;
+    font-size: 0.72rem;
     font-weight: 800;
-    letter-spacing: 1.5px;
-    padding: 6px 50px;
+    letter-spacing: 1.8px;
+    padding: 7px 55px;
+    text-transform: uppercase;
     transform: rotate(45deg);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 14px rgba(216, 27, 96, 0.45);
+    z-index: 5;
+    pointer-events: none;
+    user-select: none;
+    animation: ribbonFloatMove 2.8s ease-in-out infinite, ribbonShimmerSweep 3s linear infinite;
+    transform-origin: center center;
+    border-top: 1px solid rgba(255, 255, 255, 0.45);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+@keyframes ribbonFloatMove {
+    0%, 100% {
+        transform: rotate(45deg) translateY(0) scale(1);
+    }
+    25% {
+        transform: rotate(42deg) translateY(-3px) scale(1.05);
+    }
+    50% {
+        transform: rotate(48deg) translateY(1px) scale(1.02);
+    }
+    75% {
+        transform: rotate(43deg) translateY(2px) scale(1.04);
+    }
+}
+
+@keyframes ribbonShimmerSweep {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 260% 0;
+    }
 }
 
 .weekly-drop-grid {
@@ -1943,6 +2625,16 @@ img {
         grid-template-columns: 1fr;
         gap: 1.8rem;
     }
+    .weekly-drop-section {
+        padding: 2rem 1.4rem;
+        margin: 1.5rem 0 2.5rem;
+    }
+    .weekly-drop-media img {
+        height: 260px;
+    }
+    .weekly-drop-title {
+        font-size: clamp(1.45rem, 5vw, 2rem);
+    }
 }
 
 .weekly-drop-media {
@@ -1950,6 +2642,7 @@ img {
     border-radius: var(--radius-md);
     overflow: hidden;
     box-shadow: var(--shadow-lg);
+    background: #FAF0E6;
 }
 
 .weekly-drop-media img {
@@ -2018,6 +2711,15 @@ img {
     padding: 0.8rem 0;
     border-top: 1px dashed var(--border-color);
     border-bottom: 1px dashed var(--border-color);
+    flex-wrap: wrap;
+}
+
+@media (max-width: 500px) {
+    .weekly-drop-pricing {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.4rem;
+    }
 }
 
 .weekly-price-main {

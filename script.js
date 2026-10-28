@@ -18,8 +18,14 @@ const firebaseConfig = {
   "measurementId": ""
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+let app = null;
+let db = null;
+try {
+    app = initializeApp(firebaseConfig);
+    db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+} catch (err) {
+    console.warn("Aviso de inicialización Firebase:", err);
+}
 
 const WHATSAPP_NUMBER = "18090000000"; 
 const TELEFERICO_FEE = 50;
@@ -47,7 +53,7 @@ const defaultProducts = [
         tipo: "semana",
         badge: "🔥 Producto de la Semana",
         descripcion: "Hecho con cacao puro dominicano, centro húmedo súper fudge, corteza brillante y chispas de chocolate. Entrega exclusiva este Domingo en Los Alcarrizos.",
-        imagen: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=800&q=80",
+        imagen: "/assets/images/brownie_clasico.jpg",
         stock: 40,
         activo: true
     },
@@ -59,7 +65,7 @@ const defaultProducts = [
         tipo: "semana",
         badge: "⭐ Caja Favorita de la Semana",
         descripcion: "Incluye 4 porciones surtidas: 1 clásico de chocolate puro, 1 con dulce de leche artesanal, 1 con Nutella y 1 con nueces tostadas. Entrega este Domingo.",
-        imagen: "https://images.unsplash.com/photo-1624353365286-3f8d62daad51?auto=format&fit=crop&w=800&q=80",
+        imagen: "/assets/images/caja_brownies.jpg",
         stock: 25,
         activo: true
     },
@@ -71,7 +77,7 @@ const defaultProducts = [
         tipo: "semana",
         badge: "Edición Limitada Semanal",
         descripcion: "Vaso individual con capas de brownie melcochoso, manjar de dulce de leche criollo y suspiro dominicano flameado. Entrega este Domingo.",
-        imagen: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80",
+        imagen: "/assets/images/brownie_jar.jpg",
         stock: 20,
         activo: true
     },
@@ -85,7 +91,7 @@ const defaultProducts = [
         tipo: "encargo",
         badge: "🎂 Pastel Entero (Bajo Encargo)",
         descripcion: "Pastel completo tradicional de masa esponjosa con relleno artesanal de piña o dulce de leche y suspiro alisado. Rinde 15-20 porciones. Coordinamos entrega cualquier día de la semana con 48h.",
-        imagen: "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=800&q=80",
+        imagen: "/assets/images/bizcocho_suspiro.jpg",
         stock: 10,
         activo: true
     },
@@ -97,7 +103,7 @@ const defaultProducts = [
         tipo: "encargo",
         badge: "🎂 Pastel Entero (Bajo Encargo)",
         descripcion: "Tres capas de bizcocho húmedo de cacao dominicano, ganache brillante y trufas artesanales. Rinde 20 porciones. Se elabora bajo encargo con 48h de anticipación.",
-        imagen: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80",
+        imagen: "/assets/images/pastel_chocolate.jpg",
         stock: 10,
         activo: true
     },
@@ -109,7 +115,7 @@ const defaultProducts = [
         tipo: "encargo",
         badge: "🎂 Pastel Entero (Bajo Encargo)",
         descripcion: "Tarta horneada entera sobre base crujiente con abundante mermelada espesa de guayaba dulce del país. Rinde 12-14 porciones. Entrega programada con 48h.",
-        imagen: "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=800&q=80",
+        imagen: "/assets/images/cheesecake_guayaba.jpg",
         stock: 10,
         activo: true
     },
@@ -121,7 +127,7 @@ const defaultProducts = [
         tipo: "encargo",
         badge: "Celebraciones Especiales",
         descripcion: "Diseño elegante con suspiro tradicional alisado a mano y flores comestibles. Rinde de 25 a 35 porciones. Se agenda con un mínimo de 72h para coordinar día y detalles.",
-        imagen: "https://images.unsplash.com/photo-1535254973040-607b474cb8c2?auto=format&fit=crop&w=800&q=80",
+        imagen: "/assets/images/pastel_bodas.jpg",
         stock: 5,
         activo: true
     },
@@ -135,7 +141,7 @@ const defaultProducts = [
         tipo: "encargo",
         badge: "Bandeja para Eventos",
         descripcion: "Tequeños rellenos de queso criollo fundente horneados frescos para tus reuniones o fiestas familiares. Mínimo 24 uds. Se coordina el día que necesites con 48h.",
-        imagen: "https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&w=800&q=80",
+        imagen: "/assets/images/bocadillos_queso.jpg",
         stock: 50,
         activo: true
     },
@@ -147,7 +153,7 @@ const defaultProducts = [
         tipo: "encargo",
         badge: "Bandeja para Eventos",
         descripcion: "Mini empanadas crocantes de harina de yuca rellenas de res sazonada al estilo criollo. Perfectas para compartir en eventos. Entrega coordinada con 48h.",
-        imagen: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=800&q=80",
+        imagen: "/assets/images/catibias_gourmet.jpg",
         stock: 30,
         activo: true
     },
@@ -159,7 +165,7 @@ const defaultProducts = [
         tipo: "encargo",
         badge: "Bandeja para Eventos",
         descripcion: "Hojaldre crujiente laminado con mantequilla pura en tamaño fiesta. Ideales para mesas de bocadillos y desayunos. Entrega programada con 48h.",
-        imagen: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=800&q=80",
+        imagen: "/assets/images/bocadillos_queso.jpg",
         stock: 20,
         activo: true
     },
@@ -171,7 +177,7 @@ const defaultProducts = [
         tipo: "encargo",
         badge: "Bandeja para Eventos",
         descripcion: "Tartaletas saladas rellenas de queso gouda, jamón y espinacas con toque de nuez moscada. Mínimo 16 unidades. Entrega programada con 48h.",
-        imagen: "https://images.unsplash.com/photo-1623334834998-a48bf9f04439?auto=format&fit=crop&w=800&q=80",
+        imagen: "/assets/images/bocadillos_queso.jpg",
         stock: 20,
         activo: true
     },
@@ -185,7 +191,7 @@ const defaultProducts = [
         tipo: "proxima",
         badge: "🗓️ Próxima Semana 2",
         descripcion: "Postre cremoso de maracuyá criolla. Porciones individuales solo disponibles durante su semana temática. ¡Si deseas el pastel completo puedes pedirlo bajo encargo!",
-        imagen: "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?auto=format&fit=crop&w=800&q=80",
+        imagen: "/assets/images/preview_chinola.jpg",
         stock: 0,
         activo: true
     },
@@ -197,7 +203,7 @@ const defaultProducts = [
         tipo: "proxima",
         badge: "🗓️ Próxima Semana 3",
         descripcion: "Masa terciopelo rojo aterciopelada con frosting de cream cheese. Porciones disponibles en su semana temática. Para eventos puedes pedir la bandeja al mayor.",
-        imagen: "https://images.unsplash.com/photo-1614707267537-b85af00c4b81?auto=format&fit=crop&w=800&q=80",
+        imagen: "/assets/images/preview_cupcakes.jpg",
         stock: 0,
         activo: true
     },
@@ -209,7 +215,7 @@ const defaultProducts = [
         tipo: "proxima",
         badge: "🗓️ Próxima Semana 4",
         descripcion: "Clásico pudin dominicano aromatizado con canela, pasas y caramelo rubio. Espéralo en su semana temática de entrega dominical.",
-        imagen: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=800&q=80",
+        imagen: "/assets/images/preview_pudin.jpg",
         stock: 0,
         activo: true
     }
@@ -224,7 +230,8 @@ let ultimoPedido = null;
 let lastFocusedElement = null;
 
 // --- 3. REFERENCIAS AL DOM ---
-let DOM = {};
+let DOM = window.DOM || {};
+window.DOM = DOM;
 
 function inicializarDOM() {
     DOM = {
@@ -270,9 +277,49 @@ function inicializarDOM() {
         closeDrawerBtn: document.getElementById('close-drawer'),
         drawerLinks: document.querySelectorAll('.drawer-link'),
         faqItems: document.querySelectorAll('.faq-item'),
-        proximoDomingoSpans: document.querySelectorAll('.proximo-domingo-fecha')
+        proximoDomingoSpans: document.querySelectorAll('.proximo-domingo-fecha'),
+        // Referencias del Chatbot de la Repostera Animada
+        reposteraChatContainer: document.getElementById('repostera-chat-container'),
+        reposteraSpeechBubble: document.getElementById('repostera-speech-bubble'),
+        reposteraSpeechClose: document.getElementById('repostera-speech-close'),
+        reposteraSpeechTrigger: document.getElementById('repostera-speech-trigger'),
+        reposteraFloatBtn: document.getElementById('repostera-float-btn'),
+        reposteraChatWindow: document.getElementById('repostera-chat-window'),
+        reposteraCloseBtn: document.getElementById('repostera-close-btn'),
+        reposteraResetBtn: document.getElementById('repostera-reset-btn'),
+        reposteraChatMessages: document.getElementById('repostera-chat-messages'),
+        reposteraQuickChips: document.getElementById('repostera-quick-chips'),
+        reposteraChatForm: document.getElementById('repostera-chat-form'),
+        reposteraChatInput: document.getElementById('repostera-chat-input'),
+        reposteraUnreadPill: document.getElementById('repostera-unread-pill')
     };
+    window.DOM = DOM;
 }
+
+window.openCart = function() {
+    if (DOM.cartSidebar) {
+        DOM.cartSidebar.classList.add('open');
+        DOM.cartSidebar.setAttribute('aria-hidden', 'false');
+        if (DOM.closeCartBtn) DOM.closeCartBtn.focus();
+    }
+};
+
+window.closeCart = function() {
+    if (DOM.cartSidebar) {
+        DOM.cartSidebar.classList.remove('open');
+        DOM.cartSidebar.setAttribute('aria-hidden', 'true');
+        if (DOM.openCartBtn) DOM.openCartBtn.focus();
+    }
+};
+
+window.toggleCart = function() {
+    if (!DOM.cartSidebar) return;
+    if (DOM.cartSidebar.classList.contains('open')) {
+        window.closeCart();
+    } else {
+        window.openCart();
+    }
+};
 
 // --- 4. TOAST NOTIFICATION ---
 let toastTimer = null;
@@ -299,10 +346,56 @@ window.cardQtyChange = function(id, delta) {
     const numEl = document.getElementById(`qty-num-${id}`);
     if (numEl) numEl.textContent = newQty;
 };
+window.__realCardQtyChange = window.cardQtyChange;
+
+// Guard anti-rebote para evitar duplicación de productos al agregar al carrito
+let _lastAddToCartTime = 0;
+let _lastAddToCartId = '';
 
 window.cardAddToCart = function(id, btnElement) {
-    const prod = listaProductos.find(p => p.id === id);
-    if (!prod) return;
+    const now = Date.now();
+    if (_lastAddToCartId === id && (now - _lastAddToCartTime) < 400) {
+        return; // Prevenir doble disparo si se clickea rápidamente o por eventos concurrentes
+    }
+    _lastAddToCartTime = now;
+    _lastAddToCartId = id;
+
+    // 1. Buscar en listaProductos, luego en defaultProducts, luego fallback específico
+    let prod = listaProductos.find(p => p.id === id) || defaultProducts.find(p => p.id === id);
+    if (!prod) {
+        if (id === 'prod-brownie-clasico') {
+            prod = {
+                id: "prod-brownie-clasico",
+                nombre: "Brownie Artesanal Melcochoso (Porción)",
+                precio: 180,
+                categoria: "semana",
+                tipo: "semana",
+                badge: "🔥 Producto de la Semana",
+                descripcion: "Hecho con cacao puro dominicano, centro húmedo súper fudge, corteza brillante y chispas de chocolate. Entrega exclusiva este Domingo en Los Alcarrizos.",
+                imagen: "/assets/images/brownie_clasico.jpg",
+                stock: 40,
+                activo: true
+            };
+        } else if (id === 'prod-caja-brownies') {
+            prod = {
+                id: "prod-caja-brownies",
+                nombre: "Caja Degustación de 4 Brownies Gourmet",
+                precio: 650,
+                categoria: "semana",
+                tipo: "semana",
+                badge: "⭐ Caja Favorita de la Semana",
+                descripcion: "Incluye 4 porciones surtidas: 1 clásico de chocolate puro, 1 con dulce de leche artesanal, 1 con Nutella y 1 con nueces tostadas. Entrega este Domingo.",
+                imagen: "/assets/images/caja_brownies.jpg",
+                stock: 25,
+                activo: true
+            };
+        }
+    }
+
+    if (!prod) {
+        console.warn("Producto no encontrado:", id);
+        return;
+    }
 
     if (prod.tipo === 'proxima') {
         showToast("Este postre estará disponible en su semana temática o puedes encargar el pastel completo.");
@@ -317,28 +410,43 @@ window.cardAddToCart = function(id, btnElement) {
         carrito.push({ ...prod, cantidad: qty });
     }
 
-    // Reset cantidad temporal
+    // Reset cantidad temporal del stepper
     productQuantities[id] = 1;
     const numEl = document.getElementById(`qty-num-${id}`);
-    if (numEl) numEl.textContent = 1;
+    if (numEl) numEl.textContent = '1';
 
     actualizarCarrito();
 
-    // Feedback visual en botón y toast
+    // Feedback visual en el botón
     if (btnElement) {
         const originalContent = btnElement.innerHTML;
         btnElement.classList.add('added');
-        btnElement.innerHTML = `<i data-lucide="check" aria-hidden="true"></i> ¡Agregado!`;
+        btnElement.innerHTML = `<i data-lucide="check" aria-hidden="true"></i> <span>¡Agregado!</span>`;
         if (window.lucide) lucide.createIcons();
         setTimeout(() => {
             btnElement.classList.remove('added');
             btnElement.innerHTML = originalContent;
             if (window.lucide) lucide.createIcons();
-        }, 1200);
+        }, 1500);
     }
 
     showToast(`¡Agregado ${qty}x ${prod.nombre} al carrito!`);
+
+    // ABRIR EL CARRITO AUTOMÁTICAMENTE para confirmar la acción inmediatamente
+    if (DOM.cartSidebar) {
+        DOM.cartSidebar.classList.add('open');
+        DOM.cartSidebar.setAttribute('aria-hidden', 'false');
+    }
 };
+
+window.__realCardAddToCart = window.cardAddToCart;
+
+// Procesar clics que hayan ocurrido antes de que el script terminara de cargar
+if (window._pendingCartAdds && window._pendingCartAdds.length > 0) {
+    const pendings = [...window._pendingCartAdds];
+    window._pendingCartAdds = [];
+    pendings.forEach(p => window.cardAddToCart(p.id, p.btn));
+}
 
 function renderizarMenu() {
     if (!DOM.productsContainer) return;
@@ -403,8 +511,8 @@ function renderizarMenu() {
                         width="400" 
                         height="260" 
                         loading="lazy" 
-                        referrerpolicy="no-referrer"
-                        onerror="this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80'"
+                        decoding="async"
+                        onerror="this.onerror=null; this.src='/assets/images/brownie_clasico.jpg';"
                     >
                 </div>
                 <div class="product-info">
@@ -471,7 +579,7 @@ function actualizarCarrito() {
                 <i data-lucide="shopping-basket" style="width: 56px; height: 56px; opacity: 0.3; margin: 0 auto 1rem;" aria-hidden="true"></i>
                 <h4 style="margin-bottom: 0.5rem; color: var(--text-dark);">Tu carrito está vacío</h4>
                 <p class="text-sm mb-4">Elige tu porción del Producto de la Semana (Brownies) o tu pastel completo.</p>
-                <a href="#menu" class="btn-secondary" onclick="DOM.cartSidebar.classList.remove('open'); DOM.cartSidebar.setAttribute('aria-hidden', 'true');">Ver Menú</a>
+                <a href="#menu" class="btn-secondary" onclick="window.closeCart();">Ver Menú</a>
             </div>`;
     } else {
         carrito.forEach(item => {
@@ -528,8 +636,23 @@ function actualizarCarrito() {
     localStorage.setItem('keybakery_cart', JSON.stringify(carrito));
     if (window.lucide) lucide.createIcons();
 }
+window.actualizarCarrito = actualizarCarrito;
 
 // --- 7. UPSELLING & PROCESO DE PAGO ACCESIBLE ---
+window.agregarSugerencia = function(prodId) {
+    const p = listaProductos.find(item => item.id === prodId) || defaultProducts.find(item => item.id === prodId);
+    if (!p) return;
+    const itemEnCarrito = carrito.find(item => item.id === prodId);
+    if (itemEnCarrito) {
+        itemEnCarrito.cantidad += 1;
+    } else {
+        carrito.push({ ...p, cantidad: 1 });
+    }
+    actualizarCarrito();
+    window.cargarSugerencias();
+    showToast(`¡${p.nombre} agregado al pedido!`);
+};
+
 window.cargarSugerencias = function() {
     if (!DOM.upsellContainer) return;
     DOM.upsellContainer.innerHTML = '';
@@ -546,7 +669,7 @@ window.cargarSugerencias = function() {
                 <div style="flex-grow: 1;">
                     <p class="font-bold" style="font-size: 0.95rem; margin-bottom: 0.2rem;">${p.nombre}</p>
                     <p class="text-sm color-gold font-bold mb-2">DOP$ ${p.precio.toLocaleString()}</p>
-                    <button class="btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.8rem;" aria-label="Añadir ${p.nombre} al pedido" onclick="carrito.push({...${JSON.stringify(p).replace(/"/g, '&quot;')}, cantidad: 1}); actualizarCarrito(); cargarSugerencias();">
+                    <button type="button" class="btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.8rem;" aria-label="Añadir ${p.nombre} al pedido" onclick="window.agregarSugerencia('${p.id}')">
                         + Añadir al Pedido
                     </button>
                 </div>
@@ -590,6 +713,8 @@ function cerrarModalPago() {
         lastFocusedElement.focus();
     }
 }
+window.abrirModalPago = abrirModalPago;
+window.cerrarModalPago = cerrarModalPago;
 
 // --- 8. ENVÍO DEL PEDIDO A WHATSAPP Y FIRESTORE ---
 async function procesarPedido(e) {
@@ -649,21 +774,23 @@ async function procesarPedido(e) {
     };
 
     // 1. Guardar en Firestore
-    try {
-        await addDoc(collection(db, "orders"), {
-            cliente: nombreCliente,
-            telefono: telefonoCliente,
-            items: ultimoPedido.items,
-            total: totalFinal,
-            metodoEntrega: metodoTexto,
-            ubicacionDetalle: detalleUbicacion,
-            proximoDomingo: proximoDomingoStr,
-            fecha: serverTimestamp(),
-            status: "pending",
-            ciudad: "Los Alcarrizos"
-        });
-    } catch (err) {
-        console.warn("Firestore notice (continuando hacia WhatsApp):", err);
+    if (db) {
+        try {
+            await addDoc(collection(db, "orders"), {
+                cliente: nombreCliente,
+                telefono: telefonoCliente,
+                items: ultimoPedido.items,
+                total: totalFinal,
+                metodoEntrega: metodoTexto,
+                ubicacionDetalle: detalleUbicacion,
+                proximoDomingo: proximoDomingoStr,
+                fecha: serverTimestamp(),
+                status: "pending",
+                ciudad: "Los Alcarrizos"
+            });
+        } catch (err) {
+            console.warn("Firestore notice (continuando hacia WhatsApp):", err);
+        }
     }
 
     // 2. Construir Mensaje de WhatsApp
@@ -816,36 +943,59 @@ function init() {
         });
     }
 
-    // 1. Cargar productos desde Firestore con fallback
-    try {
-        const qProds = query(collection(db, "products"), orderBy("nombre"));
-        onSnapshot(qProds, (snapshot) => {
-            if (snapshot.empty) {
-                listaProductos = [...defaultProducts];
-            } else {
-                const prods = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                const hasHamburguesas = prods.some(p => p.nombre?.includes("Hamburguesa"));
-                if (hasHamburguesas) {
+    // 1. Cargar productos desde Firestore con fallback resiliente
+    if (db) {
+        try {
+            const qProds = query(collection(db, "products"), orderBy("nombre"));
+            onSnapshot(qProds, (snapshot) => {
+                if (snapshot.empty) {
                     listaProductos = [...defaultProducts];
                 } else {
-                    listaProductos = prods;
+                    const prods = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    // Sincronizar catálogo para asegurar que los productos de la semana nunca desaparezcan
+                    const map = new Map();
+                    defaultProducts.forEach(p => map.set(p.id, p));
+                    prods.forEach(p => {
+                        if (p.id) map.set(p.id, { ...(map.get(p.id) || {}), ...p });
+                    });
+                    listaProductos = Array.from(map.values());
                     hasDynamicFirestoreData = true;
                 }
-            }
-            renderizarMenu();
-        }, (err) => {
-            console.warn("Firestore notice, usando catálogo local de repostería:", err);
+                renderizarMenu();
+            }, (err) => {
+                console.warn("Firestore notice, usando catálogo local de repostería:", err);
+                listaProductos = [...defaultProducts];
+                renderizarMenu();
+            });
+        } catch (e) {
+            console.warn("Firestore catch:", e);
             listaProductos = [...defaultProducts];
             renderizarMenu();
-        });
-    } catch (e) {
+        }
+    } else {
         listaProductos = [...defaultProducts];
-        renderizarMenu();
     }
 
     renderizarMenu();
     actualizarCarrito();
     initScrollReveal();
+
+    // Conectar botones destacados del Producto de la Semana
+    const btnHeroPorcion = document.getElementById('btn-pedir-porcion-semana');
+    if (btnHeroPorcion) {
+        btnHeroPorcion.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.cardAddToCart('prod-brownie-clasico', btnHeroPorcion);
+        });
+    }
+
+    const btnHeroCaja = document.getElementById('btn-pedir-caja-semana');
+    if (btnHeroCaja) {
+        btnHeroCaja.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.cardAddToCart('prod-caja-brownies', btnHeroCaja);
+        });
+    }
 
     // 2. Filtros de Categorías Accesibles
     if (DOM.categoryTabs) {
@@ -1107,6 +1257,432 @@ function init() {
             cerrarModalPago();
         }
     });
+
+    // 13. Inicializar Chatbot de la Repostera Animada (Chef Keyla)
+    initReposteraChatbot();
+}
+
+// ==========================================================================
+// --- 8. CHATBOT ASISTENTE: REPOSTERA ANIMADA (CHEF KEYLA) ---
+// ==========================================================================
+
+const CHAT_QUICK_OPTIONS = [
+    { key: "semana", label: "✨ Postre de la Semana" },
+    { key: "teleferico", label: "🚡 Entregas Teleférico" },
+    { key: "pastel", label: "🎂 Pasteles (48h)" },
+    { key: "carrito", label: "🛍️ Ver mi Carrito" },
+    { key: "whatsapp", label: "💬 Hablar por WhatsApp" }
+];
+
+function initReposteraChatbot() {
+    if (!DOM.reposteraChatContainer) return;
+
+    // Toggle botón flotante
+    if (DOM.reposteraFloatBtn) {
+        DOM.reposteraFloatBtn.addEventListener('click', () => {
+            window.toggleReposteraChat();
+        });
+    }
+
+    // Clic en globo de saludo
+    if (DOM.reposteraSpeechTrigger) {
+        DOM.reposteraSpeechTrigger.addEventListener('click', () => {
+            window.toggleReposteraChat(true);
+        });
+    }
+
+    // Cerrar globo de saludo
+    if (DOM.reposteraSpeechClose) {
+        DOM.reposteraSpeechClose.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (DOM.reposteraSpeechBubble) DOM.reposteraSpeechBubble.classList.add('hidden');
+        });
+    }
+
+    // Cerrar ventana del chat
+    if (DOM.reposteraCloseBtn) {
+        DOM.reposteraCloseBtn.addEventListener('click', () => {
+            window.toggleReposteraChat(false);
+        });
+    }
+
+    // Reiniciar conversación
+    if (DOM.reposteraResetBtn) {
+        DOM.reposteraResetBtn.addEventListener('click', () => {
+            window.resetReposteraChat();
+        });
+    }
+
+    // Envío del formulario de texto
+    if (DOM.reposteraChatForm) {
+        DOM.reposteraChatForm.addEventListener('submit', window.handleReposteraSubmit);
+    }
+
+    // Cerrar con Escape si está abierto
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && DOM.reposteraChatWindow && !DOM.reposteraChatWindow.hidden) {
+            window.toggleReposteraChat(false);
+        }
+    });
+
+    // Auto-ocultar globo teaser tras 18 segundos si no se interactuó
+    setTimeout(() => {
+        if (DOM.reposteraSpeechBubble && DOM.reposteraChatWindow && DOM.reposteraChatWindow.hidden) {
+            DOM.reposteraSpeechBubble.style.opacity = '0';
+            DOM.reposteraSpeechBubble.style.transition = 'opacity 0.8s ease';
+            setTimeout(() => {
+                if (DOM.reposteraSpeechBubble) DOM.reposteraSpeechBubble.classList.add('hidden');
+            }, 800);
+        }
+    }, 18000);
+}
+
+window.toggleReposteraChat = function(forceOpen) {
+    if (!DOM.reposteraChatWindow) return;
+
+    const isHidden = DOM.reposteraChatWindow.hidden;
+    const shouldOpen = (forceOpen !== undefined) ? forceOpen : isHidden;
+
+    if (shouldOpen) {
+        DOM.reposteraChatWindow.hidden = false;
+        if (DOM.reposteraFloatBtn) DOM.reposteraFloatBtn.setAttribute('aria-expanded', 'true');
+        if (DOM.reposteraSpeechBubble) DOM.reposteraSpeechBubble.classList.add('hidden');
+        if (DOM.reposteraUnreadPill) DOM.reposteraUnreadPill.classList.add('hidden');
+
+        // Si es la primera vez que abre y no hay mensajes, iniciar
+        if (DOM.reposteraChatMessages && DOM.reposteraChatMessages.children.length === 0) {
+            window.resetReposteraChat();
+        }
+
+        setTimeout(() => {
+            if (DOM.reposteraChatInput) DOM.reposteraChatInput.focus();
+            if (DOM.reposteraChatMessages) {
+                DOM.reposteraChatMessages.scrollTop = DOM.reposteraChatMessages.scrollHeight;
+            }
+        }, 150);
+    } else {
+        DOM.reposteraChatWindow.hidden = true;
+        if (DOM.reposteraFloatBtn) DOM.reposteraFloatBtn.setAttribute('aria-expanded', 'false');
+    }
+};
+
+window.resetReposteraChat = function() {
+    if (!DOM.reposteraChatMessages) return;
+    DOM.reposteraChatMessages.innerHTML = '';
+
+    const welcomeHtml = `
+        <p>¡Hola! 👩‍🍳 Soy <strong>Keyla</strong>, tu repostera artesanal en <strong>KeyBakery Los Alcarrizos</strong>.</p>
+        <p>En nuestra cocina trabajamos bajo un modelo por lotes: de lunes a viernes atendemos labores regulares y horneamos todo 100% fresco para entregas fijas los <strong>domingos</strong> (en taller o estaciones del Teleférico).</p>
+        <p>Si deseas <strong>pasteles enteros o eventos</strong>, los preparamos personalizados bajo encargo con 48h de anticipación para cualquier fecha.</p>
+        <p>¿En qué puedo colaborarte hoy? Elige una opción abajo o escribe tu consulta:</p>
+    `;
+
+    renderReposteraMessage('bot', welcomeHtml);
+    renderQuickChips();
+};
+
+function renderQuickChips() {
+    if (!DOM.reposteraQuickChips) return;
+    DOM.reposteraQuickChips.innerHTML = CHAT_QUICK_OPTIONS.map(opt => `
+        <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('${opt.key}')">
+            ${opt.label}
+        </button>
+    `).join('');
+}
+
+window.handleReposteraQuickAction = function(key) {
+    const option = CHAT_QUICK_OPTIONS.find(o => o.key === key);
+    if (option) {
+        renderReposteraMessage('user', option.label);
+    }
+
+    const domingoTexto = getProximoDomingoTexto();
+
+    if (key === 'semana') {
+        const weeklyItem = listaProductos.find(p => p.id === 'prod-brownie-clasico') || {
+            nombre: 'Brownie Artesanal Melcochoso',
+            precio: 180,
+            id: 'prod-brownie-clasico',
+            desc: 'Elaborado con cacao criollo dominicano, textura húmeda y costra brillante craquelada.'
+        };
+        const weeklyBox = listaProductos.find(p => p.id === 'prod-caja-brownies') || {
+            nombre: 'Caja Degustación (4 unidades)',
+            precio: 650,
+            id: 'prod-caja-brownies',
+            desc: '4 porciones surtidas: Clásico, Dulce de Leche, Nutella y Nueces.'
+        };
+
+        const replyHtml = `
+            <p>✨ <strong>Postre Especial de Esta Semana:</strong></p>
+            <p>Nuestro horno está dedicado a: <strong>${weeklyItem.nombre}</strong>. Horneado fresco por lotes para entregar este <strong>${domingoTexto}</strong> en Los Alcarrizos.</p>
+            <p>Elige tu porción o caja y se agregará directamente a tu pedido:</p>
+            
+            <div class="chat-product-card">
+                <div class="chat-product-header">
+                    <span class="chat-product-title">${weeklyItem.nombre} (Porción)</span>
+                    <span class="chat-product-price">DOP$ ${weeklyItem.precio.toLocaleString()}</span>
+                </div>
+                <p class="chat-product-desc">${weeklyItem.desc || 'Porción individual recién horneada para este domingo.'}</p>
+                <button type="button" class="chat-btn-add" onclick="window.cardAddToCart('${weeklyItem.id}', this)">
+                    <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar Porción (+1)
+                </button>
+            </div>
+
+            <div class="chat-product-card">
+                <div class="chat-product-header">
+                    <span class="chat-product-title">${weeklyBox.nombre}</span>
+                    <span class="chat-product-price">DOP$ ${weeklyBox.precio.toLocaleString()}</span>
+                </div>
+                <p class="chat-product-desc">${weeklyBox.desc || '4 porciones ideales para compartir.'}</p>
+                <button type="button" class="chat-btn-add" onclick="window.cardAddToCart('${weeklyBox.id}', this)">
+                    <i data-lucide="box" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar Caja 4x (+1)
+                </button>
+            </div>
+        `;
+        renderReposteraMessage('bot', replyHtml);
+    } else if (key === 'teleferico') {
+        const replyHtml = `
+            <p>🚡 <strong>Entregas en Los Alcarrizos (Domingos):</strong></p>
+            <p>Para mayor comodidad de nuestra comunidad:</p>
+            <ul style="padding-left: 1.2rem; margin: 0.4rem 0; font-size: 0.85rem; line-height: 1.5;">
+                <li><strong>🏪 Taller Los Alcarrizos:</strong> Retiro en persona sin costo adicional (Gratis).</li>
+                <li><strong>🚡 Paradas del Teleférico (DOP$ 50):</strong>
+                    <br>• Estación 1: Los Alcarrizos (Entrada / Autopista Duarte)
+                    <br>• Estación 2: Las Cangrejas
+                    <br>• Estación 3: Puente Blanco
+                    <br>• Estación 4: Los Americanos
+                </li>
+                <li><strong>🛵 Envío a Domicilio:</strong> Directo a tu casa en Savica, El Chucho, Los Americanos, etc. (Costo coordinado según sector).</li>
+            </ul>
+            <p style="font-size: 0.82rem; color: var(--pink-hover);">Al confirmar en el carrito seleccionas tu punto exacto.</p>
+        `;
+        renderReposteraMessage('bot', replyHtml);
+    } else if (key === 'pastel') {
+        const replyHtml = `
+            <p>🎂 <strong>Pasteles Completos & Eventos bajo Encargo:</strong></p>
+            <p>¿Tienes un cumpleaños, bautizo o reunión en la semana? Los pasteles enteros los preparamos personalizados:</p>
+            <ul style="padding-left: 1.2rem; margin: 0.4rem 0; font-size: 0.85rem; line-height: 1.5;">
+                <li><strong>Anticipación:</strong> Mínimo 48 horas de anticipación.</li>
+                <li><strong>Día de entrega:</strong> ¡Cualquier día de la semana coordinado contigo!</li>
+                <li><strong>Opciones:</strong> Bizcocho dominicano tradicional con suspiro, pudín de vainilla, red velvet, chocolate húmedo o zanahoria.</li>
+            </ul>
+            <div style="display: flex; gap: 0.5rem; flex-direction: column; margin-top: 0.6rem;">
+                <a href="#menu" class="btn-secondary" style="padding: 0.55rem; text-align: center; font-size: 0.82rem;" onclick="window.toggleReposteraChat(false)">Ver Pasteles en el Menú</a>
+                <a href="https://wa.me/${WHATSAPP_NUMBER}?text=Hola%20Chef%20Keyla,%20quisiera%20cotizar%20un%20pastel%20completo%20para%20un%20evento" target="_blank" rel="noopener noreferrer" class="btn-hero-whatsapp" style="padding: 0.55rem; font-size: 0.82rem; justify-content: center;">Coordinar Pastel por WhatsApp</a>
+            </div>
+        `;
+        renderReposteraMessage('bot', replyHtml);
+    } else if (key === 'carrito') {
+        const totalItems = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+        const totalDOP = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+
+        if (totalItems === 0) {
+            const replyHtml = `
+                <p>🛒 <strong>Tu carrito actualmente está vacío.</strong></p>
+                <p>¿Deseas consultar el postre activo de esta semana o explorar los pasteles completos en el menú?</p>
+                <div style="display: flex; gap: 0.45rem; flex-wrap: wrap; margin-top: 0.5rem;">
+                    <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('semana')">✨ Ver Postre de la Semana</button>
+                    <a href="#menu" class="repostera-chip" onclick="window.toggleReposteraChat(false)">🍰 Ver Menú</a>
+                </div>
+            `;
+            renderReposteraMessage('bot', replyHtml);
+        } else {
+            const itemsListHtml = carrito.map(item => `
+                <li style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                    <span>${item.cantidad}x ${item.nombre}</span>
+                    <strong>DOP$ ${(item.precio * item.cantidad).toLocaleString()}</strong>
+                </li>
+            `).join('');
+
+            const replyHtml = `
+                <p>🛍️ <strong>Resumen de tu Carrito (${totalItems} productos):</strong></p>
+                <ul style="padding-left: 0; list-style: none; font-size: 0.82rem; background: #fff; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--border-color); margin: 0.5rem 0;">
+                    ${itemsListHtml}
+                    <li style="border-top: 1px dashed #ddd; margin-top: 6px; padding-top: 6px; display: flex; justify-content: space-between; font-weight: 800; color: var(--pink);">
+                        <span>Total:</span>
+                        <span>DOP$ ${totalDOP.toLocaleString()}</span>
+                    </li>
+                </ul>
+                <div style="display: flex; gap: 0.5rem; flex-direction: column; margin-top: 0.5rem;">
+                    <button type="button" class="btn-primary" style="padding: 0.6rem; font-size: 0.84rem;" onclick="window.openCart(); window.toggleReposteraChat(false);">
+                        Abrir Carrito y Completar Pedido
+                    </button>
+                </div>
+            `;
+            renderReposteraMessage('bot', replyHtml);
+        }
+    } else if (key === 'whatsapp') {
+        const totalItems = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+        let txt = `Hola Chef Keyla, te escribo desde la página de KeyBakery Los Alcarrizos.`;
+        if (totalItems > 0) {
+            txt += ` Tengo ${totalItems} productos en mi carrito y deseo coordinar mi pedido.`;
+        } else {
+            txt += ` Deseo hacer un pedido para este domingo.`;
+        }
+        const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(txt)}`;
+
+        const replyHtml = `
+            <p>💬 <strong>¡Con mucho gusto te atiendo en WhatsApp!</strong></p>
+            <p>Haz clic en el botón de abajo para abrir la conversación directa con nuestro equipo:</p>
+            <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="btn-hero-whatsapp" style="padding: 0.65rem; font-size: 0.84rem; justify-content: center; margin-top: 0.4rem;">
+                <i data-lucide="message-circle" style="width: 16px; height: 16px;" aria-hidden="true"></i> Abrir Chat en WhatsApp
+            </a>
+        `;
+        renderReposteraMessage('bot', replyHtml);
+    }
+};
+
+window.handleReposteraSubmit = async function(event) {
+    if (event) event.preventDefault();
+    if (!DOM.reposteraChatInput) return;
+
+    const rawText = DOM.reposteraChatInput.value.trim();
+    if (!rawText) return;
+
+    DOM.reposteraChatInput.value = '';
+    renderReposteraMessage('user', rawText);
+
+    // Indicador temporal de escribiendo
+    const typingId = 'typing-' + Date.now();
+    const typingRow = document.createElement('div');
+    typingRow.className = 'chat-bubble-row bot';
+    typingRow.id = typingId;
+    typingRow.innerHTML = `
+        <div class="chat-bubble-avatar">👩‍🍳</div>
+        <div class="chat-bubble" style="color: var(--text-muted); font-style: italic;">
+            Chef Keyla está escribiendo...
+        </div>
+    `;
+    if (DOM.reposteraChatMessages) {
+        DOM.reposteraChatMessages.appendChild(typingRow);
+        DOM.reposteraChatMessages.scrollTop = DOM.reposteraChatMessages.scrollHeight;
+    }
+
+    const removeTyping = () => {
+        const el = document.getElementById(typingId);
+        if (el) el.remove();
+    };
+
+    // 1. Intentar endpoint de Gemini /api/chat en segundo plano con timeout
+    let aiReply = null;
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: rawText }),
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data.reply) {
+                aiReply = data.reply;
+            }
+        }
+    } catch (e) {
+        // Fallback natural a motor de respuestas local
+    }
+
+    removeTyping();
+
+    if (aiReply) {
+        renderReposteraMessage('bot', `<p>${aiReply.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}</p>`);
+        return;
+    }
+
+    // 2. Motor de Respuestas Contextuales Local de Chef Keyla
+    const q = rawText.toLowerCase();
+    const domingoTexto = getProximoDomingoTexto();
+
+    if (q.includes('brownie') || q.includes('semana') || q.includes('lote') || q.includes('que tienen') || q.includes('que hay') || q.includes('postre de la semana') || q.includes('especial de la semana')) {
+        renderReposteraMessage('bot', `
+            <p>✨ <strong>Postre Especial de Esta Semana:</strong></p>
+            <p>Esta semana tenemos activo nuestro lote de <strong>Brownies Artesanales Melcochosos</strong> 🍫 horneados con cacao criollo dominicano, textura húmeda y costra brillante.</p>
+            <p>Puedes pedir la porción individual por <strong>DOP$ 180</strong> o la caja degustación de 4 unidades por <strong>DOP$ 650</strong> con entrega este <strong>${domingoTexto}</strong> en Los Alcarrizos.</p>
+            <button type="button" class="chat-btn-add" style="margin-top: 0.3rem;" onclick="window.cardAddToCart('prod-brownie-clasico', this)">
+                <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Pedir Porción de la Semana (+1)
+            </button>
+        `);
+    } else if (q.includes('teleferico') || q.includes('donde') || q.includes('ubicacion') || q.includes('direccion') || q.includes('entrega') || q.includes('alcarrizos') || q.includes('parada')) {
+        renderReposteraMessage('bot', `
+            <p>📍 <strong>Estamos en Los Alcarrizos, Santo Domingo Oeste</strong>.</p>
+            <p>Nuestras entregas son los <strong>domingos</strong> en:</p>
+            <p>• <strong>Gratis:</strong> En nuestro taller de Los Alcarrizos.<br>• <strong>DOP$ 50:</strong> En las estaciones 1 (Entrada Duarte), 2 (Las Cangrejas), 3 (Puente Blanco) y 4 (Los Americanos).<br>• <strong>Delivery a Domicilio:</strong> Directo a tu puerta en tu sector.</p>
+        `);
+    } else if (q.includes('pastel') || q.includes('bizcocho') || q.includes('torta') || q.includes('cumpleaños') || q.includes('boda') || q.includes('completo') || q.includes('libra')) {
+        renderReposteraMessage('bot', `
+            <p>🎂 ¡Hacemos hermosos y deliciosos pasteles completos para tus celebraciones!</p>
+            <p>Los pasteles enteros se elaboran bajo encargo con <strong>mínimo 48h de anticipación</strong> y podemos coordinar la entrega el día de la semana que lo necesites (no solo domingo).</p>
+            <p>¿Deseas masa pudín tradicional con dulce de leche, tres leches o red velvet?</p>
+            <a href="https://wa.me/${WHATSAPP_NUMBER}?text=Hola%20Chef%20Keyla,%20quiero%20cotizar%20un%20pastel%20completo" target="_blank" rel="noopener noreferrer" class="btn-hero-whatsapp" style="padding: 0.55rem; font-size: 0.82rem; justify-content: center; margin-top: 0.3rem;">
+                <i data-lucide="message-circle" style="width: 14px; height: 14px;" aria-hidden="true"></i> Cotizar Pastel en WhatsApp
+            </a>
+        `);
+    } else if (q.includes('precio') || q.includes('costo') || q.includes('cuanto') || q.includes('vale')) {
+        renderReposteraMessage('bot', `
+            <p>💵 <strong>Precios Destacados de KeyBakery:</strong></p>
+            <p>• <strong>Postre de la Semana:</strong> DOP$ 180 (Porción) | DOP$ 650 (Caja 4 uds)<br>• <strong>Pastel Dominicano 1/2 lb:</strong> Desde DOP$ 750<br>• <strong>Pastel Dominicano 1 lb:</strong> Desde DOP$ 1,350<br>• <strong>Bandejas de Catibías (25 uds):</strong> DOP$ 950<br>• <strong>Bandeja Croissants (12 uds):</strong> DOP$ 700</p>
+        `);
+    } else if (q.includes('pago') || q.includes('pagar') || q.includes('transferencia') || q.includes('banco') || q.includes('tarjeta') || q.includes('efectivo')) {
+        renderReposteraMessage('bot', `
+            <p>💳 <strong>Métodos de Pago Aceptados:</strong></p>
+            <p>Aceptamos transferencias por <strong>Banco Popular, BHD y Banreservas</strong>, así como pago en <strong>efectivo</strong> al momento de retirar en el taller o contra entrega en Los Alcarrizos.</p>
+        `);
+    } else if (q.includes('gracias') || q.includes('ok') || q.includes('bien') || q.includes('excelente') || q.includes('perfecto')) {
+        renderReposteraMessage('bot', `
+            <p>¡A la orden siempre! 🥰 En KeyBakery horneamos con mucho amor para endulzar tus momentos en Los Alcarrizos. Si necesitas algo más, solo dime.</p>
+        `);
+    } else {
+        renderReposteraMessage('bot', `
+            <p>¡Hola! Con mucho gusto te asisto. 👩‍🍳 En KeyBakery horneamos por lotes semanales para los <strong>domingos</strong>, y preparamos pasteles enteros por encargo con 48h de anticipación.</p>
+            <p>¿En qué puedo ayudarte? Puedes consultar el postre de esta semana, los puntos del Teleférico o cotizar un pastel para tu evento:</p>
+            <div style="display: flex; gap: 0.45rem; flex-wrap: wrap; margin-top: 0.5rem;">
+                <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('semana')">✨ Postre de esta semana</button>
+                <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('teleferico')">🚡 Puntos Teleférico</button>
+                <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('pastel')">🎂 Pastel Entero</button>
+                <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('whatsapp')">💬 Abrir WhatsApp</button>
+            </div>
+        `);
+    }
+};
+
+function renderReposteraMessage(role, htmlContent) {
+    if (!DOM.reposteraChatMessages) return;
+
+    const row = document.createElement('div');
+    row.className = `chat-bubble-row ${role}`;
+
+    if (role === 'bot') {
+        row.innerHTML = `
+            <div class="chat-bubble-avatar">👩‍🍳</div>
+            <div class="chat-bubble">
+                ${htmlContent}
+            </div>
+        `;
+    } else {
+        row.innerHTML = `
+            <div class="chat-bubble">
+                <p>${escapeHtml(htmlContent)}</p>
+            </div>
+        `;
+    }
+
+    DOM.reposteraChatMessages.appendChild(row);
+    DOM.reposteraChatMessages.scrollTop = DOM.reposteraChatMessages.scrollHeight;
+
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // Ejecutar cuando el DOM esté listo

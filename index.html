@@ -121,6 +121,52 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
+    <!-- Global Cart Safety Handler (prevents inline handler errors during initial module parsing) -->
+    <script>
+        window._pendingCartAdds = window._pendingCartAdds || [];
+        window.cardAddToCart = function(id, btn) {
+            if (window.__realCardAddToCart) {
+                window.__realCardAddToCart(id, btn);
+            } else {
+                window._pendingCartAdds.push({ id, btn });
+            }
+        };
+        window.cardQtyChange = function(id, delta) {
+            if (window.__realCardQtyChange) {
+                window.__realCardQtyChange(id, delta);
+            }
+        };
+        window.closeCart = function() {
+            if (window.DOM && window.DOM.cartSidebar) {
+                window.DOM.cartSidebar.classList.remove('open');
+                window.DOM.cartSidebar.setAttribute('aria-hidden', 'true');
+            } else {
+                const el = document.getElementById('cart-sidebar');
+                if (el) {
+                    el.classList.remove('open');
+                    el.setAttribute('aria-hidden', 'true');
+                }
+            }
+        };
+        window.openCart = function() {
+            if (window.DOM && window.DOM.cartSidebar) {
+                window.DOM.cartSidebar.classList.add('open');
+                window.DOM.cartSidebar.setAttribute('aria-hidden', 'false');
+            } else {
+                const el = document.getElementById('cart-sidebar');
+                if (el) {
+                    el.classList.add('open');
+                    el.setAttribute('aria-hidden', 'false');
+                }
+            }
+        };
+        window.DOM = window.DOM || {
+            get cartSidebar() { return document.getElementById('cart-sidebar'); },
+            get openCartBtn() { return document.getElementById('open-cart'); },
+            get closeCartBtn() { return document.getElementById('close-cart'); }
+        };
+    </script>
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -232,15 +278,20 @@
         <div class="container">
             
             <div class="weekly-drop-section">
+                <!-- Etiqueta / Cinta animada diagonal en la esquina -->
+                <div class="ribbon-semana-animated" aria-hidden="true">
+                    <span>★ ESPECIAL DE LA SEMANA ★</span>
+                </div>
                 <div class="weekly-drop-grid">
                     <div class="weekly-drop-media">
                         <img 
-                            src="https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=800&q=80" 
+                            src="/assets/images/hero_brownies.jpg" 
                             alt="Brownie artesanal melcochoso recién horneado con cacao dominicano y chispas de chocolate"
                             width="600"
                             height="400"
-                            loading="lazy"
-                            referrerpolicy="no-referrer"
+                            loading="eager"
+                            decoding="async"
+                            onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=800&q=80';"
                         >
                         <div class="weekly-drop-badge">
                             <i data-lucide="sparkles" style="color: #F5A623; width: 16px; height: 16px;" aria-hidden="true"></i>
@@ -277,11 +328,11 @@
                         </p>
 
                         <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem;">
-                            <button class="btn-primary" onclick="cardAddToCart('prod-brownie-clasico', this)" aria-label="Agregar Porción de Brownie Artesanal al carrito">
-                                <i data-lucide="shopping-basket" aria-hidden="true"></i> Pedir Porción (DOP$ 180)
+                            <button id="btn-pedir-porcion-semana" type="button" class="btn-primary" aria-label="Pedir Porción de Brownie Artesanal Melcochoso (DOP$ 180)">
+                                <i data-lucide="shopping-basket" aria-hidden="true"></i> <span>Pedir Porción (DOP$ 180)</span>
                             </button>
-                            <button class="btn-secondary" onclick="cardAddToCart('prod-caja-brownies', this)" aria-label="Agregar Caja de 4 Brownies al carrito">
-                                <i data-lucide="box" aria-hidden="true"></i> Pedir Caja 4x (DOP$ 650)
+                            <button id="btn-pedir-caja-semana" type="button" class="btn-secondary" aria-label="Pedir Caja Degustación de 4 Brownies Gourmet (DOP$ 650)">
+                                <i data-lucide="box" aria-hidden="true"></i> <span>Pedir Caja 4x (DOP$ 650)</span>
                             </button>
                         </div>
                     </div>
@@ -361,7 +412,7 @@
                 <article class="product-card" id="card-prod-brownie-clasico" data-category="semana">
                     <div class="product-image-wrapper">
                         <span class="product-badge">🔥 Producto de la Semana</span>
-                        <img src="https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=800&q=80" alt="Brownie artesanal melcochoso clásico" width="400" height="260" loading="lazy" referrerpolicy="no-referrer">
+                        <img src="/assets/images/brownie_clasico.jpg" alt="Brownie artesanal melcochoso clásico" width="400" height="260" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=800&q=80';">
                     </div>
                     <div class="product-info">
                         <div>
@@ -388,7 +439,7 @@
                 <article class="product-card" id="card-prod-caja-brownies" data-category="semana">
                     <div class="product-image-wrapper">
                         <span class="product-badge">⭐ Caja Favorita de la Semana</span>
-                        <img src="https://images.unsplash.com/photo-1624353365286-3f8d62daad51?auto=format&fit=crop&w=800&q=80" alt="Caja degustación de 4 brownies surtidos gourmet" width="400" height="260" loading="lazy" referrerpolicy="no-referrer">
+                        <img src="/assets/images/caja_brownies.jpg" alt="Caja degustación de 4 brownies surtidos gourmet" width="400" height="260" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1624353365286-3f8d62daad51?auto=format&fit=crop&w=800&q=80';">
                     </div>
                     <div class="product-info">
                         <div>
@@ -415,7 +466,7 @@
                 <article class="product-card" id="card-prod-brownie-jar" data-category="semana">
                     <div class="product-image-wrapper">
                         <span class="product-badge">Edición Limitada Semanal</span>
-                        <img src="https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80" alt="Brownie Jar en vasito con capas de dulce de leche y suspiro dominicano" width="400" height="260" loading="lazy" referrerpolicy="no-referrer">
+                        <img src="/assets/images/brownie_jar.jpg" alt="Brownie Jar en vasito con capas de dulce de leche y suspiro dominicano" width="400" height="260" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80';">
                     </div>
                     <div class="product-info">
                         <div>
@@ -442,7 +493,7 @@
                 <article class="product-card" id="card-prod-bizcocho-suspiro" data-category="pasteles-completos">
                     <div class="product-image-wrapper">
                         <span class="product-badge">🎂 Pastel Entero (Bajo Encargo)</span>
-                        <img src="https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=800&q=80" alt="Bizcocho Dominicano de Suspiro de 1 libra entera" width="400" height="260" loading="lazy" referrerpolicy="no-referrer">
+                        <img src="/assets/images/bizcocho_suspiro.jpg" alt="Bizcocho Dominicano de Suspiro de 1 libra entera" width="400" height="260" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=800&q=80';">
                     </div>
                     <div class="product-info">
                         <div>
@@ -469,7 +520,7 @@
                 <article class="product-card" id="card-prod-pastel-chocolate" data-category="pasteles-completos">
                     <div class="product-image-wrapper">
                         <span class="product-badge">🎂 Pastel Entero (Bajo Encargo)</span>
-                        <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80" alt="Pastel entero de chocolate intenso 1.5 libras" width="400" height="260" loading="lazy" referrerpolicy="no-referrer">
+                        <img src="/assets/images/pastel_chocolate.jpg" alt="Pastel entero de chocolate intenso 1.5 libras" width="400" height="260" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80';">
                     </div>
                     <div class="product-info">
                         <div>
@@ -496,7 +547,7 @@
                 <article class="product-card" id="card-prod-cheesecake-guayaba" data-category="pasteles-completos">
                     <div class="product-image-wrapper">
                         <span class="product-badge">🎂 Pastel Entero (Bajo Encargo)</span>
-                        <img src="https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=800&q=80" alt="Cheesecake completo con mermelada de guayaba" width="400" height="260" loading="lazy" referrerpolicy="no-referrer">
+                        <img src="/assets/images/cheesecake_guayaba.jpg" alt="Cheesecake completo con mermelada de guayaba" width="400" height="260" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=800&q=80';">
                     </div>
                     <div class="product-info">
                         <div>
@@ -523,7 +574,7 @@
                 <article class="product-card" id="card-prod-pastel-bodas" data-category="pasteles-completos">
                     <div class="product-image-wrapper">
                         <span class="product-badge">Celebraciones Especiales</span>
-                        <img src="https://images.unsplash.com/photo-1535254973040-607b474cb8c2?auto=format&fit=crop&w=800&q=80" alt="Pastel de bodas y celebraciones en Los Alcarrizos" width="400" height="260" loading="lazy" referrerpolicy="no-referrer">
+                        <img src="/assets/images/pastel_bodas.jpg" alt="Pastel de bodas y celebraciones en Los Alcarrizos" width="400" height="260" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1535254973040-607b474cb8c2?auto=format&fit=crop&w=800&q=80';">
                     </div>
                     <div class="product-info">
                         <div>
@@ -550,7 +601,7 @@
                 <article class="product-card" id="card-prod-bocadillos-queso" data-category="bocadillos-eventos">
                     <div class="product-image-wrapper">
                         <span class="product-badge">Bandeja para Eventos</span>
-                        <img src="https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&w=800&q=80" alt="Bandeja de 24 bocadillos de queso criollo" width="400" height="260" loading="lazy" referrerpolicy="no-referrer">
+                        <img src="/assets/images/bocadillos_queso.jpg" alt="Bandeja de 24 bocadillos de queso criollo" width="400" height="260" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&w=800&q=80';">
                     </div>
                     <div class="product-info">
                         <div>
@@ -577,7 +628,7 @@
                 <article class="product-card" id="card-prod-catibias-gourmet" data-category="bocadillos-eventos">
                     <div class="product-image-wrapper">
                         <span class="product-badge">Bandeja para Eventos</span>
-                        <img src="https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=800&q=80" alt="Bandeja de 25 catibías de yuca gourmet" width="400" height="260" loading="lazy" referrerpolicy="no-referrer">
+                        <img src="/assets/images/catibias_gourmet.jpg" alt="Bandeja de 25 catibías de yuca gourmet" width="400" height="260" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=800&q=80';">
                     </div>
                     <div class="product-info">
                         <div>
@@ -604,7 +655,7 @@
                 <article class="product-card" id="card-prod-preview-chinola" data-category="proximas-semanas">
                     <div class="product-image-wrapper">
                         <span class="product-badge">🗓️ Próxima Semana 2</span>
-                        <img src="https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?auto=format&fit=crop&w=800&q=80" alt="Mousse individual de chinola silvestre en vasitos" width="400" height="260" loading="lazy" referrerpolicy="no-referrer">
+                        <img src="/assets/images/preview_chinola.jpg" alt="Mousse individual de chinola silvestre en vasitos" width="400" height="260" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?auto=format&fit=crop&w=800&q=80';">
                     </div>
                     <div class="product-info">
                         <div>
@@ -627,7 +678,7 @@
                 <article class="product-card" id="card-prod-preview-cupcakes" data-category="proximas-semanas">
                     <div class="product-image-wrapper">
                         <span class="product-badge">🗓️ Próxima Semana 3</span>
-                        <img src="https://images.unsplash.com/photo-1614707267537-b85af00c4b81?auto=format&fit=crop&w=800&q=80" alt="Cupcakes red velvet con frosting suave" width="400" height="260" loading="lazy" referrerpolicy="no-referrer">
+                        <img src="/assets/images/preview_cupcakes.jpg" alt="Cupcakes red velvet con frosting suave" width="400" height="260" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1614707267537-b85af00c4b81?auto=format&fit=crop&w=800&q=80';">
                     </div>
                     <div class="product-info">
                         <div>
@@ -650,7 +701,7 @@
                 <article class="product-card" id="card-prod-preview-pudin" data-category="proximas-semanas">
                     <div class="product-image-wrapper">
                         <span class="product-badge">🗓️ Próxima Semana 4</span>
-                        <img src="https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=800&q=80" alt="Pudin de pan tradicional dominicano" width="400" height="260" loading="lazy" referrerpolicy="no-referrer">
+                        <img src="/assets/images/preview_pudin.jpg" alt="Pudin de pan tradicional dominicano" width="400" height="260" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=800&q=80';">
                     </div>
                     <div class="product-info">
                         <div>
@@ -920,16 +971,145 @@
         </div>
     </footer>
 
-    <!-- Botón Flotante de WhatsApp Accesible -->
-    <a href="https://wa.me/18090000000?text=Hola%20KeyBakery,%20quisiera%20hacer%20un%20pedido%20en%20Los%20Alcarrizos" 
-       target="_blank" 
-       rel="noopener noreferrer" 
-       class="floating-whatsapp" 
-       id="floating-whatsapp"
-       aria-label="Contactar por WhatsApp para realizar un pedido en Los Alcarrizos">
-        <i data-lucide="message-circle" class="floating-whatsapp-icon" aria-hidden="true"></i>
-        <span>¿Deseas ordenar? Escríbenos</span>
-    </a>
+    <!-- ================= BOTÓN FLOTANTE & CHATBOT: REPOSTERA ANIMADA CHEF KEYLA ================= -->
+    <div id="repostera-chat-container" class="repostera-chat-container">
+        
+        <!-- Globo de bienvenida animado de la Repostera -->
+        <div id="repostera-speech-bubble" class="repostera-speech-bubble" role="status" aria-live="polite">
+            <button type="button" class="repostera-speech-close" id="repostera-speech-close" aria-label="Cerrar saludo de la repostera">×</button>
+            <div class="repostera-speech-body" id="repostera-speech-trigger">
+                <span class="repostera-speech-tag">👩‍🍳 Chef Keyla:</span>
+                <p class="repostera-speech-text">¡Hola! ¿Un antojito para este domingo? Escríbeme aquí para ayudarte con tu pedido.</p>
+            </div>
+        </div>
+
+        <!-- Botón flotante con la repostera animada -->
+        <button id="repostera-float-btn" class="repostera-float-btn" type="button" aria-label="Abrir asistente de repostería con Chef Keyla" aria-expanded="false" aria-controls="repostera-chat-window">
+            <div class="repostera-avatar-box">
+                <!-- SVG animado artesanal de la repostera Chef Keyla -->
+                <svg class="repostera-avatar-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <circle cx="50" cy="50" r="48" fill="url(#chef-grad-btn)" />
+                    <circle cx="50" cy="50" r="44" fill="#FFF8F3" />
+                    
+                    <!-- Chaqueta pastelera -->
+                    <path d="M22 88C22 72 34 68 50 68C66 68 78 72 78 88V96H22V88Z" fill="#FCE4EC"/>
+                    <path d="M42 68L50 78L58 68" stroke="#D81B60" stroke-width="2.5" stroke-linecap="round"/>
+                    <circle cx="50" cy="83" r="2" fill="#D81B60"/>
+                    <circle cx="50" cy="90" r="2" fill="#D81B60"/>
+
+                    <!-- Cuello -->
+                    <rect x="44" y="60" width="12" height="10" rx="3" fill="#FFDFC4"/>
+
+                    <!-- Cabeza y rostro -->
+                    <circle cx="50" cy="48" r="18" fill="#FFDFC4"/>
+                    <!-- Cabello -->
+                    <path d="M32 46C32 38 40 34 50 34C60 34 68 38 68 46C68 49 65 52 64 53C62 47 58 44 50 44C42 44 38 47 36 53C35 52 32 49 32 46Z" fill="#5D4037"/>
+                    <!-- Aretes dorados -->
+                    <circle cx="32" cy="49" r="1.5" fill="#D4AF37"/>
+                    <circle cx="68" cy="49" r="1.5" fill="#D4AF37"/>
+                    
+                    <!-- Ojos y pestañas winking / sonrientes -->
+                    <path d="M41 47C42 45 45 45 46 47" stroke="#3E2723" stroke-width="2.2" stroke-linecap="round"/>
+                    <path d="M54 47C55 45 58 45 59 47" stroke="#3E2723" stroke-width="2.2" stroke-linecap="round"/>
+                    <!-- Mejillas sonrojadas -->
+                    <ellipse cx="38" cy="52" rx="3" ry="1.5" fill="#FF80AB" opacity="0.6"/>
+                    <ellipse cx="62" cy="52" rx="3" ry="1.5" fill="#FF80AB" opacity="0.6"/>
+                    <!-- Sonrisa -->
+                    <path d="M45 53C47 57 53 57 55 53" stroke="#D81B60" stroke-width="2" stroke-linecap="round"/>
+
+                    <!-- Gorro de Chef (Toque Blanche) animado -->
+                    <g class="chef-toque-animated">
+                        <path d="M34 35C28 35 26 26 33 21C31 15 40 10 47 13C52 9 62 10 65 16C72 17 74 25 67 31C68 33 67 35 66 35H34Z" fill="#FFFFFF" stroke="#E2D9D2" stroke-width="1.5"/>
+                        <!-- Pliegues del gorro -->
+                        <path d="M41 18C42 24 43 32 43 34" stroke="#F06292" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
+                        <path d="M50 14C50 22 50 31 50 34" stroke="#F06292" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
+                        <path d="M59 18C58 24 57 32 57 34" stroke="#F06292" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
+                        <!-- Cintilla de la toque con lazo -->
+                        <rect x="33" y="32" width="34" height="4" rx="2" fill="#D81B60"/>
+                        <circle cx="50" cy="34" r="2.2" fill="#D4AF37"/>
+                    </g>
+
+                    <!-- Chispas mágicas de repostería -->
+                    <path class="chef-sparkle s1" d="M20 26L22 22L24 26L28 28L24 30L22 34L20 30L16 28L20 26Z" fill="#D4AF37"/>
+                    <path class="chef-sparkle s2" d="M76 22L77.5 19L79 22L82 23.5L79 25L77.5 28L76 25L73 23.5L76 22Z" fill="#D81B60"/>
+                    
+                    <defs>
+                        <linearGradient id="chef-grad-btn" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#FF4081"/>
+                            <stop offset="1" stop-color="#C2185B"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                
+                <span class="repostera-online-dot" title="Chef en línea"></span>
+                <span class="repostera-unread-pill" id="repostera-unread-pill">1</span>
+            </div>
+            
+            <div class="repostera-float-caption">
+                <span class="repostera-name">Chef Keyla</span>
+                <span class="repostera-hint">Pedir en Los Alcarrizos</span>
+            </div>
+        </button>
+
+        <!-- Ventana del Chatbot Completo de la Repostera -->
+        <section id="repostera-chat-window" class="repostera-chat-window" role="dialog" aria-modal="false" aria-label="Chatbot de repostería con Chef Keyla" hidden>
+            <!-- Cabecera del Chat -->
+            <div class="repostera-chat-header">
+                <div class="repostera-header-info">
+                    <div class="repostera-header-avatar">
+                        👩‍🍳
+                        <span class="repostera-header-dot"></span>
+                    </div>
+                    <div>
+                        <h3 class="repostera-header-title">Chef Keyla | KeyBakery</h3>
+                        <p class="repostera-header-sub">🟢 Horneando en vivo en Los Alcarrizos</p>
+                    </div>
+                </div>
+                <div class="repostera-header-buttons">
+                    <a href="https://wa.me/18090000000?text=Hola%20Chef%20Keyla,%20quisiera%20hacer%20un%20pedido%20en%20Los%20Alcarrizos" target="_blank" rel="noopener noreferrer" class="repostera-btn-icon" title="Abrir en WhatsApp directamente" aria-label="Abrir en WhatsApp">
+                        <i data-lucide="message-circle" aria-hidden="true"></i>
+                    </a>
+                    <button type="button" class="repostera-btn-icon" id="repostera-reset-btn" title="Reiniciar chat" aria-label="Reiniciar conversación">
+                        <i data-lucide="rotate-ccw" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" class="repostera-btn-icon repostera-close-btn" id="repostera-close-btn" title="Cerrar chat" aria-label="Cerrar ventana de la repostera">
+                        <i data-lucide="x" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Franja Informativa de Horarios y Entregas en Los Alcarrizos -->
+            <div class="repostera-chat-banner">
+                <i data-lucide="calendar" style="width: 14px; height: 14px; color: var(--pink);" aria-hidden="true"></i>
+                <span><strong>Entregas:</strong> Domingos en Teleférico o Taller. Pasteles enteros con 48h mín.</span>
+            </div>
+
+            <!-- Área de Mensajes del Chat -->
+            <div id="repostera-chat-messages" class="repostera-chat-messages" tabindex="0" aria-live="polite">
+                <!-- Se inyectan dinámicamente -->
+            </div>
+
+            <!-- Chips de Opciones Rápidas -->
+            <div id="repostera-quick-chips" class="repostera-quick-chips" aria-label="Preguntas y acciones frecuentes">
+                <!-- Se generan dinámicamente -->
+            </div>
+
+            <!-- Entrada de Texto y Envío -->
+            <form id="repostera-chat-form" class="repostera-chat-form">
+                <input 
+                    type="text" 
+                    id="repostera-chat-input" 
+                    class="repostera-chat-input" 
+                    placeholder="Escríbele a Chef Keyla (ej: ¿Cómo son las entregas?)..." 
+                    autocomplete="off"
+                    aria-label="Escribe tu mensaje para Chef Keyla"
+                />
+                <button type="submit" class="repostera-chat-send-btn" aria-label="Enviar mensaje a la chef repostera">
+                    <i data-lucide="send" style="width: 16px; height: 16px;" aria-hidden="true"></i>
+                </button>
+            </form>
+        </section>
+    </div>
 
     <!-- Botón Subir al Inicio Accesible -->
     <button id="scroll-top" class="scroll-top-btn" aria-label="Volver arriba al inicio de la página">
