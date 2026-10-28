@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="gradPink" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D81B60"/>
+      <stop offset="100%" stop-color="#AD1457"/>
+    </linearGradient>
+    <linearGradient id="gradGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#B88E4B"/>
+      <stop offset="100%" stop-color="#7D5515"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#gradPink)"/>
+  <!-- Cake slice graphic -->
+  <path d="M12 42 L52 42 L46 22 L18 22 Z" fill="#FFF9F5"/>
+  <path d="M12 42 L52 42 L52 46 C52 49 49 51 46 51 L18 51 C15 51 12 49 12 46 Z" fill="url(#gradGold)"/>
+  <!-- Frosting swirls -->
+  <circle cx="24" cy="22" r="5" fill="#FFF"/>
+  <circle cx="34" cy="22" r="5" fill="#FFF"/>
+  <circle cx="44" cy="22" r="5" fill="#FFF"/>
+  <!-- Cherry / strawberry on top -->
+  <circle cx="34" cy="14" r="4.5" fill="#FF1744"/>
+  <path d="M34 10 C34 7 38 6 39 5" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" fill="none"/>
+</svg>

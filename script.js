@@ -1,7 +1,12 @@
-// --- 1. CONFIGURACIÓN Y FIREBASE ---
+// ===============================================================
+// KEYBAKERY - Lógica de Tienda, Carrito, Pedidos & Firebase
+// Repostería Artesanal Dominicana • Los Alcarrizos, Santo Domingo
+// ===============================================================
+
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, collection, onSnapshot, addDoc, serverTimestamp, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+// --- 1. CONFIGURACIÓN FIREBASE ---
 const firebaseConfig = {
   "projectId": "gen-lang-client-0108986058",
   "appId": "1:349673049471:web:488735f9f380a3768e5e4a",
@@ -14,984 +19,767 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
-const provider = new GoogleAuthProvider();
 
 const WHATSAPP_NUMBER = "18090000000"; 
-const MIN_PURCHASE_DELIVERY = 600;
-const METRO_DELIVERY_FEE = 100;
-const ADMIN_EMAIL = "ronalbatista577@gmail.com";
+const TELEFERICO_FEE = 50;
 
+// Calcular fecha amigable del próximo domingo de entrega
+function getProximoDomingoTexto() {
+    const hoy = new Date();
+    const dia = hoy.getDay(); // 0 es Domingo
+    const diff = dia === 0 ? 0 : 7 - dia;
+    const proximo = new Date(hoy);
+    proximo.setDate(hoy.getDate() + diff);
+    const opciones = { weekday: 'long', day: 'numeric', month: 'long' };
+    const texto = proximo.toLocaleDateString('es-DO', opciones);
+    return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+// --- 2. CATÁLOGO ADAPTADO AL MODELO: PRODUCTO DE LA SEMANA + PASTELES COMPLETOS ---
 const defaultProducts = [
+    // --- CATEGORÍA 1: PRODUCTO DE LA SEMANA (BROWNIES - ENTREGA DOMINGO) ---
     {
-        nombre: "Pastel de Bodas Clásico",
-        precio: 2500,
-        imagen: "https://images.unsplash.com/photo-1535254973040-607b474cb8c2?auto=format&fit=crop&w=800&q=80",
-        stock: 10,
-        activo: true
-    },
-    {
-        nombre: "Cupcakes Red Velvet (6 uds)",
-        precio: 450,
-        imagen: "https://images.unsplash.com/photo-1614707267537-b85af00c4b81?auto=format&fit=crop&w=800&q=80",
-        stock: 50,
-        activo: true
-    },
-    {
-        nombre: "Bocadillos de Queso (12 uds)",
+        id: "prod-brownie-clasico",
+        nombre: "Brownie Artesanal Melcochoso (Porción)",
         precio: 180,
-        imagen: "https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&w=800&q=80",
-        stock: 100,
-        activo: true
-    },
-    {
-        nombre: "Tarta de Frutas Tropicales",
-        precio: 1200,
-        imagen: "https://images.unsplash.com/photo-1519915028121-7d3463d20b13?auto=format&fit=crop&w=800&q=80",
-        stock: 15,
-        activo: true
-    },
-    {
-        nombre: "Pastel de Chocolate Intenso",
-        precio: 1800,
-        imagen: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80",
-        stock: 12,
-        activo: true
-    },
-    {
-        nombre: "Mini Quiches Variados (8 uds)",
-        precio: 320,
-        imagen: "https://images.unsplash.com/photo-1623334834998-a48bf9f04439?auto=format&fit=crop&w=800&q=80",
+        categoria: "semana",
+        tipo: "semana",
+        badge: "🔥 Producto de la Semana",
+        descripcion: "Hecho con cacao puro dominicano, centro húmedo súper fudge, corteza brillante y chispas de chocolate. Entrega exclusiva este Domingo en Los Alcarrizos.",
+        imagen: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=800&q=80",
         stock: 40,
         activo: true
     },
     {
-        nombre: "Bizcocho Dominicano de Suspiro",
-        precio: 950,
-        imagen: "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=800&q=80",
-        stock: 20,
-        activo: true
-    },
-    {
-        nombre: "Cheesecake de Guayaba Real",
-        precio: 1100,
-        imagen: "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=800&q=80",
-        stock: 18,
-        activo: true
-    },
-    {
-        nombre: "Croissants de Mantequilla (4 uds)",
-        precio: 240,
-        imagen: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=800&q=80",
-        stock: 30,
-        activo: true
-    },
-    {
-        nombre: "Mousse de Chinola Silvestre",
-        precio: 350,
-        imagen: "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?auto=format&fit=crop&w=800&q=80",
+        id: "prod-caja-brownies",
+        nombre: "Caja Degustación de 4 Brownies Gourmet",
+        precio: 650,
+        categoria: "semana",
+        tipo: "semana",
+        badge: "⭐ Caja Favorita de la Semana",
+        descripcion: "Incluye 4 porciones surtidas: 1 clásico de chocolate puro, 1 con dulce de leche artesanal, 1 con Nutella y 1 con nueces tostadas. Entrega este Domingo.",
+        imagen: "https://images.unsplash.com/photo-1624353365286-3f8d62daad51?auto=format&fit=crop&w=800&q=80",
         stock: 25,
         activo: true
     },
     {
-        nombre: "Pudin de Pan con Pasas",
-        precio: 500,
-        imagen: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=800&q=80",
-        stock: 15,
+        id: "prod-brownie-jar",
+        nombre: "Brownie Jar con Suspiro & Dulce de Leche",
+        precio: 250,
+        categoria: "semana",
+        tipo: "semana",
+        badge: "Edición Limitada Semanal",
+        descripcion: "Vaso individual con capas de brownie melcochoso, manjar de dulce de leche criollo y suspiro dominicano flameado. Entrega este Domingo.",
+        imagen: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80",
+        stock: 20,
+        activo: true
+    },
+
+    // --- CATEGORÍA 2: PASTELES COMPLETOS (BAJO ENCARGO - DÍA A COORDINAR) ---
+    {
+        id: "prod-bizcocho-suspiro",
+        nombre: "Bizcocho Dominicano de Suspiro (1 Libra Entera)",
+        precio: 950,
+        categoria: "pasteles-completos",
+        tipo: "encargo",
+        badge: "🎂 Pastel Entero (Bajo Encargo)",
+        descripcion: "Pastel completo tradicional de masa esponjosa con relleno artesanal de piña o dulce de leche y suspiro alisado. Rinde 15-20 porciones. Coordinamos entrega cualquier día de la semana con 48h.",
+        imagen: "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=800&q=80",
+        stock: 10,
         activo: true
     },
     {
-        nombre: "Catibías Gourmet (10 uds)",
-        precio: 400,
+        id: "prod-pastel-chocolate",
+        nombre: "Pastel de Chocolate Intenso (Pastel Entero 1.5 Lb)",
+        precio: 1800,
+        categoria: "pasteles-completos",
+        tipo: "encargo",
+        badge: "🎂 Pastel Entero (Bajo Encargo)",
+        descripcion: "Tres capas de bizcocho húmedo de cacao dominicano, ganache brillante y trufas artesanales. Rinde 20 porciones. Se elabora bajo encargo con 48h de anticipación.",
+        imagen: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80",
+        stock: 10,
+        activo: true
+    },
+    {
+        id: "prod-cheesecake-guayaba",
+        nombre: "Cheesecake de Guayaba Real (Molde Entero)",
+        precio: 1100,
+        categoria: "pasteles-completos",
+        tipo: "encargo",
+        badge: "🎂 Pastel Entero (Bajo Encargo)",
+        descripcion: "Tarta horneada entera sobre base crujiente con abundante mermelada espesa de guayaba dulce del país. Rinde 12-14 porciones. Entrega programada con 48h.",
+        imagen: "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=800&q=80",
+        stock: 10,
+        activo: true
+    },
+    {
+        id: "prod-pastel-bodas",
+        nombre: "Pastel de Bodas & Cumpleaños (2-3 Pisos)",
+        precio: 2500,
+        categoria: "pasteles-completos",
+        tipo: "encargo",
+        badge: "Celebraciones Especiales",
+        descripcion: "Diseño elegante con suspiro tradicional alisado a mano y flores comestibles. Rinde de 25 a 35 porciones. Se agenda con un mínimo de 72h para coordinar día y detalles.",
+        imagen: "https://images.unsplash.com/photo-1535254973040-607b474cb8c2?auto=format&fit=crop&w=800&q=80",
+        stock: 5,
+        activo: true
+    },
+
+    // --- CATEGORÍA 3: BOCADILLOS & EVENTOS AL MAYOR (MÍNIMO 12-25 UDS) ---
+    {
+        id: "prod-bocadillos-queso",
+        nombre: "Bandeja de Bocadillos de Queso Criollo (24 uds)",
+        precio: 360,
+        categoria: "bocadillos-eventos",
+        tipo: "encargo",
+        badge: "Bandeja para Eventos",
+        descripcion: "Tequeños rellenos de queso criollo fundente horneados frescos para tus reuniones o fiestas familiares. Mínimo 24 uds. Se coordina el día que necesites con 48h.",
+        imagen: "https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&w=800&q=80",
+        stock: 50,
+        activo: true
+    },
+    {
+        id: "prod-catibias-gourmet",
+        nombre: "Bandeja de Catibías de Yuca Gourmet (25 uds)",
+        precio: 950,
+        categoria: "bocadillos-eventos",
+        tipo: "encargo",
+        badge: "Bandeja para Eventos",
+        descripcion: "Mini empanadas crocantes de harina de yuca rellenas de res sazonada al estilo criollo. Perfectas para compartir en eventos. Entrega coordinada con 48h.",
         imagen: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=800&q=80",
-        stock: 60,
+        stock: 30,
+        activo: true
+    },
+    {
+        id: "prod-croissants-mantequilla",
+        nombre: "Bandeja de Croissants de Mantequilla (12 uds)",
+        precio: 700,
+        categoria: "bocadillos-eventos",
+        tipo: "encargo",
+        badge: "Bandeja para Eventos",
+        descripcion: "Hojaldre crujiente laminado con mantequilla pura en tamaño fiesta. Ideales para mesas de bocadillos y desayunos. Entrega programada con 48h.",
+        imagen: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=800&q=80",
+        stock: 20,
+        activo: true
+    },
+    {
+        id: "prod-mini-quiches",
+        nombre: "Bandeja de Mini Quiches Variados (16 uds)",
+        precio: 640,
+        categoria: "bocadillos-eventos",
+        tipo: "encargo",
+        badge: "Bandeja para Eventos",
+        descripcion: "Tartaletas saladas rellenas de queso gouda, jamón y espinacas con toque de nuez moscada. Mínimo 16 unidades. Entrega programada con 48h.",
+        imagen: "https://images.unsplash.com/photo-1623334834998-a48bf9f04439?auto=format&fit=crop&w=800&q=80",
+        stock: 20,
+        activo: true
+    },
+
+    // --- CATEGORÍA 4: PRÓXIMAS SEMANAS (INFORMATIVO) ---
+    {
+        id: "prod-preview-chinola",
+        nombre: "Mousse de Chinola Silvestre en Vasitos",
+        precio: 350,
+        categoria: "proximas-semanas",
+        tipo: "proxima",
+        badge: "🗓️ Próxima Semana 2",
+        descripcion: "Postre cremoso de maracuyá criolla. Porciones individuales solo disponibles durante su semana temática. ¡Si deseas el pastel completo puedes pedirlo bajo encargo!",
+        imagen: "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?auto=format&fit=crop&w=800&q=80",
+        stock: 0,
+        activo: true
+    },
+    {
+        id: "prod-preview-cupcakes",
+        nombre: "Cupcakes Red Velvet & Zanahoria (Caja 6)",
+        precio: 450,
+        categoria: "proximas-semanas",
+        tipo: "proxima",
+        badge: "🗓️ Próxima Semana 3",
+        descripcion: "Masa terciopelo rojo aterciopelada con frosting de cream cheese. Porciones disponibles en su semana temática. Para eventos puedes pedir la bandeja al mayor.",
+        imagen: "https://images.unsplash.com/photo-1614707267537-b85af00c4b81?auto=format&fit=crop&w=800&q=80",
+        stock: 0,
+        activo: true
+    },
+    {
+        id: "prod-preview-pudin",
+        nombre: "Pudin de Pan Tradicional Dominicano",
+        precio: 500,
+        categoria: "proximas-semanas",
+        tipo: "proxima",
+        badge: "🗓️ Próxima Semana 4",
+        descripcion: "Clásico pudin dominicano aromatizado con canela, pasas y caramelo rubio. Espéralo en su semana temática de entrega dominical.",
+        imagen: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=800&q=80",
+        stock: 0,
         activo: true
     }
 ];
 
 let listaProductos = [...defaultProducts];
-let pedidos = [];
-let user = null;
-let isAdmin = true;
-
+let hasDynamicFirestoreData = false;
 let carrito = JSON.parse(localStorage.getItem('keybakery_cart')) || [];
+let activeCategory = 'todos';
+let productQuantities = {};
+let ultimoPedido = null;
+let lastFocusedElement = null;
 
-// --- 2. ELEMENTOS DEL DOM (MODULARIZADO) ---
+// --- 3. REFERENCIAS AL DOM ---
 let DOM = {};
 
 function inicializarDOM() {
     DOM = {
+        productsContainer: document.getElementById('products-container'),
+        categoryTabs: document.querySelectorAll('.category-tab'),
         cartSidebar: document.getElementById('cart-sidebar'),
         openCartBtn: document.getElementById('open-cart'),
+        mobileOpenCartBtn: document.getElementById('mobile-open-cart'),
         closeCartBtn: document.getElementById('close-cart'),
         cartItemsContainer: document.getElementById('cart-items'),
         cartTotalSpan: document.getElementById('cart-total'),
         cartCountSpan: document.getElementById('cart-count'),
-        paymentModal: document.getElementById('payment-modal'),
+        mobileCartCount: document.querySelector('.mobile-cart-count'),
         checkoutBtn: document.getElementById('checkout-btn'),
-        productsContainer: document.getElementById('products-container'),
-        upsellContainer: document.getElementById('upsell-products'),
-        paymentForm: document.getElementById('payment-form'),
-        modalTotal: document.getElementById('modal-total'),
+        paymentModal: document.getElementById('payment-modal'),
+        closePaymentBtn: document.getElementById('close-payment'),
         stepUpsell: document.getElementById('step-upsell'),
         stepPayment: document.getElementById('step-payment'),
         successMessage: document.getElementById('success-message'),
+        upsellContainer: document.getElementById('upsell-products'),
         goToPaymentBtn: document.getElementById('go-to-payment'),
-        closePaymentBtn: document.getElementById('close-payment'),
-        closeSuccessBtn: document.getElementById('close-success'),
-        mobileOpenCartBtn: document.getElementById('mobile-open-cart'),
-        mobileCartCount: document.querySelector('.mobile-cart-count'),
-        contactForm: document.getElementById('contact-form'),
+        paymentForm: document.getElementById('payment-form'),
+        modalTotal: document.getElementById('modal-total'),
         deliveryMethods: document.getElementsByName('delivery-method'),
-        deliveryWarning: document.getElementById('delivery-warning'),
+        telefericoSelectorBox: document.getElementById('teleferico-station-box'),
+        telefericoStationSelect: document.getElementById('teleferico-station'),
         customerAddress: document.getElementById('customer-address'),
-        deliveryNotice: document.getElementById('delivery-notice'),
+        customerAddressLabel: document.getElementById('label-customer-address'),
+        deliveryWarning: document.getElementById('delivery-warning'),
+        encargoDateBox: document.getElementById('encargo-date-box'),
+        encargoDateInput: document.getElementById('encargo-date'),
         downloadInvoiceBtn: document.getElementById('download-invoice'),
+        closeSuccessBtn: document.getElementById('close-success'),
+        contactForm: document.getElementById('contact-form'),
         contactPhone: document.getElementById('contact-phone'),
         customerPhone: document.getElementById('customer-phone'),
-        adminPanelModal: document.getElementById('admin-panel-modal'),
-        adminPanelBtn: document.getElementById('admin-panel-btn'),
-        closeAdminBtn: document.getElementById('close-admin'),
-        adminInventoryTab: document.getElementById('admin-inventory-tab'),
-        adminOrdersTab: document.getElementById('admin-orders-tab'),
-        adminProductsList: document.getElementById('admin-products-list'),
-        adminOrdersList: document.getElementById('admin-orders-list'),
-        adminTabs: document.querySelectorAll('.admin-tab'),
-        addProductBtn: document.getElementById('add-product-btn'),
-        resetCatalogBtn: document.getElementById('reset-catalog-btn')
+        toastNotification: document.getElementById('toast-notification'),
+        toastMessage: document.getElementById('toast-message'),
+        scrollTopBtn: document.getElementById('scroll-top'),
+        mobileMenuToggle: document.getElementById('mobile-menu-toggle'),
+        mobileDrawer: document.getElementById('mobile-drawer'),
+        mobileDrawerOverlay: document.getElementById('mobile-drawer-overlay'),
+        closeDrawerBtn: document.getElementById('close-drawer'),
+        drawerLinks: document.querySelectorAll('.drawer-link'),
+        faqItems: document.querySelectorAll('.faq-item'),
+        proximoDomingoSpans: document.querySelectorAll('.proximo-domingo-fecha')
     };
 }
 
-let ultimoPedido = null;
+// --- 4. TOAST NOTIFICATION ---
+let toastTimer = null;
+function showToast(message) {
+    if (!DOM.toastNotification || !DOM.toastMessage) return;
+    DOM.toastMessage.textContent = message;
+    DOM.toastNotification.classList.add('show');
 
-// --- 3. LÓGICA DEL CARRITO ---
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+        DOM.toastNotification.classList.remove('show');
+    }, 3200);
+}
+
+// --- 5. RENDERIZADO DEL MENÚ Y FILTROS ACCESIBLES ---
+function getProductQuantity(id) {
+    return productQuantities[id] || 1;
+}
+
+window.cardQtyChange = function(id, delta) {
+    const current = getProductQuantity(id);
+    const newQty = Math.max(1, Math.min(99, current + delta));
+    productQuantities[id] = newQty;
+    const numEl = document.getElementById(`qty-num-${id}`);
+    if (numEl) numEl.textContent = newQty;
+};
+
+window.cardAddToCart = function(id, btnElement) {
+    const prod = listaProductos.find(p => p.id === id);
+    if (!prod) return;
+
+    if (prod.tipo === 'proxima') {
+        showToast("Este postre estará disponible en su semana temática o puedes encargar el pastel completo.");
+        return;
+    }
+
+    const qty = getProductQuantity(id);
+    const existe = carrito.find(i => i.id === id);
+    if (existe) {
+        existe.cantidad += qty;
+    } else {
+        carrito.push({ ...prod, cantidad: qty });
+    }
+
+    // Reset cantidad temporal
+    productQuantities[id] = 1;
+    const numEl = document.getElementById(`qty-num-${id}`);
+    if (numEl) numEl.textContent = 1;
+
+    actualizarCarrito();
+
+    // Feedback visual en botón y toast
+    if (btnElement) {
+        const originalContent = btnElement.innerHTML;
+        btnElement.classList.add('added');
+        btnElement.innerHTML = `<i data-lucide="check" aria-hidden="true"></i> ¡Agregado!`;
+        if (window.lucide) lucide.createIcons();
+        setTimeout(() => {
+            btnElement.classList.remove('added');
+            btnElement.innerHTML = originalContent;
+            if (window.lucide) lucide.createIcons();
+        }, 1200);
+    }
+
+    showToast(`¡Agregado ${qty}x ${prod.nombre} al carrito!`);
+};
+
+function renderizarMenu() {
+    if (!DOM.productsContainer) return;
+
+    // Si ya existen tarjetas pre-renderizadas en HTML y no hay datos remotos alterados:
+    const existingCards = DOM.productsContainer.querySelectorAll('.product-card');
+    if (existingCards.length > 0 && !hasDynamicFirestoreData) {
+        let visibleCount = 0;
+        existingCards.forEach(card => {
+            const cardCat = card.dataset.category;
+            const matches = (activeCategory === 'todos' || cardCat === activeCategory);
+            card.style.display = matches ? '' : 'none';
+            if (matches) visibleCount++;
+        });
+
+        let emptyMsg = document.getElementById('menu-empty-message');
+        if (visibleCount === 0) {
+            if (!emptyMsg) {
+                emptyMsg = document.createElement('div');
+                emptyMsg.id = 'menu-empty-message';
+                emptyMsg.style.gridColumn = '1 / -1';
+                emptyMsg.style.textAlign = 'center';
+                emptyMsg.style.padding = '4rem 1rem';
+                emptyMsg.innerHTML = `<p class="text-muted" style="font-size: 1.1rem;">No se encontraron productos en esta categoría.</p>`;
+                DOM.productsContainer.appendChild(emptyMsg);
+            } else {
+                emptyMsg.style.display = 'block';
+            }
+        } else if (emptyMsg) {
+            emptyMsg.style.display = 'none';
+        }
+        return;
+    }
+
+    // Si viene de Firestore con datos actualizados:
+    let filtrados = listaProductos.filter(p => p.activo !== false);
+    if (activeCategory !== 'todos') {
+        filtrados = filtrados.filter(p => p.categoria === activeCategory);
+    }
+
+    if (filtrados.length === 0) {
+        DOM.productsContainer.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
+                <p class="text-muted" style="font-size: 1.1rem;">No se encontraron productos en esta categoría.</p>
+            </div>`;
+        return;
+    }
+
+    DOM.productsContainer.innerHTML = filtrados.map(p => {
+        const qty = getProductQuantity(p.id);
+        const badgeHtml = p.badge ? `<span class="product-badge">${p.badge}</span>` : '';
+        const descHtml = p.descripcion || 'Elaborado artesanalmente en Los Alcarrizos.';
+        const isUpcoming = p.tipo === 'proxima';
+
+        return `
+            <article class="product-card" id="card-${p.id}" data-category="${p.categoria}">
+                <div class="product-image-wrapper">
+                    ${badgeHtml}
+                    <img 
+                        src="${p.imagen}" 
+                        alt="${p.nombre}" 
+                        width="400" 
+                        height="260" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer"
+                        onerror="this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80'"
+                    >
+                </div>
+                <div class="product-info">
+                    <div>
+                        <h3>${p.nombre}</h3>
+                        <p class="product-desc">${descHtml}</p>
+                    </div>
+
+                    <div class="product-meta">
+                        <div class="product-price-row">
+                            <span class="price-tag">${isUpcoming ? 'Próximamente' : `DOP$ ${p.precio.toLocaleString()}`}</span>
+                            ${!isUpcoming ? `
+                            <div class="card-qty-stepper" aria-label="Selector de cantidad para ${p.nombre}">
+                                <button class="card-qty-btn" onclick="cardQtyChange('${p.id}', -1)" aria-label="Disminuir cantidad de ${p.nombre}">-</button>
+                                <span class="card-qty-num" id="qty-num-${p.id}" aria-live="polite">${qty}</span>
+                                <button class="card-qty-btn" onclick="cardQtyChange('${p.id}', 1)" aria-label="Aumentar cantidad de ${p.nombre}">+</button>
+                            </div>
+                            ` : `
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Semana Temática</span>
+                            `}
+                        </div>
+                        ${!isUpcoming ? `
+                        <button class="btn-card-add" onclick="cardAddToCart('${p.id}', this)" aria-label="Agregar ${p.nombre} al Carrito">
+                            <i data-lucide="shopping-basket" style="width: 18px; height: 18px;" aria-hidden="true"></i> Agregar al Carrito
+                        </button>
+                        ` : `
+                        <a href="https://wa.me/${WHATSAPP_NUMBER}?text=Hola%20KeyBakery,%20quisiera%20saber%20cuándo%20toca%20la%20semana%20de%20${encodeURIComponent(p.nombre)}%20o%20encargarlo%20completo" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full text-center" style="padding: 0.65rem;" aria-label="Consultar fecha o encargar pastel completo de ${p.nombre}">
+                            <i data-lucide="calendar" style="width: 16px; height: 16px;" aria-hidden="true"></i> Consultar Fecha
+                        </a>
+                        `}
+                    </div>
+                </div>
+            </article>
+        `;
+    }).join('');
+
+    if (window.lucide) lucide.createIcons();
+}
+
+// --- 6. LÓGICA DEL CARRITO ACCESIBLE & PERSISTENCIA ---
 window.cambiarCant = function(id, delta) {
     const item = carrito.find(i => i.id === id);
     if (item) {
         item.cantidad += delta;
-        if (item.cantidad <= 0) carrito = carrito.filter(i => i.id !== id);
+        if (item.cantidad <= 0) {
+            carrito = carrito.filter(i => i.id !== id);
+        }
     }
     actualizarCarrito();
-}
-
-window.agregarAlCarrito = function(id, event) {
-    const prod = listaProductos.find(p => p.id === id);
-    const existe = carrito.find(i => i.id === id);
-    if (existe) existe.cantidad++;
-    else carrito.push({ ...prod, cantidad: 1 });
-    actualizarCarrito();
-    
-    // Feedback visual en el botón
-    const btn = event?.target?.closest('.btn-add') || event?.target?.closest('.btn-add-sm');
-    if (btn) {
-        const originalText = btn.innerText;
-        btn.innerText = "¡Agregado!";
-        btn.classList.add('btn-success');
-        setTimeout(() => {
-            btn.innerText = originalText;
-            btn.classList.remove('btn-success');
-        }, 1500);
-    }
-}
+};
 
 function actualizarCarrito() {
+    if (!DOM.cartItemsContainer) return;
     DOM.cartItemsContainer.innerHTML = '';
     let total = 0;
     let itemsContador = 0;
 
+    let hasWeeklyItem = false;
+    let hasCustomCake = false;
+
     if (carrito.length === 0) {
         DOM.cartItemsContainer.innerHTML = `
-            <div class="cart-empty-state">
-                <i data-lucide="shopping-basket" style="width: 64px; height: 64px; opacity: 0.2;"></i>
-                <p>Tu carrito está vacío</p>
-                <a href="#menu" class="btn-secondary" style="margin-top: 1rem;">Ver Productos</a>
+            <div style="text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
+                <i data-lucide="shopping-basket" style="width: 56px; height: 56px; opacity: 0.3; margin: 0 auto 1rem;" aria-hidden="true"></i>
+                <h4 style="margin-bottom: 0.5rem; color: var(--text-dark);">Tu carrito está vacío</h4>
+                <p class="text-sm mb-4">Elige tu porción del Producto de la Semana (Brownies) o tu pastel completo.</p>
+                <a href="#menu" class="btn-secondary" onclick="DOM.cartSidebar.classList.remove('open'); DOM.cartSidebar.setAttribute('aria-hidden', 'true');">Ver Menú</a>
             </div>`;
-        if (window.lucide) lucide.createIcons();
     } else {
-        carrito.forEach((item, index) => {
+        carrito.forEach(item => {
             total += item.precio * item.cantidad;
             itemsContador += item.cantidad;
+            if (item.categoria === 'semana') hasWeeklyItem = true;
+            if (item.categoria === 'pasteles-completos' || item.categoria === 'bocadillos-eventos') hasCustomCake = true;
+
+            const badgeNota = item.categoria === 'semana' ? '📦 Entrega este Domingo' : '🎂 Coordinar Día (48h mín)';
+
             DOM.cartItemsContainer.innerHTML += `
-                <div class="cart-item" style="animation-delay: ${index * 0.1}s">
-                    <img src="${item.imagen}" class="cart-item-img" alt="${item.nombre}" referrerPolicy="no-referrer">
+                <div class="cart-item">
+                    <img src="${item.imagen}" class="cart-item-img" alt="${item.nombre}" width="70" height="70" loading="lazy" referrerpolicy="no-referrer">
                     <div class="cart-item-info">
                         <p class="cart-item-title">${item.nombre}</p>
+                        <p class="text-xs color-gold font-bold">${badgeNota}</p>
                         <p class="cart-item-price">DOP$ ${item.precio.toLocaleString()}</p>
-                        <div class="cart-item-controls">
-                            <button class="btn-qty" onclick="cambiarCant('${item.id}', -1)">-</button>
-                            <span class="cart-item-qty">${item.cantidad}</span>
-                            <button class="btn-qty" onclick="cambiarCant('${item.id}', 1)">+</button>
+                        <div class="cart-item-controls" aria-label="Controles de cantidad para ${item.nombre}">
+                            <button class="btn-qty" onclick="cambiarCant('${item.id}', -1)" aria-label="Restar una unidad de ${item.nombre}">-</button>
+                            <span class="cart-item-qty" aria-live="polite">${item.cantidad}</span>
+                            <button class="btn-qty" onclick="cambiarCant('${item.id}', 1)" aria-label="Sumar una unidad de ${item.nombre}">+</button>
                         </div>
                     </div>
                 </div>`;
         });
+
+        // Banner informativo dentro del carrito sobre días de entrega
+        let avisoEntrega = '';
+        if (hasWeeklyItem && !hasCustomCake) {
+            avisoEntrega = `<div style="background: var(--pink-subtle); padding: 0.7rem; border-radius: 8px; font-size: 0.8rem; color: var(--pink-hover); margin-bottom: 1rem; border: 1px solid rgba(216,27,96,0.2);">
+                📅 <strong>Producto de la Semana:</strong> Tu orden se horneará y entregará este <strong>${getProximoDomingoTexto()}</strong> en Los Alcarrizos.
+            </div>`;
+        } else if (hasCustomCake && !hasWeeklyItem) {
+            avisoEntrega = `<div style="background: var(--gold-subtle); padding: 0.7rem; border-radius: 8px; font-size: 0.8rem; color: var(--gold); margin-bottom: 1rem; border: 1px solid rgba(125,85,21,0.2);">
+                🎂 <strong>Pastel Completo / Evento:</strong> Coordinaremos el día que lo necesites con mínimo 48h de anticipación.
+            </div>`;
+        } else if (hasWeeklyItem && hasCustomCake) {
+            avisoEntrega = `<div style="background: var(--cream-dark); padding: 0.7rem; border-radius: 8px; font-size: 0.8rem; color: var(--text-dark); margin-bottom: 1rem; border: 1px solid var(--border-color);">
+                📦 Tu carrito combina porciones de la semana (entrega domingo) y pastel completo bajo encargo.
+            </div>`;
+        }
+        DOM.cartItemsContainer.insertAdjacentHTML('afterbegin', avisoEntrega);
     }
 
-    DOM.cartTotalSpan.innerText = `DOP$ ${total.toLocaleString()}`;
-    DOM.cartCountSpan.innerText = itemsContador;
-    
-    if (DOM.mobileCartCount) {
-        DOM.mobileCartCount.innerText = itemsContador;
+    if (DOM.cartTotalSpan) DOM.cartTotalSpan.innerText = `DOP$ ${total.toLocaleString()}`;
+    if (DOM.cartCountSpan) {
+        DOM.cartCountSpan.innerText = itemsContador;
+        DOM.cartCountSpan.classList.remove('bounce');
+        void DOM.cartCountSpan.offsetWidth;
+        DOM.cartCountSpan.classList.add('bounce');
     }
-    
-    // Animación de feedback en el contador
-    DOM.cartCountSpan.classList.remove('bounce');
-    void DOM.cartCountSpan.offsetWidth; // Trigger reflow
-    DOM.cartCountSpan.classList.add('bounce');
+    if (DOM.mobileCartCount) DOM.mobileCartCount.innerText = itemsContador;
 
     localStorage.setItem('keybakery_cart', JSON.stringify(carrito));
+    if (window.lucide) lucide.createIcons();
 }
 
-// --- 4. RENDERIZAR MENÚ ---
-function renderizarMenu() {
-    if (!DOM.productsContainer) {
-        console.error("No se encontró el contenedor de productos");
-        return;
-    }
-    
-    DOM.productsContainer.innerHTML = ''; 
-    
-    if (listaProductos.length === 0) {
-        DOM.productsContainer.innerHTML = '<p class="text-center w-full">No hay productos disponibles en este momento.</p>';
-        return;
-    }
-
-    listaProductos.filter(p => p.activo !== false).forEach((p, index) => {
-        DOM.productsContainer.innerHTML += `
-            <div class="product-card" style="animation-delay: ${index * 0.1}s">
-                <div class="product-image-wrapper">
-                    <img src="${p.imagen}" alt="${p.nombre}" referrerPolicy="no-referrer">
-                </div>
-                <div class="product-info">
-                    <h3>${p.nombre}</h3>
-                    <div class="product-meta">
-                        <span class="price">DOP$ ${p.precio.toLocaleString()}</span>
-                        <button class="btn-add" onclick="agregarAlCarrito('${p.id}', event)">Agregar</button>
-                    </div>
-                </div>
-            </div>`;
-    });
-}
-
-// --- 5. SCROLL REVEAL LOGIC ---
-function initScrollReveal() {
-    const observerOptions = {
-        threshold: 0.15,
-        rootMargin: "0px 0px -50px 0px"
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('active');
-                observer.unobserve(entry.target);
-            }
-        });
-    }, observerOptions);
-
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-}
-
-// --- 6. MANEJO DE MODAL Y VENTAS (UPSELLING) ---
+// --- 7. UPSELLING & PROCESO DE PAGO ACCESIBLE ---
 window.cargarSugerencias = function() {
     if (!DOM.upsellContainer) return;
     DOM.upsellContainer.innerHTML = '';
     
+    // Sugerir brownies adicionales u opción de pastel
     const sugeridos = listaProductos
-        .filter(p => p.activo !== false && !carrito.find(item => item.id === p.id))
+        .filter(p => p.activo !== false && p.tipo !== 'proxima' && !carrito.find(item => item.id === p.id))
         .slice(0, 2);
 
     sugeridos.forEach(p => {
         DOM.upsellContainer.innerHTML += `
-            <div class="upsell-item">
-                <img src="${p.imagen}" style="width:60px; height:60px; border-radius:10px; object-fit:cover;" alt="${p.nombre}" referrerPolicy="no-referrer">
-                <div>
-                    <p class="font-bold" style="font-size:0.9rem; margin:0;">${p.nombre}</p>
-                    <button class="btn-add-sm" onclick="agregarAlCarrito('${p.id}', event); cargarSugerencias();">
-                        + Añadir (DOP$ ${p.precio})
+            <div class="cart-item" style="border: 1.5px dashed var(--gold-light);">
+                <img src="${p.imagen}" class="cart-item-img" alt="${p.nombre}" width="70" height="70" loading="lazy" referrerpolicy="no-referrer">
+                <div style="flex-grow: 1;">
+                    <p class="font-bold" style="font-size: 0.95rem; margin-bottom: 0.2rem;">${p.nombre}</p>
+                    <p class="text-sm color-gold font-bold mb-2">DOP$ ${p.precio.toLocaleString()}</p>
+                    <button class="btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.8rem;" aria-label="Añadir ${p.nombre} al pedido" onclick="carrito.push({...${JSON.stringify(p).replace(/"/g, '&quot;')}, cantidad: 1}); actualizarCarrito(); cargarSugerencias();">
+                        + Añadir al Pedido
                     </button>
                 </div>
             </div>`;
     });
-}
+};
 
-// --- 7. EVENTOS Y PANEL DE ADMINISTRACIÓN ---
-
-function abrirAdminPanel() {
-    if (DOM.adminPanelModal) {
-        DOM.adminPanelModal.style.display = 'flex';
-        renderAdminInventory();
-        renderAdminOrders();
-    }
-}
-
-function renderAdminInventory() {
-    if (!DOM.adminProductsList) return;
-    DOM.adminProductsList.innerHTML = '';
-    
-    if (listaProductos.length === 0) {
-        DOM.adminProductsList.innerHTML = '<p class="text-center opacity-60 col-span-full py-8">No hay productos en inventario.</p>';
+function abrirModalPago() {
+    if (carrito.length === 0) {
+        showToast("Tu carrito está vacío. Elige tus postres primero.");
         return;
     }
 
-    listaProductos.forEach(p => {
-        const card = document.createElement('div');
-        card.className = 'admin-product-card';
-        card.innerHTML = `
-            <img src="${p.imagen}" alt="${p.nombre}" referrerPolicy="no-referrer" onerror="this.src='https://images.unsplash.com/photo-1535254973040-607b474cb8c2?auto=format&fit=crop&w=800&q=80'">
-            <label style="font-size: 0.75rem; font-weight: 700; color: #666; margin-bottom: 2px; display: block;">Nombre:</label>
-            <input type="text" value="${p.nombre}" onchange="updateProduct('${p.id}', {nombre: this.value})">
-            
-            <label style="font-size: 0.75rem; font-weight: 700; color: #666; margin-bottom: 2px; display: block;">Precio (DOP):</label>
-            <input type="number" value="${p.precio}" onchange="updateProduct('${p.id}', {precio: Number(this.value)})">
-            
-            <label style="font-size: 0.75rem; font-weight: 700; color: #666; margin-bottom: 2px; display: block;">URL de Imagen:</label>
-            <input type="text" value="${p.imagen}" onchange="updateProduct('${p.id}', {imagen: this.value})">
+    lastFocusedElement = document.activeElement;
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid #eee;">
-                <button onclick="deleteProduct('${p.id}')" style="color: #ff4d4d; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
-                    <i data-lucide="trash-2" style="width: 15px; height: 15px;"></i> Eliminar
-                </button>
-                <label style="font-size: 0.75rem; font-weight: 700; color: #555; display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
-                    ACTIVO <input type="checkbox" ${p.activo !== false ? 'checked' : ''} onchange="updateProduct('${p.id}', {activo: this.checked})">
-                </label>
-            </div>
-        `;
-        DOM.adminProductsList.appendChild(card);
-    });
-    if (window.lucide) lucide.createIcons();
+    const total = carrito.reduce((acc, i) => acc + (i.precio * i.cantidad), 0);
+    if (DOM.modalTotal) DOM.modalTotal.textContent = `DOP$ ${total.toLocaleString()}`;
+
+    DOM.stepUpsell.classList.remove('hidden');
+    DOM.stepPayment.classList.add('hidden');
+    DOM.successMessage.classList.add('hidden');
+    cargarSugerencias();
+
+    DOM.paymentModal.style.display = 'flex';
+    DOM.paymentModal.setAttribute('aria-hidden', 'false');
+    if (DOM.cartSidebar) {
+        DOM.cartSidebar.classList.remove('open');
+        DOM.cartSidebar.setAttribute('aria-hidden', 'true');
+    }
+
+    setTimeout(() => {
+        if (DOM.closePaymentBtn) DOM.closePaymentBtn.focus();
+    }, 50);
 }
 
-function renderAdminOrders() {
-    if (!DOM.adminOrdersList) return;
-    DOM.adminOrdersList.innerHTML = '';
-    if (pedidos.length === 0) {
-        DOM.adminOrdersList.innerHTML = '<p class="text-center opacity-50 py-10">No hay pedidos registrados aún.</p>';
+function cerrarModalPago() {
+    if (!DOM.paymentModal) return;
+    DOM.paymentModal.style.display = 'none';
+    DOM.paymentModal.setAttribute('aria-hidden', 'true');
+    if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+        lastFocusedElement.focus();
+    }
+}
+
+// --- 8. ENVÍO DEL PEDIDO A WHATSAPP Y FIRESTORE ---
+async function procesarPedido(e) {
+    e.preventDefault();
+
+    const nombreCliente = document.getElementById('card-name').value.trim();
+    const telefonoCliente = document.getElementById('customer-phone').value.trim();
+    const metodoEntregaInput = document.querySelector('input[name="delivery-method"]:checked');
+    const metodo = metodoEntregaInput ? metodoEntregaInput.value : 'pickup';
+    const estacionTeleferico = DOM.telefericoStationSelect ? DOM.telefericoStationSelect.value : '';
+    const direccion = document.getElementById('customer-address').value.trim();
+    const fechaEncargo = DOM.encargoDateInput ? DOM.encargoDateInput.value.trim() : '';
+
+    if (!nombreCliente) {
+        showToast("Por favor ingresa tu nombre completo.");
+        document.getElementById('card-name')?.focus();
         return;
     }
-    pedidos.forEach(pedido => {
-        const card = document.createElement('div');
-        card.className = 'admin-order-card';
-        let fecha = 'Fecha reciente';
-        if (pedido.fecha?.toDate) {
-            fecha = pedido.fecha.toDate().toLocaleString('es-DO');
-        } else if (pedido.fecha) {
-            fecha = new Date(pedido.fecha).toLocaleString('es-DO');
-        }
-        
-        const items = Array.isArray(pedido.items) ? pedido.items : [];
 
-        card.innerHTML = `
-            <div class="admin-order-header">
-                <div>
-                    <h4 style="margin:0; font-size: 1.1rem; color: #1a1a1a;">${pedido.cliente || 'Cliente Anónimo'}</h4>
-                    <p style="font-size:0.75rem; color:#888; margin:0.2rem 0 0 0;">📅 ${fecha}</p>
-                </div>
-                <div style="text-align: right;">
-                    <span class="status-badge status-${pedido.status || 'pending'}">${pedido.status === 'completed' ? 'Completado' : pedido.status === 'cancelled' ? 'Cancelado' : 'Pendiente'}</span>
-                    <p style="font-weight:700; color:var(--gold); margin-top:0.35rem; font-size: 1.1rem;">DOP$ ${(pedido.total || 0).toLocaleString()}</p>
-                </div>
-            </div>
-            <div style="background:#fdfcf9; border: 1px solid #f0ede6; padding:0.85rem; border-radius:12px; font-size:0.85rem; margin-top: 0.75rem;">
-                ${items.map(i => `
-                    <div style="display:flex; justify-content:space-between; padding: 0.25rem 0; border-bottom: 1px dashed #f0ede6;">
-                        <span><strong>${i.nombre}</strong> (x${i.cantidad})</span>
-                        <span style="color: #666;">DOP$ ${((i.precio || 0) * (i.cantidad || 1)).toLocaleString()}</span>
-                    </div>
-                `).join('')}
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <label style="font-size: 0.8rem; font-weight: 700; color: #555;">Estado:</label>
-                    <select onchange="updateOrderStatus('${pedido.id}', this.value)" style="font-size:0.8rem; padding:0.35rem 0.6rem; border-radius:8px; border:1px solid #ccc; background: #fff; font-weight: 600;">
-                        <option value="pending" ${pedido.status === 'pending' ? 'selected' : ''}>⏳ Pendiente</option>
-                        <option value="completed" ${pedido.status === 'completed' ? 'selected' : ''}>✅ Completado</option>
-                        <option value="cancelled" ${pedido.status === 'cancelled' ? 'selected' : ''}>❌ Cancelado</option>
-                    </select>
-                </div>
-                <button onclick="deleteOrder('${pedido.id}')" style="color:#ff4d4d; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 0.25rem; cursor: pointer;">
-                    <i data-lucide="trash-2" style="width:16px;"></i> Eliminar Orden
-                </button>
-            </div>
-        `;
-        DOM.adminOrdersList.appendChild(card);
-    });
-    if (window.lucide) lucide.createIcons();
-}
+    if (!telefonoCliente) {
+        showToast("Por favor ingresa tu teléfono WhatsApp de Los Alcarrizos / RD.");
+        document.getElementById('customer-phone')?.focus();
+        return;
+    }
 
-window.updateProduct = async (id, data) => {
+    const subtotal = carrito.reduce((acc, i) => acc + (i.precio * i.cantidad), 0);
+    let costoEnvio = 0;
+    let metodoTexto = "Recoger en Taller (Los Alcarrizos) - Domingo";
+    let detalleUbicacion = "";
+
+    if (metodo === 'teleferico') {
+        costoEnvio = TELEFERICO_FEE;
+        metodoTexto = `Parada Teleférico Los Alcarrizos: ${estacionTeleferico} (DOP$ ${TELEFERICO_FEE})`;
+        detalleUbicacion = `Estación: ${estacionTeleferico}`;
+    } else if (metodo === 'delivery') {
+        metodoTexto = "Envío a Domicilio en Los Alcarrizos (Domingo)";
+        detalleUbicacion = direccion || "Sector a coordinar en Los Alcarrizos";
+    } else if (metodo === 'encargo') {
+        metodoTexto = "Encargo Especial: Pastel Completo / Evento (Día flexible)";
+        detalleUbicacion = fechaEncargo ? `Fecha solicitada: ${fechaEncargo}` : "Día a coordinar con 48h";
+    }
+
+    const totalFinal = subtotal + costoEnvio;
+    const proximoDomingoStr = getProximoDomingoTexto();
+
+    ultimoPedido = {
+        cliente: nombreCliente,
+        telefono: telefonoCliente,
+        items: carrito.map(i => ({ id: i.id, nombre: i.nombre, precio: i.precio, cantidad: i.cantidad, categoria: i.categoria })),
+        subtotal,
+        costoEnvio,
+        total: totalFinal,
+        metodoTexto,
+        detalleUbicacion,
+        proximoDomingo: proximoDomingoStr,
+        fechaOrden: new Date().toLocaleString('es-DO')
+    };
+
+    // 1. Guardar en Firestore
     try {
-        await updateDoc(doc(db, "products", id), data);
-    } catch (error) {
-        console.error("Error updating product in Firestore:", error);
-        // Fallback local update
-        listaProductos = listaProductos.map(p => p.id === id ? { ...p, ...data } : p);
-        renderizarMenu();
-        renderAdminInventory();
-    }
-};
-
-window.deleteProduct = async (id) => {
-    if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
-        try {
-            await deleteDoc(doc(db, "products", id));
-        } catch (error) {
-            console.error("Error deleting product:", error);
-            listaProductos = listaProductos.filter(p => p.id !== id);
-            renderizarMenu();
-            renderAdminInventory();
-        }
-    }
-};
-
-window.updateOrderStatus = async (id, status) => {
-    try {
-        await updateDoc(doc(db, "orders", id), { status });
-    } catch (error) {
-        console.error("Error updating order status:", error);
-        pedidos = pedidos.map(o => o.id === id ? { ...o, status } : o);
-        renderAdminOrders();
-    }
-};
-
-window.deleteOrder = async (id) => {
-    if (confirm("¿Eliminar este pedido permanentemente?")) {
-        try {
-            await deleteDoc(doc(db, "orders", id));
-        } catch (error) {
-            console.error("Error deleting order:", error);
-            pedidos = pedidos.filter(o => o.id !== id);
-            renderAdminOrders();
-        }
-    }
-};
-
-window.resetCatalog = async function() {
-    try {
-        if (DOM.resetCatalogBtn) {
-            DOM.resetCatalogBtn.innerHTML = `<span>Restableciendo catálogo...</span>`;
-            DOM.resetCatalogBtn.disabled = true;
-        }
-
-        // Delete existing products from Firestore
-        const existingDocs = await getDocs(collection(db, "products"));
-        for (const docSnap of existingDocs.docs) {
-            await deleteDoc(doc(db, "products", docSnap.id));
-        }
-
-        // Seed with authentic Dominican pastry products
-        for (const prod of defaultProducts) {
-            await addDoc(collection(db, "products"), prod);
-        }
-
-        alert("¡Catálogo e imágenes restablecidos exitosamente con los postres oficiales de KeyBakery!");
+        await addDoc(collection(db, "orders"), {
+            cliente: nombreCliente,
+            telefono: telefonoCliente,
+            items: ultimoPedido.items,
+            total: totalFinal,
+            metodoEntrega: metodoTexto,
+            ubicacionDetalle: detalleUbicacion,
+            proximoDomingo: proximoDomingoStr,
+            fecha: serverTimestamp(),
+            status: "pending",
+            ciudad: "Los Alcarrizos"
+        });
     } catch (err) {
-        console.error("Error al restablecer catálogo en Firestore:", err);
-        listaProductos = defaultProducts.map((p, idx) => ({ id: 'local_' + idx, ...p }));
-        renderizarMenu();
-        renderAdminInventory();
-        alert("El catálogo ha sido actualizado en la pantalla.");
-    } finally {
-        if (DOM.resetCatalogBtn) {
-            DOM.resetCatalogBtn.disabled = false;
-            DOM.resetCatalogBtn.innerHTML = `<i data-lucide="refresh-cw"></i> Restablecer Fotos y Catálogo`;
-            if (window.lucide) lucide.createIcons();
-        }
-    }
-};
-
-function init() {
-    inicializarDOM();
-
-    // 1. Listen for Products
-    try {
-        const qProds = query(collection(db, "products"), orderBy("nombre"));
-        onSnapshot(qProds, (snapshot) => {
-            if (snapshot.empty) {
-                seedProducts();
-                return;
-            }
-            const prods = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-            // Auto-heal: If fast food or incorrect Chinola picture detected, fix it
-            const hasFastFood = prods.some(p => p.nombre?.includes("Hamburguesa") || p.nombre?.includes("Pizza"));
-            if (hasFastFood) {
-                console.log("Detectados datos de prueba antiguos, restableciendo catálogo oficial...");
-                resetCatalog();
-                return;
-            }
-
-            const chinolaDoc = snapshot.docs.find(d => d.data().nombre?.toLowerCase().includes("chinola"));
-            if (chinolaDoc && (!chinolaDoc.data().imagen || !chinolaDoc.data().imagen.includes("photo-1590080875515"))) {
-                console.log("Restableciendo foto correcta del Mousse de Chinola Silvestre...");
-                updateDoc(doc(db, "products", chinolaDoc.id), {
-                    imagen: "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?auto=format&fit=crop&w=800&q=80"
-                }).catch(console.error);
-            }
-
-            listaProductos = prods;
-            renderizarMenu();
-            if (DOM.adminPanelModal && DOM.adminPanelModal.style.display === 'flex') {
-                renderAdminInventory();
-            }
-        }, (error) => {
-            console.warn("Firestore products warning, using local catalog:", error);
-            listaProductos = defaultProducts.map((p, idx) => ({ id: 'fallback_' + idx, ...p }));
-            renderizarMenu();
-        });
-    } catch (e) {
-        console.warn("Error starting products listener:", e);
-        listaProductos = defaultProducts.map((p, idx) => ({ id: 'local_' + idx, ...p }));
-        renderizarMenu();
+        console.warn("Firestore notice (continuando hacia WhatsApp):", err);
     }
 
-    // 2. Listen for Orders (No registration required!)
-    try {
-        const qOrders = query(collection(db, "orders"), orderBy("fecha", "desc"));
-        onSnapshot(qOrders, (snapshot) => {
-            pedidos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if (DOM.adminPanelModal && DOM.adminPanelModal.style.display === 'flex') {
-                renderAdminOrders();
-            }
-        }, (error) => {
-            console.warn("Orders subscription notice:", error);
-        });
-    } catch (e) {
-        console.warn("Error starting orders listener:", e);
-    }
+    // 2. Construir Mensaje de WhatsApp
+    let mensaje = `🎂 *NUEVO PEDIDO - KEYBAKERY (LOS ALCARRIZOS)* 🎂\n\n`;
+    mensaje += `👤 *Cliente:* ${nombreCliente}\n`;
+    mensaje += `📱 *Teléfono:* ${telefonoCliente}\n`;
+    mensaje += `📍 *Método de Entrega:* ${metodoTexto}\n`;
+    if (detalleUbicacion) mensaje += `📌 *Detalle / Ubicación:* ${detalleUbicacion}\n`;
+    mensaje += `🗓️ *Fecha Estimada:* ${metodo === 'encargo' ? (fechaEncargo || 'A coordinar') : proximoDomingoStr}\n`;
+    mensaje += `\n🛒 *DETALLE DEL PEDIDO:*\n`;
 
-    // 3. Admin Events (Direct access from footer!)
-    if (DOM.adminPanelBtn) {
-        DOM.adminPanelBtn.onclick = (e) => {
-            e.preventDefault();
-            abrirAdminPanel();
-        };
-    }
+    ultimoPedido.items.forEach(i => {
+        mensaje += `• ${i.cantidad}x ${i.nombre} - DOP$ ${(i.precio * i.cantidad).toLocaleString()}\n`;
+    });
 
-    if (DOM.closeAdminBtn) {
-        DOM.closeAdminBtn.onclick = () => {
-            DOM.adminPanelModal.style.display = 'none';
-        };
-    }
+    mensaje += `\n💵 *Subtotal:* DOP$ ${subtotal.toLocaleString()}`;
+    if (costoEnvio > 0) mensaje += `\n📦 *Punto de Encuentro:* DOP$ ${costoEnvio.toLocaleString()}`;
+    mensaje += `\n💰 *TOTAL FINAL:* DOP$ ${totalFinal.toLocaleString()}\n\n`;
+    mensaje += `🍰 _KeyBakery Los Alcarrizos • Pedidos semanales horneados por lotes._`;
 
-    if (DOM.resetCatalogBtn) {
-        DOM.resetCatalogBtn.onclick = async () => {
-            if (confirm("¿Deseas restablecer todas las fotos y postres al catálogo oficial de KeyBakery?")) {
-                await resetCatalog();
-            }
-        };
-    }
-    
-    if (DOM.adminTabs) {
-        DOM.adminTabs.forEach(tab => {
-            tab.onclick = () => {
-                DOM.adminTabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const target = tab.dataset.tab;
-                if (target === 'inventory') {
-                    DOM.adminInventoryTab.classList.remove('hidden');
-                    DOM.adminOrdersTab.classList.add('hidden');
-                } else {
-                    DOM.adminInventoryTab.classList.add('hidden');
-                    DOM.adminOrdersTab.classList.remove('hidden');
-                }
-            };
-        });
-    }
+    const encoded = encodeURIComponent(mensaje);
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encoded}`;
 
-    if (DOM.addProductBtn) {
-        DOM.addProductBtn.onclick = async () => {
-            const nombre = prompt("Nombre del postre / producto:");
-            if (!nombre) return;
-            const precio = Number(prompt("Precio en DOP (ej: 450):"));
-            if (isNaN(precio) || precio <= 0) return;
-            const imagen = prompt("URL de la imagen (Unsplash o enlace directo):", "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80");
-            if (!imagen) return;
-            
-            try {
-                await addDoc(collection(db, "products"), { nombre, precio, imagen, activo: true, stock: 10 });
-            } catch (err) {
-                console.error("Error creating product:", err);
-                listaProductos.push({ id: 'local_' + Date.now(), nombre, precio, imagen, activo: true, stock: 10 });
-                renderizarMenu();
-                renderAdminInventory();
-            }
-        };
-    }
+    // Abrir WhatsApp
+    window.open(whatsappUrl, '_blank');
 
-    renderizarMenu();
+    // Limpiar carrito y mostrar confirmación
+    carrito = [];
     actualizarCarrito();
-    initScrollReveal();
 
-    // Navbar scroll effect
-    window.addEventListener('scroll', () => {
-        const nav = document.querySelector('.navbar');
-        const scrollTopBtn = document.getElementById('scroll-top');
-        
-        if (window.scrollY > 50) {
-            nav.classList.add('scrolled');
-        } else {
-            nav.classList.remove('scrolled');
-        }
+    DOM.stepPayment.classList.add('hidden');
+    DOM.successMessage.classList.remove('hidden');
 
-        if (scrollTopBtn) {
-            if (window.scrollY > 500) scrollTopBtn.classList.add('visible');
-            else scrollTopBtn.classList.remove('visible');
-        }
-    });
-
-    // Scroll to top
-    const scrollTopBtn = document.getElementById('scroll-top');
-    if (scrollTopBtn) {
-        scrollTopBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // Abrir Carrito
-    if (DOM.openCartBtn) {
-        DOM.openCartBtn.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            DOM.cartSidebar.classList.add('open');
-        };
-    }
-
-    if (DOM.mobileOpenCartBtn) {
-        DOM.mobileOpenCartBtn.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            DOM.cartSidebar.classList.add('open');
-        };
-    }
-
-    // Cerrar Carrito
-    if (DOM.closeCartBtn) {
-        DOM.closeCartBtn.onclick = () => DOM.cartSidebar.classList.remove('open');
-    }
-
-    // Abrir Modal de Pago
-    if (DOM.checkoutBtn) {
-        DOM.checkoutBtn.addEventListener('click', () => {
-            const total = carrito.reduce((acc, i) => acc + (i.precio * i.cantidad), 0);
-            
-            // Configurar opciones de entrega según el total
-            const metroRadio = Array.from(DOM.deliveryMethods).find(r => r.value === 'metro');
-            const deliveryRadio = Array.from(DOM.deliveryMethods).find(r => r.value === 'delivery');
-            const pickupRadio = Array.from(DOM.deliveryMethods).find(r => r.value === 'pickup');
-
-            if (total < MIN_PURCHASE_DELIVERY) {
-                // Deshabilitar opciones de envío si es menor al mínimo
-                metroRadio.disabled = true;
-                deliveryRadio.disabled = true;
-                metroRadio.parentElement.style.opacity = "0.5";
-                deliveryRadio.parentElement.style.opacity = "0.5";
-                metroRadio.parentElement.title = `Mínimo DOP$ ${MIN_PURCHASE_DELIVERY} para envío`;
-                deliveryRadio.parentElement.title = `Mínimo DOP$ ${MIN_PURCHASE_DELIVERY} para envío`;
-                pickupRadio.checked = true;
-                
-                if (DOM.deliveryNotice) DOM.deliveryNotice.classList.remove('hidden');
-                
-                // Forzar evento change para ocultar campos de dirección
-                pickupRadio.dispatchEvent(new Event('change'));
-            } else {
-                // Habilitar todas las opciones
-                metroRadio.disabled = false;
-                deliveryRadio.disabled = false;
-                metroRadio.parentElement.style.opacity = "1";
-                deliveryRadio.parentElement.style.opacity = "1";
-                metroRadio.parentElement.removeAttribute('title');
-                deliveryRadio.parentElement.removeAttribute('title');
-                
-                if (DOM.deliveryNotice) DOM.deliveryNotice.classList.add('hidden');
-            }
-
-            DOM.stepUpsell.classList.remove('hidden');
-            DOM.stepPayment.classList.add('hidden');
-            DOM.successMessage.classList.add('hidden');
-            
-            cargarSugerencias();
-            DOM.paymentModal.style.display = 'flex';
-            DOM.cartSidebar.classList.remove('open');
-        });
-    }
-
-    // Manejo de métodos de entrega
-    if (DOM.deliveryMethods) {
-        DOM.deliveryMethods.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                const method = e.target.value;
-                if (method === 'pickup') {
-                    DOM.customerAddress.classList.add('hidden');
-                    DOM.deliveryWarning.classList.add('hidden');
-                    DOM.customerAddress.required = false;
-                } else if (method === 'metro') {
-                    DOM.customerAddress.classList.remove('hidden');
-                    DOM.deliveryWarning.classList.add('hidden');
-                    DOM.customerAddress.placeholder = "Indica la parada del metro donde deseas recibir";
-                    DOM.customerAddress.required = true;
-                } else {
-                    DOM.customerAddress.classList.remove('hidden');
-                    DOM.deliveryWarning.classList.remove('hidden');
-                    DOM.customerAddress.placeholder = "Dirección completa de entrega";
-                    DOM.customerAddress.required = true;
-                }
-            });
-        });
-    }
-
-    // Continuar al formulario de pago
-    if (DOM.goToPaymentBtn) {
-        DOM.goToPaymentBtn.addEventListener('click', () => {
-            const total = carrito.reduce((acc, i) => acc + (i.precio * i.cantidad), 0);
-            DOM.modalTotal.innerText = `DOP$ ${total.toLocaleString()}`;
-            DOM.stepUpsell.classList.add('hidden');
-            DOM.stepPayment.classList.remove('hidden');
-        });
-    }
-
-    // Cierre del Modal de Pago
-    if (DOM.closePaymentBtn) {
-        DOM.closePaymentBtn.onclick = () => DOM.paymentModal.style.display = 'none';
-    }
-
-    // Botón de éxito
-    if (DOM.closeSuccessBtn) {
-        DOM.closeSuccessBtn.onclick = () => {
-            DOM.paymentModal.style.display = 'none';
-            location.reload();
-        };
-    }
-
-    // Envío del Formulario (WhatsApp)
-    if (DOM.paymentForm) {
-        DOM.paymentForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const nombre = document.getElementById('card-name').value;
-            const telefono = document.getElementById('customer-phone').value;
-            const direccion = document.getElementById('customer-address').value;
-            const metodoEntrega = Array.from(DOM.deliveryMethods).find(r => r.checked).value;
-            
-            const subtotal = carrito.reduce((acc, i) => acc + (i.precio * i.cantidad), 0);
-            let costoEnvio = 0;
-            let metodoTexto = "";
-
-            if (metodoEntrega === 'pickup') {
-                metodoTexto = "Recoger en Taller (Gratis)";
-            } else if (metodoEntrega === 'metro') {
-                costoEnvio = METRO_DELIVERY_FEE;
-                metodoTexto = `Parada del Metro (DOP$ ${METRO_DELIVERY_FEE})`;
-            } else {
-                metodoTexto = "Envío a Domicilio (Costo a acordar)";
-            }
-
-            const totalFinal = subtotal + costoEnvio;
-
-            // Construir el mensaje de WhatsApp
-            let mensaje = `*NUEVO PEDIDO - KEYBAKERY*\n\n`;
-            mensaje += `*Cliente:* ${nombre}\n`;
-            mensaje += `*Teléfono:* ${telefono}\n`;
-            mensaje += `*Método:* ${metodoTexto}\n`;
-            if (direccion) mensaje += `*Referencia/Dirección:* ${direccion}\n`;
-            
-            mensaje += `\n*DETALLE DEL PEDIDO:*\n`;
-            carrito.forEach(item => {
-                mensaje += `- ${item.cantidad}x ${item.nombre} (DOP$ ${(item.precio * item.cantidad).toLocaleString()})\n`;
-            });
-
-            mensaje += `\n*Subtotal: DOP$ ${subtotal.toLocaleString()}*`;
-            if (costoEnvio > 0) mensaje += `\n*Envío: DOP$ ${costoEnvio.toLocaleString()}*`;
-            mensaje += `\n*TOTAL FINAL: DOP$ ${totalFinal.toLocaleString()}*`;
-
-            // Save to Firestore
-            addDoc(collection(db, "orders"), {
-                cliente: nombre,
-                total: totalFinal,
-                items: carrito.map(i => ({ id: i.id, nombre: i.nombre, precio: i.precio, cantidad: i.cantidad })),
-                fecha: serverTimestamp(),
-                status: 'pending'
-            }).catch(err => console.error("Error saving order to Firestore:", err));
-
-            // Guardar datos para la factura
-            ultimoPedido = {
-                nombre,
-                telefono,
-                direccion,
-                metodoTexto,
-                items: [...carrito],
-                subtotal,
-                costoEnvio,
-                totalFinal,
-                fecha: new Date().toLocaleString()
-            };
-
-            // Enviar factura por email (Resend)
-            fetch('/api/send-invoice', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pedido: ultimoPedido })
-            }).catch(err => console.error("Error al enviar factura por email:", err));
-
-            // Codificar para URL
-            const mensajeCodificado = encodeURIComponent(mensaje);
-            const urlWhatsApp = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensajeCodificado}`;
-
-            // Mostrar éxito y redirigir con un pequeño retraso
-            DOM.stepPayment.classList.add('hidden');
-            DOM.successMessage.classList.remove('hidden');
-            
-            // Pequeño retraso para que el usuario lea el aviso de la factura
-            setTimeout(() => {
-                window.open(urlWhatsApp, '_blank');
-            }, 1500);
-
-            carrito = [];
-            actualizarCarrito();
-        });
-    }
-
-    // Envío del Formulario de Contacto (WhatsApp)
-    if (DOM.contactForm) {
-        DOM.contactForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const nombre = document.getElementById('contact-name').value;
-            const telefono = document.getElementById('contact-phone').value;
-            const mensajeTexto = document.getElementById('contact-message').value;
-
-            let mensaje = `*MENSAJE DE CONTACTO - KEYBAKERY*\n\n`;
-            mensaje += `*Nombre:* ${nombre}\n`;
-            mensaje += `*Teléfono:* ${telefono}\n`;
-            mensaje += `\n*Mensaje:*\n${mensajeTexto}`;
-
-            const mensajeCodificado = encodeURIComponent(mensaje);
-            const urlWhatsApp = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensajeCodificado}`;
-
-            window.open(urlWhatsApp, '_blank');
-            DOM.contactForm.reset();
-        });
-    }
-
-    // Descargar Factura
-    if (DOM.downloadInvoiceBtn) {
-        DOM.downloadInvoiceBtn.onclick = () => descargarFactura();
-    }
-
-    // Formateo de teléfonos
-    [DOM.contactPhone, DOM.customerPhone].forEach(input => {
-        if (input) {
-            input.addEventListener('input', (e) => {
-                const inputVal = e.target.value.replace(/\D/g, ''); // Solo números
-                let formatted = '';
-                
-                if (inputVal.length > 0) {
-                    formatted = inputVal.substring(0, 3);
-                    if (inputVal.length > 3) {
-                        formatted += '-' + inputVal.substring(3, 6);
-                    }
-                    if (inputVal.length > 6) {
-                        formatted += '-' + inputVal.substring(6, 10);
-                    }
-                }
-                
-                e.target.value = formatted;
-            });
-        }
-    });
-
-    // Manejo de clics global
-    document.addEventListener('click', (e) => {
-        if (!DOM.cartSidebar || !DOM.paymentModal || !DOM.openCartBtn) return;
-
-        if (DOM.paymentModal.style.display === 'flex') {
-            if (e.target === DOM.paymentModal) {
-                DOM.paymentModal.style.display = 'none';
-            }
-            return; 
-        }
-
-        const esBotonAbrir = DOM.openCartBtn.contains(e.target);
-        const esCarrito = DOM.cartSidebar.contains(e.target);
-        const esBotonAgregar = e.target.closest('.btn-add') || e.target.closest('.btn-add-sm');
-        const esBotonQty = e.target.closest('.btn-qty');
-
-        if (!esCarrito && !esBotonAbrir && !esBotonAgregar && !esBotonQty) {
-            DOM.cartSidebar.classList.remove('open');
-        }
-    });
+    setTimeout(() => {
+        if (DOM.closeSuccessBtn) DOM.closeSuccessBtn.focus();
+    }, 50);
 }
 
-// --- 8. GENERACIÓN DE FACTURA ---
+// --- 9. FACTURA DESCARGABLE ---
 function descargarFactura() {
     if (!ultimoPedido) return;
 
     const invoiceWindow = window.open('', '_blank');
+    if (!invoiceWindow) return;
+
     const itemsHtml = ultimoPedido.items.map(item => `
         <tr>
-            <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.nombre}</td>
-            <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${item.cantidad}</td>
-            <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">DOP$ ${item.precio.toLocaleString()}</td>
-            <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">DOP$ ${(item.precio * item.cantidad).toLocaleString()}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.nombre}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.cantidad}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">DOP$ ${item.precio.toLocaleString()}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">DOP$ ${(item.precio * item.cantidad).toLocaleString()}</td>
         </tr>
     `).join('');
 
     invoiceWindow.document.write(`
-        <html>
+        <!DOCTYPE html>
+        <html lang="es-DO">
         <head>
-            <title>Factura KeyBakery - ${ultimoPedido.nombre}</title>
+            <meta charset="UTF-8">
+            <title>Resumen de Orden - KeyBakery Los Alcarrizos</title>
             <style>
-                body { font-family: 'Arial', sans-serif; color: #333; padding: 40px; }
-                .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #f723b4; padding-bottom: 20px; }
-                .header h1 { color: #f723b4; margin: 0; }
-                .info { display: flex; justify-content: space-between; margin-bottom: 30px; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-                th { background: #f9f9f9; padding: 10px; text-align: left; border-bottom: 2px solid #eee; }
-                .totals { text-align: right; }
-                .totals p { margin: 5px 0; font-size: 1.1rem; }
-                .footer { text-align: center; margin-top: 50px; font-size: 0.9rem; color: #666; }
+                body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1F1916; padding: 40px; margin: 0; }
+                .invoice-box { max-width: 650px; margin: auto; border: 1px solid #eee; padding: 30px; border-radius: 12px; }
+                .header { text-align: center; border-bottom: 2px solid #D81B60; padding-bottom: 20px; margin-bottom: 25px; }
+                .header h1 { margin: 0; color: #D81B60; font-size: 28px; letter-spacing: 1px; }
+                .meta { display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 14px; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 14px; }
+                th { background: #FFF9F5; padding: 10px; text-align: left; border-bottom: 2px solid #ddd; }
+                .totals { text-align: right; font-size: 15px; }
+                .grand-total { font-size: 20px; font-weight: bold; color: #7D5515; margin-top: 8px; }
+                .footer { text-align: center; margin-top: 35px; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 20px; }
                 @media print { .no-print { display: none; } }
             </style>
         </head>
         <body>
-            <div class="header">
-                <h1>KEYBAKERY</h1>
-                <p>Repostería Artesanal Dominicana</p>
-                <p>Santo Domingo, RD</p>
-            </div>
-            <div class="info">
-                <div>
-                    <h3>Cliente:</h3>
-                    <p><strong>Nombre:</strong> ${ultimoPedido.nombre}</p>
-                    <p><strong>Teléfono:</strong> ${ultimoPedido.telefono}</p>
-                    <p><strong>Fecha:</strong> ${ultimoPedido.fecha}</p>
+            <div class="invoice-box">
+                <div class="header">
+                    <h1>KEYBAKERY</h1>
+                    <p style="margin: 4px 0 0; color: #666; font-size: 13px;">Repostería Artesanal Dominicana • Los Alcarrizos, Santo Domingo Oeste</p>
                 </div>
-                <div>
-                    <h3>Detalles de Entrega:</h3>
-                    <p><strong>Método:</strong> ${ultimoPedido.metodoTexto}</p>
-                    ${ultimoPedido.direccion ? `<p><strong>Dirección:</strong> ${ultimoPedido.direccion}</p>` : ''}
+                <div class="meta">
+                    <div>
+                        <strong>Cliente:</strong> ${ultimoPedido.cliente}<br>
+                        <strong>Teléfono:</strong> ${ultimoPedido.telefono}<br>
+                        <strong>Fecha de Orden:</strong> ${ultimoPedido.fechaOrden}
+                    </div>
+                    <div style="text-align: right;">
+                        <strong>Entrega:</strong> ${ultimoPedido.metodoTexto}<br>
+                        ${ultimoPedido.detalleUbicacion ? `<strong>Punto:</strong> ${ultimoPedido.detalleUbicacion}<br>` : ''}
+                        <strong>Fecha Programada:</strong> ${ultimoPedido.proximoDomingo}
+                    </div>
                 </div>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th style="text-align: center;">Cant.</th>
-                        <th style="text-align: right;">Precio Unit.</th>
-                        <th style="text-align: right;">Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${itemsHtml}
-                </tbody>
-            </table>
-            <div class="totals">
-                <p>Subtotal: <strong>DOP$ ${ultimoPedido.subtotal.toLocaleString()}</strong></p>
-                ${ultimoPedido.costoEnvio > 0 ? `<p>Envío: <strong>DOP$ ${ultimoPedido.costoEnvio.toLocaleString()}</strong></p>` : ''}
-                <p style="font-size: 1.5rem; color: #B08D57; margin-top: 10px;">TOTAL: <strong>DOP$ ${ultimoPedido.totalFinal.toLocaleString()}</strong></p>
-            </div>
-            <div class="footer">
-                <p>¡Gracias por elegir KeyBakery para endulzar tus momentos!</p>
-                <button class="no-print" onclick="window.print()" style="margin-top: 20px; padding: 10px 20px; background: #f723b4; color: white; border: none; border-radius: 5px; cursor: pointer;">Imprimir Factura</button>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th style="text-align: center;">Cant.</th>
+                            <th style="text-align: right;">Precio</th>
+                            <th style="text-align: right;">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                    </tbody>
+                </table>
+                <div class="totals">
+                    <p>Subtotal: <strong>DOP$ ${ultimoPedido.subtotal.toLocaleString()}</strong></p>
+                    ${ultimoPedido.costoEnvio > 0 ? `<p>Tarifa de Entrega: <strong>DOP$ ${ultimoPedido.costoEnvio.toLocaleString()}</strong></p>` : ''}
+                    <p class="grand-total">Total: DOP$ ${ultimoPedido.total.toLocaleString()}</p>
+                </div>
+                <div class="footer">
+                    <p>¡Gracias por endulzar tus momentos con KeyBakery en Los Alcarrizos!</p>
+                    <button class="no-print" onclick="window.print()" style="margin-top: 15px; padding: 8px 18px; background: #D81B60; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                        Imprimir / Guardar como PDF
+                    </button>
+                </div>
             </div>
         </body>
         </html>
@@ -999,17 +787,329 @@ function descargarFactura() {
     invoiceWindow.document.close();
 }
 
-async function seedProducts() {
-    try {
-        for (const prod of defaultProducts) {
-            await addDoc(collection(db, "products"), prod);
-        }
-    } catch (err) {
-        console.error("Error seeding products:", err);
-    }
+// --- 10. SCROLL REVEAL OPTIMIZADO ---
+function initScrollReveal() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.08,
+        rootMargin: "0px 0px -30px 0px"
+    });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 }
 
-// Ejecución segura
+// --- 11. INICIALIZACIÓN DE LA APLICACIÓN ---
+function init() {
+    inicializarDOM();
+
+    // Actualizar fecha del próximo domingo en todos los indicadores
+    const proximoDomingoTexto = getProximoDomingoTexto();
+    if (DOM.proximoDomingoSpans) {
+        DOM.proximoDomingoSpans.forEach(span => {
+            span.textContent = proximoDomingoTexto;
+        });
+    }
+
+    // 1. Cargar productos desde Firestore con fallback
+    try {
+        const qProds = query(collection(db, "products"), orderBy("nombre"));
+        onSnapshot(qProds, (snapshot) => {
+            if (snapshot.empty) {
+                listaProductos = [...defaultProducts];
+            } else {
+                const prods = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                const hasHamburguesas = prods.some(p => p.nombre?.includes("Hamburguesa"));
+                if (hasHamburguesas) {
+                    listaProductos = [...defaultProducts];
+                } else {
+                    listaProductos = prods;
+                    hasDynamicFirestoreData = true;
+                }
+            }
+            renderizarMenu();
+        }, (err) => {
+            console.warn("Firestore notice, usando catálogo local de repostería:", err);
+            listaProductos = [...defaultProducts];
+            renderizarMenu();
+        });
+    } catch (e) {
+        listaProductos = [...defaultProducts];
+        renderizarMenu();
+    }
+
+    renderizarMenu();
+    actualizarCarrito();
+    initScrollReveal();
+
+    // 2. Filtros de Categorías Accesibles
+    if (DOM.categoryTabs) {
+        DOM.categoryTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                DOM.categoryTabs.forEach(t => {
+                    t.classList.remove('active');
+                    t.setAttribute('aria-selected', 'false');
+                });
+                tab.classList.add('active');
+                tab.setAttribute('aria-selected', 'true');
+                activeCategory = tab.dataset.category || 'todos';
+                renderizarMenu();
+            });
+        });
+    }
+
+    // 3. Menú Móvil Drawer con Accesibilidad
+    if (DOM.mobileMenuToggle && DOM.mobileDrawer && DOM.mobileDrawerOverlay) {
+        const openDrawer = () => {
+            lastFocusedElement = document.activeElement;
+            DOM.mobileDrawer.classList.add('active');
+            DOM.mobileDrawerOverlay.classList.add('active');
+            DOM.mobileDrawer.setAttribute('aria-hidden', 'false');
+            if (DOM.closeDrawerBtn) DOM.closeDrawerBtn.focus();
+        };
+        const closeDrawer = () => {
+            DOM.mobileDrawer.classList.remove('active');
+            DOM.mobileDrawerOverlay.classList.remove('active');
+            DOM.mobileDrawer.setAttribute('aria-hidden', 'true');
+            if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+                lastFocusedElement.focus();
+            }
+        };
+
+        DOM.mobileMenuToggle.addEventListener('click', openDrawer);
+        if (DOM.closeDrawerBtn) DOM.closeDrawerBtn.addEventListener('click', closeDrawer);
+        DOM.mobileDrawerOverlay.addEventListener('click', closeDrawer);
+
+        if (DOM.drawerLinks) {
+            DOM.drawerLinks.forEach(link => link.addEventListener('click', closeDrawer));
+        }
+    }
+
+    // 4. Preguntas Frecuentes (FAQ Accordion)
+    if (DOM.faqItems) {
+        DOM.faqItems.forEach(item => {
+            const btn = item.querySelector('.faq-question');
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    const isActive = item.classList.contains('active');
+                    DOM.faqItems.forEach(i => {
+                        i.classList.remove('active');
+                        const b = i.querySelector('.faq-question');
+                        if (b) b.setAttribute('aria-expanded', 'false');
+                    });
+                    if (!isActive) {
+                        item.classList.add('active');
+                        btn.setAttribute('aria-expanded', 'true');
+                    }
+                });
+            }
+        });
+    }
+
+    // 5. Apertura y Cierre de Carrito
+    if (DOM.openCartBtn) {
+        DOM.openCartBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            DOM.cartSidebar.classList.add('open');
+            DOM.cartSidebar.setAttribute('aria-hidden', 'false');
+            if (DOM.closeCartBtn) DOM.closeCartBtn.focus();
+        });
+    }
+
+    if (DOM.mobileOpenCartBtn) {
+        DOM.mobileOpenCartBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            DOM.cartSidebar.classList.add('open');
+            DOM.cartSidebar.setAttribute('aria-hidden', 'false');
+            if (DOM.closeCartBtn) DOM.closeCartBtn.focus();
+        });
+    }
+
+    if (DOM.closeCartBtn) {
+        DOM.closeCartBtn.addEventListener('click', () => {
+            DOM.cartSidebar.classList.remove('open');
+            DOM.cartSidebar.setAttribute('aria-hidden', 'true');
+            if (DOM.openCartBtn) DOM.openCartBtn.focus();
+        });
+    }
+
+    // 6. Pasos del Modal de Compra & Atrapado de Foco
+    if (DOM.checkoutBtn) {
+        DOM.checkoutBtn.addEventListener('click', abrirModalPago);
+    }
+
+    if (DOM.closePaymentBtn) {
+        DOM.closePaymentBtn.addEventListener('click', cerrarModalPago);
+    }
+
+    if (DOM.goToPaymentBtn) {
+        DOM.goToPaymentBtn.addEventListener('click', () => {
+            DOM.stepUpsell.classList.add('hidden');
+            DOM.stepPayment.classList.remove('hidden');
+            const firstInput = document.getElementById('card-name');
+            if (firstInput) firstInput.focus();
+        });
+    }
+
+    if (DOM.paymentForm) {
+        DOM.paymentForm.addEventListener('submit', procesarPedido);
+    }
+
+    if (DOM.downloadInvoiceBtn) {
+        DOM.downloadInvoiceBtn.addEventListener('click', descargarFactura);
+    }
+
+    if (DOM.closeSuccessBtn) {
+        DOM.closeSuccessBtn.addEventListener('click', cerrarModalPago);
+    }
+
+    // Focus Trap
+    if (DOM.paymentModal) {
+        DOM.paymentModal.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                const focusableSelectors = 'button:not([disabled]):not([aria-hidden="true"]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+                const focusables = Array.from(DOM.paymentModal.querySelectorAll(focusableSelectors))
+                    .filter(el => el.offsetParent !== null && !el.closest('.hidden'));
+
+                if (focusables.length === 0) return;
+                const first = focusables[0];
+                const last = focusables[focusables.length - 1];
+
+                if (e.shiftKey) {
+                    if (document.activeElement === first) {
+                        e.preventDefault();
+                        last.focus();
+                    }
+                } else {
+                    if (document.activeElement === last) {
+                        e.preventDefault();
+                        first.focus();
+                    }
+                }
+            }
+        });
+    }
+
+    // Cierre global con la tecla Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' || e.key === 'Esc') {
+            if (DOM.paymentModal && DOM.paymentModal.style.display !== 'none' && DOM.paymentModal.style.display !== '') {
+                cerrarModalPago();
+                return;
+            }
+            if (DOM.cartSidebar && DOM.cartSidebar.classList.contains('open')) {
+                DOM.cartSidebar.classList.remove('open');
+                DOM.cartSidebar.setAttribute('aria-hidden', 'true');
+                if (DOM.openCartBtn) DOM.openCartBtn.focus();
+                return;
+            }
+            if (DOM.mobileDrawer && DOM.mobileDrawer.classList.contains('active')) {
+                DOM.mobileDrawer.classList.remove('active');
+                DOM.mobileDrawerOverlay.classList.remove('active');
+                DOM.mobileDrawer.setAttribute('aria-hidden', 'true');
+                if (DOM.mobileMenuToggle) DOM.mobileMenuToggle.focus();
+                return;
+            }
+        }
+    });
+
+    // 7. Opciones de Entrega (Taller, Teleférico, Domicilio, Pastel Completo)
+    if (DOM.deliveryMethods) {
+        DOM.deliveryMethods.forEach(radio => {
+            radio.addEventListener('change', () => {
+                const val = radio.value;
+                if (DOM.telefericoSelectorBox) {
+                    DOM.telefericoSelectorBox.classList.toggle('hidden', val !== 'teleferico');
+                }
+                if (DOM.customerAddress) {
+                    DOM.customerAddress.classList.toggle('hidden', val !== 'delivery');
+                }
+                if (DOM.customerAddressLabel) {
+                    DOM.customerAddressLabel.classList.toggle('hidden', val !== 'delivery');
+                }
+                if (DOM.deliveryWarning) {
+                    DOM.deliveryWarning.classList.toggle('hidden', val !== 'delivery');
+                }
+                if (DOM.encargoDateBox) {
+                    DOM.encargoDateBox.classList.toggle('hidden', val !== 'encargo');
+                }
+            });
+        });
+    }
+
+    // 8. Formulario de Contacto
+    if (DOM.contactForm) {
+        DOM.contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nombre = document.getElementById('contact-name').value.trim();
+            const tel = document.getElementById('contact-phone').value.trim();
+            const msg = document.getElementById('contact-message').value.trim();
+
+            if (!nombre || !tel || !msg) {
+                showToast("Por favor completa todos los campos del formulario.");
+                return;
+            }
+
+            let txt = `🎂 *CONSULTA - KEYBAKERY (LOS ALCARRIZOS)*\n\n*Nombre:* ${nombre}\n*Teléfono:* ${tel}\n*Mensaje:*\n${msg}`;
+            const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(txt)}`;
+            window.open(url, '_blank');
+            DOM.contactForm.reset();
+            showToast("¡Mensaje preparado para enviar por WhatsApp!");
+        });
+    }
+
+    // 9. Formato Telefónico Dominicano (809-000-0000)
+    [DOM.contactPhone, DOM.customerPhone].forEach(input => {
+        if (input) {
+            input.addEventListener('input', (e) => {
+                const numbers = e.target.value.replace(/\D/g, '');
+                let formatted = '';
+                if (numbers.length > 0) formatted = numbers.substring(0, 3);
+                if (numbers.length > 3) formatted += '-' + numbers.substring(3, 6);
+                if (numbers.length > 6) formatted += '-' + numbers.substring(6, 10);
+                e.target.value = formatted;
+            });
+        }
+    });
+
+    // 10. Navbar Scroll Effect & Scroll-To-Top
+    window.addEventListener('scroll', () => {
+        const nav = document.getElementById('navbar');
+        if (nav) {
+            if (window.scrollY > 40) nav.classList.add('scrolled');
+            else nav.classList.remove('scrolled');
+        }
+
+        if (DOM.scrollTopBtn) {
+            if (window.scrollY > 450) DOM.scrollTopBtn.classList.add('visible');
+            else DOM.scrollTopBtn.classList.remove('visible');
+        }
+    });
+
+    if (DOM.scrollTopBtn) {
+        DOM.scrollTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    // 11. Año en Footer
+    const yearEl = document.getElementById('year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    // 12. Cierre modal al hacer click fuera del contenedor
+    window.addEventListener('click', (e) => {
+        if (DOM.paymentModal && e.target === DOM.paymentModal) {
+            cerrarModalPago();
+        }
+    });
+}
+
+// Ejecutar cuando el DOM esté listo
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
