@@ -27,7 +27,7 @@ try {
     console.warn("Aviso de inicialización Firebase:", err);
 }
 
-const WHATSAPP_NUMBER = "18090000000"; 
+const WHATSAPP_NUMBER = "18094428442"; 
 const TELEFERICO_FEE = 50;
 
 // Calcular fecha amigable del próximo domingo de entrega

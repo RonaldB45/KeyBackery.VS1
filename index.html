@@ -14,7 +14,7 @@
     <!-- Preconnect a Fuentes -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Krub:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Great+Vibes&family=Krub:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap" rel="stylesheet">
 
     <!-- Open Graph / Redes Sociales & WhatsApp -->
     <meta property="og:type" content="website">
@@ -23,27 +23,27 @@
     <meta property="og:url" content="https://keybakery.com.do/">
     <meta property="og:title" content="KEYBAKERY | Repostería por Lotes en Los Alcarrizos">
     <meta property="og:description" content="Especiales semanales de repostería con entregas fijas los domingos en el taller o paradas del Teleférico de Los Alcarrizos. Pasteles completos bajo encargo.">
-    <meta property="og:image" content="https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=1200">
+    <meta property="og:image" content="/assets/images/keybakery-logo.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Brownies artesanales y repostería KeyBakery Los Alcarrizos">
+    <meta property="og:image:alt" content="KeyBakery Pastelería Artesanal Los Alcarrizos">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="KEYBAKERY | Repostería Artesanal en Los Alcarrizos">
     <meta name="twitter:description" content="Especiales semanales horneados por lotes con entregas los domingos en Los Alcarrizos y Teleférico.">
-    <meta name="twitter:image" content="https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=1200">
+    <meta name="twitter:image" content="/assets/images/keybakery-logo.png">
 
     <!-- Datos Estructurados Schema.org (JSON-LD) para Bakery Local en Los Alcarrizos -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Bakery",
-      "name": "KeyBakery Los Alcarrizos",
-      "image": "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=1200",
+      "name": "KeyBakery | Pastelería Artesanal Los Alcarrizos",
+      "image": "/assets/images/keybakery-logo.png",
       "@id": "https://keybakery.com.do/",
       "url": "https://keybakery.com.do/",
-      "telephone": "+18090000000",
+      "telephone": "+18094428442",
       "priceRange": "$$",
       "address": {
         "@type": "PostalAddress",
@@ -171,20 +171,15 @@
 </head>
 <body>
 
-    <!-- ================= BARRA DE ANUNCIO SUPERIOR ================= -->
-    <div class="top-announcement-bar" role="region" aria-label="Aviso de entregas y modelo de negocio">
-        <span class="top-announcement-pill">Los Alcarrizos</span>
-        <span>🔥 <strong>Producto de la Semana:</strong> Brownies Melcochosos (Entregas fijas este <strong class="proximo-domingo-fecha">Domingo</strong>)</span>
-        <span style="opacity: 0.6;">|</span>
-        <span>🎂 Pasteles enteros y eventos disponibles cualquier día bajo encargo</span>
-    </div>
-
     <!-- ================= NAVBAR ACCESIBLE ================= -->
     <nav class="navbar" id="navbar" aria-label="Navegación principal">
-        <div class="nav-container">
-            <a href="#" class="logo" aria-label="KeyBakery - Inicio">
-                <i data-lucide="cake-slice" style="color: var(--pink); width: 28px; height: 28px;" aria-hidden="true"></i>
-                KEYBAKERY
+        <div class="container nav-container">
+            <a href="#" class="logo" aria-label="KeyBakery Pastelería Artesanal - Inicio">
+                <img src="/assets/images/keybakery-logo.png" alt="Logo oficial KeyBakery Pastelería Artesanal" class="brand-logo-img" width="46" height="46">
+                <span class="brand-text-group">
+                    <span class="brand-main-title">Key<span class="gold-script">Bakery</span></span>
+                    <span class="brand-subtitle-tag"><i data-lucide="sparkles" style="width: 10px; height: 10px; display: inline;" aria-hidden="true"></i> Pastelería Artesanal</span>
+                </span>
             </a>
             
             <div class="nav-links">
@@ -214,8 +209,11 @@
         <div>
             <div class="drawer-header">
                 <span class="logo">
-                    <i data-lucide="cake-slice" style="color: var(--pink); width: 24px;" aria-hidden="true"></i>
-                    KEYBAKERY
+                    <img src="/assets/images/keybakery-logo.png" alt="KeyBakery Logo" class="brand-logo-img" width="42" height="42">
+                    <span class="brand-text-group">
+                        <span class="brand-main-title" style="font-size: 1.25rem;">Key<span class="gold-script">Bakery</span></span>
+                        <span class="brand-subtitle-tag">Pastelería Artesanal</span>
+                    </span>
                 </span>
                 <button id="close-drawer" class="close-btn" style="color: var(--text-dark);" aria-label="Cerrar menú de navegación">
                     <i data-lucide="x" aria-hidden="true"></i>
@@ -231,7 +229,7 @@
             </nav>
         </div>
         <div class="drawer-footer">
-            <a href="https://wa.me/18090000000?text=Hola%20KeyBakery,%20quisiera%20hacer%20un%20pedido%20en%20Los%20Alcarrizos" target="_blank" rel="noopener noreferrer" class="btn-hero-whatsapp w-full" aria-label="Pedir directamente por WhatsApp">
+            <a href="https://wa.me/18094428442?text=Hola%20KeyBakery,%20quisiera%20hacer%20un%20pedido%20en%20Los%20Alcarrizos" target="_blank" rel="noopener noreferrer" class="btn-hero-whatsapp w-full" aria-label="Pedir directamente por WhatsApp">
                 <i data-lucide="message-circle" aria-hidden="true"></i> Pedir por WhatsApp
             </a>
         </div>
@@ -240,11 +238,28 @@
     <!-- ================= 1. HERO ================= -->
     <header class="hero">
         <div class="hero-content">
-            <div class="hero-tag">
-                <i data-lucide="map-pin" style="width: 16px; height: 16px; color: var(--gold-light);" aria-hidden="true"></i>
-                Venta Exclusiva en Los Alcarrizos, Santo Domingo Oeste
+            <!-- Bloque de Identidad Principal KeyBakery en el Hero -->
+            <div class="hero-brand-hero">
+                <div class="hero-brand-text">
+                    <h1 class="hero-main-title">Key<span class="gold-script">Bakery</span></h1>
+                    <div class="hero-artesanal-container">
+                        <span class="hero-artesanal-divider" aria-hidden="true"></span>
+                        <p class="hero-brand-artesanal">Pastelería Artesanal</p>
+                        <span class="hero-artesanal-divider" aria-hidden="true"></span>
+                    </div>
+                </div>
             </div>
-            <h1>Repostería Artesanal por Lotes <br><span class="highlight">en Los Alcarrizos</span></h1>
+
+            <div class="hero-pill-row">
+                <span class="hero-loc-pill">
+                    <i data-lucide="map-pin" style="width: 15px; height: 15px; color: var(--gold-light);" aria-hidden="true"></i>
+                    Venta Exclusiva en Los Alcarrizos • Paradas del Teleférico
+                </span>
+                <span class="hero-tel-pill">
+                    <i data-lucide="phone" style="width: 15px; height: 15px; color: var(--pink-light);" aria-hidden="true"></i>
+                    Pedidos & Encargos: <strong>(809) 442-8442</strong>
+                </span>
+            </div>
             <p>Horneamos un lote fresco cada semana con entregas fijas los domingos en nuestro taller o paradas del Teleférico. ¿Necesitas un pastel completo? Lo preparamos bajo encargo para el día que lo necesites.</p>
             
             <div class="hero-ctas">
@@ -667,7 +682,7 @@
                                 <span class="price-tag" style="color: var(--text-muted); font-size: 1.1rem;">Próximamente</span>
                                 <span style="font-size: 0.8rem; font-weight: 700; color: var(--pink);">Semana Temática</span>
                             </div>
-                            <a href="https://wa.me/18090000000?text=Hola%20KeyBakery,%20quisiera%20saber%20cuándo%20toca%20la%20semana%20de%20Mousse%20de%20Chinola" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full text-center" style="padding: 0.75rem;" aria-label="Consultar fecha para Mousse de Chinola">
+                            <a href="https://wa.me/18094428442?text=Hola%20KeyBakery,%20quisiera%20saber%20cuándo%20toca%20la%20semana%20de%20Mousse%20de%20Chinola" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full text-center" style="padding: 0.75rem;" aria-label="Consultar fecha para Mousse de Chinola">
                                 <i data-lucide="calendar" style="width: 16px; height: 16px;" aria-hidden="true"></i> Consultar Fecha
                             </a>
                         </div>
@@ -690,7 +705,7 @@
                                 <span class="price-tag" style="color: var(--text-muted); font-size: 1.1rem;">Próximamente</span>
                                 <span style="font-size: 0.8rem; font-weight: 700; color: var(--pink);">Semana Temática</span>
                             </div>
-                            <a href="https://wa.me/18090000000?text=Hola%20KeyBakery,%20quisiera%20consultar%20por%20cupcakes%20o%20encargarlos%20para%20un%20evento" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full text-center" style="padding: 0.75rem;" aria-label="Consultar fecha para Cupcakes">
+                            <a href="https://wa.me/18094428442?text=Hola%20KeyBakery,%20quisiera%20consultar%20por%20cupcakes%20o%20encargarlos%20para%20un%20evento" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full text-center" style="padding: 0.75rem;" aria-label="Consultar fecha para Cupcakes">
                                 <i data-lucide="calendar" style="width: 16px; height: 16px;" aria-hidden="true"></i> Consultar Fecha
                             </a>
                         </div>
@@ -713,7 +728,7 @@
                                 <span class="price-tag" style="color: var(--text-muted); font-size: 1.1rem;">Próximamente</span>
                                 <span style="font-size: 0.8rem; font-weight: 700; color: var(--pink);">Semana Temática</span>
                             </div>
-                            <a href="https://wa.me/18090000000?text=Hola%20KeyBakery,%20quisiera%20consultar%20por%20el%20Pudin%20de%20Pan" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full text-center" style="padding: 0.75rem;" aria-label="Consultar fecha para Pudin de Pan">
+                            <a href="https://wa.me/18094428442?text=Hola%20KeyBakery,%20quisiera%20consultar%20por%20el%20Pudin%20de%20Pan" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full text-center" style="padding: 0.75rem;" aria-label="Consultar fecha para Pudin de Pan">
                                 <i data-lucide="calendar" style="width: 16px; height: 16px;" aria-hidden="true"></i> Consultar Fecha
                             </a>
                         </div>
@@ -852,7 +867,7 @@
                         </div>
                         <div>
                             <h4>WhatsApp Directo</h4>
-                            <a href="tel:+18090000000" aria-label="Llamar al teléfono de KeyBakery">(809) 000-0000</a>
+                            <a href="tel:+18094428442" aria-label="Llamar al teléfono de KeyBakery">(809) 442-8442</a>
                         </div>
                     </div>
 
@@ -885,7 +900,7 @@
 
                     <div class="form-group">
                         <label for="contact-phone" class="form-label">Teléfono WhatsApp (RD)</label>
-                        <input type="tel" id="contact-phone" name="tel" class="form-input" autocomplete="tel" inputmode="tel" placeholder="809-000-0000" pattern="^(?:\+?1[-. ]?)?(809|829|849)[-. ]?[0-9]{3}[-. ]?[0-9]{4}$" title="Ingresa un teléfono dominicano válido (809, 829 o 849)" required>
+                        <input type="tel" id="contact-phone" name="tel" class="form-input" autocomplete="tel" inputmode="tel" placeholder="809-442-8442" pattern="^(?:\+?1[-. ]?)?(809|829|849)[-. ]?[0-9]{3}[-. ]?[0-9]{4}$" title="Ingresa un teléfono dominicano válido (809, 829 o 849)" required>
                     </div>
 
                     <div class="form-group">
@@ -908,8 +923,11 @@
                 <!-- Columna 1: Marca -->
                 <div class="footer-brand">
                     <a href="#" class="logo" aria-label="KeyBakery - Inicio">
-                        <i data-lucide="cake-slice" style="color: var(--pink-light); width: 26px;" aria-hidden="true"></i>
-                        KEYBAKERY
+                        <img src="/assets/images/keybakery-logo.png" alt="KeyBakery Pastelería Artesanal" class="brand-logo-img" width="50" height="50">
+                        <div class="brand-text-group">
+                            <span class="brand-main-title">Key<span class="gold-script">Bakery</span></span>
+                            <span class="brand-subtitle-tag" style="color: rgba(255, 255, 255, 0.7);">Pastelería Artesanal</span>
+                        </div>
                     </a>
                     <p class="footer-tagline">Repostería artesanal horneada por lotes semanales en Los Alcarrizos. Calidad casera, sabor inigualable y entregas fijas cada domingo.</p>
                     <div class="social-badges-row">
@@ -919,7 +937,7 @@
                         <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="social-btn" style="background: rgba(255,255,255,0.08); color:#fff;" aria-label="Página de Facebook de KeyBakery">
                             <i data-lucide="facebook" aria-hidden="true"></i>
                         </a>
-                        <a href="https://wa.me/18090000000" target="_blank" rel="noopener noreferrer" class="social-btn" style="background: rgba(255,255,255,0.08); color:#fff;" aria-label="WhatsApp oficial de KeyBakery">
+                        <a href="https://wa.me/18094428442" target="_blank" rel="noopener noreferrer" class="social-btn" style="background: rgba(255,255,255,0.08); color:#fff;" aria-label="WhatsApp oficial de KeyBakery">
                             <i data-lucide="message-circle" aria-hidden="true"></i>
                         </a>
                     </div>
@@ -951,7 +969,7 @@
                 <div>
                     <h4 class="footer-col-title">Ubicación & Contacto</h4>
                     <div class="footer-hours-list">
-                        <p><i data-lucide="phone" style="width: 14px; display: inline-block;" aria-hidden="true"></i> <a href="tel:+18090000000" style="color:#fff;" aria-label="Llamar al teléfono de KeyBakery">(809) 000-0000</a></p>
+                        <p><i data-lucide="phone" style="width: 14px; display: inline-block;" aria-hidden="true"></i> <a href="tel:+18094428442" style="color:#fff;" aria-label="Llamar al teléfono de KeyBakery">(809) 442-8442</a></p>
                         <p><i data-lucide="map-pin" style="width: 14px; display: inline-block;" aria-hidden="true"></i> Los Alcarrizos, Santo Domingo Oeste</p>
                         <h4 style="font-size: 0.85rem; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-top: 1rem;">Métodos de Pago:</h4>
                         <div class="footer-payment-icons">
@@ -1057,7 +1075,7 @@
             <div class="repostera-chat-header">
                 <div class="repostera-header-info">
                     <div class="repostera-header-avatar">
-                        👩‍🍳
+                        <img src="/assets/images/keybakery-logo.png" alt="Chef Keyla KeyBakery" class="repostera-header-logo-img">
                         <span class="repostera-header-dot"></span>
                     </div>
                     <div>
@@ -1066,7 +1084,7 @@
                     </div>
                 </div>
                 <div class="repostera-header-buttons">
-                    <a href="https://wa.me/18090000000?text=Hola%20Chef%20Keyla,%20quisiera%20hacer%20un%20pedido%20en%20Los%20Alcarrizos" target="_blank" rel="noopener noreferrer" class="repostera-btn-icon" title="Abrir en WhatsApp directamente" aria-label="Abrir en WhatsApp">
+                    <a href="https://wa.me/18094428442?text=Hola%20Chef%20Keyla,%20quisiera%20hacer%20un%20pedido%20en%20Los%20Alcarrizos" target="_blank" rel="noopener noreferrer" class="repostera-btn-icon" title="Abrir en WhatsApp directamente" aria-label="Abrir en WhatsApp">
                         <i data-lucide="message-circle" aria-hidden="true"></i>
                     </a>
                     <button type="button" class="repostera-btn-icon" id="repostera-reset-btn" title="Reiniciar chat" aria-label="Reiniciar conversación">

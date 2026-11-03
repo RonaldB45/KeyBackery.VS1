@@ -1,23 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
   <defs>
-    <linearGradient id="gradPink" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#D81B60"/>
-      <stop offset="100%" stop-color="#AD1457"/>
-    </linearGradient>
-    <linearGradient id="gradGold" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#B88E4B"/>
-      <stop offset="100%" stop-color="#7D5515"/>
+    <radialGradient id="lilacBg" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#E89EF9"/>
+      <stop offset="70%" stop-color="#D475ED"/>
+      <stop offset="100%" stop-color="#BF5BD9"/>
+    </radialGradient>
+    <linearGradient id="goldText" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F7D88B"/>
+      <stop offset="50%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#AA7E18"/>
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="16" fill="url(#gradPink)"/>
-  <!-- Cake slice graphic -->
-  <path d="M12 42 L52 42 L46 22 L18 22 Z" fill="#FFF9F5"/>
-  <path d="M12 42 L52 42 L52 46 C52 49 49 51 46 51 L18 51 C15 51 12 49 12 46 Z" fill="url(#gradGold)"/>
-  <!-- Frosting swirls -->
-  <circle cx="24" cy="22" r="5" fill="#FFF"/>
-  <circle cx="34" cy="22" r="5" fill="#FFF"/>
-  <circle cx="44" cy="22" r="5" fill="#FFF"/>
-  <!-- Cherry / strawberry on top -->
-  <circle cx="34" cy="14" r="4.5" fill="#FF1744"/>
-  <path d="M34 10 C34 7 38 6 39 5" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" fill="none"/>
+  
+  <!-- Outer circular badge with soft white rim & drop shadow effect -->
+  <circle cx="32" cy="32" r="30" fill="url(#lilacBg)" stroke="#FFFFFF" stroke-width="2.5"/>
+  <!-- Inner fine plum ring matching logo -->
+  <circle cx="32" cy="32" r="26" fill="none" stroke="#3D1836" stroke-width="1.2" opacity="0.85"/>
+  
+  <!-- Whisk (Batidor) in signature cyan on the left side -->
+  <g transform="translate(13, 15) rotate(-15)">
+    <!-- Whisk handle with heart accents -->
+    <path d="M4 18 L4 26 C4 27.5 5.5 28.5 7 28.5 C8.5 28.5 10 27.5 10 26 L10 18 Z" fill="#00B8F4" stroke="#008EC2" stroke-width="0.8"/>
+    <circle cx="7" cy="22" r="1.2" fill="#FFFFFF"/>
+    <!-- Whisk loops -->
+    <path d="M4 18 C3 12 3 7 7 4 C11 7 11 12 10 18" fill="none" stroke="#00B8F4" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M5.5 18 C5 13 5 8 7 6 C9 8 9 13 8.5 18" fill="none" stroke="#00B8F4" stroke-width="1.2"/>
+  </g>
+  
+  <!-- Gold Little Heart above Key Bakery -->
+  <path d="M38 17 C36.8 15 34 16 34 17.8 C34 19.8 38 22.5 38 22.5 C38 22.5 42 19.8 42 17.8 C42 16 39.2 15 38 17 Z" fill="url(#goldText)"/>
+
+  <!-- Golden 'KB' Monogram in elegant script style -->
+  <text x="38" y="38" font-family="'Playfair Display', Georgia, serif" font-weight="900" font-size="16" fill="url(#goldText)" text-anchor="middle" font-style="italic">KB</text>
+  
+  <!-- Subtitle pill text -->
+  <text x="32" y="48" font-family="'Krub', sans-serif" font-weight="700" font-size="5.2" fill="#3D1836" text-anchor="middle" letter-spacing="0.8">PASTELERÍA</text>
 </svg>
