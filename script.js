@@ -27,7 +27,7 @@ try {
     console.warn("Aviso de inicialización Firebase:", err);
 }
 
-const WHATSAPP_NUMBER = "18094428442"; 
+const WHATSAPP_NUMBER = "18096564233"; 
 const TELEFERICO_FEE = 50;
 
 // Calcular fecha amigable del próximo domingo de entrega
@@ -42,181 +42,163 @@ function getProximoDomingoTexto() {
     return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
-// --- 2. CATÁLOGO ADAPTADO AL MODELO: PRODUCTO DE LA SEMANA + PASTELES COMPLETOS ---
+// --- 2. CATÁLOGO OFICIAL: MENÚ DE POSTRES ARTESANALES KEYBAKERY ---
+// Precios oficiales del menú físico: Brownies, Pastisetas, Alfajores, Tres Leches, Flanes y Bizcochos
 const defaultProducts = [
-    // --- CATEGORÍA 1: PRODUCTO DE LA SEMANA (BROWNIES - ENTREGA DOMINGO) ---
+    // 1. Brownies
     {
-        id: "prod-brownie-clasico",
-        nombre: "Brownie Artesanal Melcochoso (Porción)",
-        precio: 180,
-        categoria: "semana",
-        tipo: "semana",
-        badge: "🔥 Producto de la Semana",
-        descripcion: "Hecho con cacao puro dominicano, centro húmedo súper fudge, corteza brillante y chispas de chocolate. Entrega exclusiva este Domingo en Los Alcarrizos.",
-        imagen: "/assets/images/brownie_clasico.jpg",
-        stock: 40,
-        activo: true
-    },
-    {
-        id: "prod-caja-brownies",
-        nombre: "Caja Degustación de 4 Brownies Gourmet",
-        precio: 650,
-        categoria: "semana",
-        tipo: "semana",
-        badge: "⭐ Caja Favorita de la Semana",
-        descripcion: "Incluye 4 porciones surtidas: 1 clásico de chocolate puro, 1 con dulce de leche artesanal, 1 con Nutella y 1 con nueces tostadas. Entrega este Domingo.",
-        imagen: "/assets/images/caja_brownies.jpg",
-        stock: 25,
-        activo: true
-    },
-    {
-        id: "prod-brownie-jar",
-        nombre: "Brownie Jar con Suspiro & Dulce de Leche",
-        precio: 250,
-        categoria: "semana",
-        tipo: "semana",
-        badge: "Edición Limitada Semanal",
-        descripcion: "Vaso individual con capas de brownie melcochoso, manjar de dulce de leche criollo y suspiro dominicano flameado. Entrega este Domingo.",
-        imagen: "/assets/images/brownie_jar.jpg",
-        stock: 20,
-        activo: true
-    },
-
-    // --- CATEGORÍA 2: PASTELES COMPLETOS (BAJO ENCARGO - DÍA A COORDINAR) ---
-    {
-        id: "prod-bizcocho-suspiro",
-        nombre: "Bizcocho Dominicano de Suspiro (1 Libra Entera)",
-        precio: 950,
-        categoria: "pasteles-completos",
-        tipo: "encargo",
-        badge: "🎂 Pastel Entero (Bajo Encargo)",
-        descripcion: "Pastel completo tradicional de masa esponjosa con relleno artesanal de piña o dulce de leche y suspiro alisado. Rinde 15-20 porciones. Coordinamos entrega cualquier día de la semana con 48h.",
-        imagen: "/assets/images/bizcocho_suspiro.jpg",
-        stock: 10,
-        activo: true
-    },
-    {
-        id: "prod-pastel-chocolate",
-        nombre: "Pastel de Chocolate Intenso (Pastel Entero 1.5 Lb)",
-        precio: 1800,
-        categoria: "pasteles-completos",
-        tipo: "encargo",
-        badge: "🎂 Pastel Entero (Bajo Encargo)",
-        descripcion: "Tres capas de bizcocho húmedo de cacao dominicano, ganache brillante y trufas artesanales. Rinde 20 porciones. Se elabora bajo encargo con 48h de anticipación.",
-        imagen: "/assets/images/pastel_chocolate.jpg",
-        stock: 10,
-        activo: true
-    },
-    {
-        id: "prod-cheesecake-guayaba",
-        nombre: "Cheesecake de Guayaba Real (Molde Entero)",
-        precio: 1100,
-        categoria: "pasteles-completos",
-        tipo: "encargo",
-        badge: "🎂 Pastel Entero (Bajo Encargo)",
-        descripcion: "Tarta horneada entera sobre base crujiente con abundante mermelada espesa de guayaba dulce del país. Rinde 12-14 porciones. Entrega programada con 48h.",
-        imagen: "/assets/images/cheesecake_guayaba.jpg",
-        stock: 10,
-        activo: true
-    },
-    {
-        id: "prod-pastel-bodas",
-        nombre: "Pastel de Bodas & Cumpleaños (2-3 Pisos)",
-        precio: 2500,
-        categoria: "pasteles-completos",
-        tipo: "encargo",
-        badge: "Celebraciones Especiales",
-        descripcion: "Diseño elegante con suspiro tradicional alisado a mano y flores comestibles. Rinde de 25 a 35 porciones. Se agenda con un mínimo de 72h para coordinar día y detalles.",
-        imagen: "/assets/images/pastel_bodas.jpg",
-        stock: 5,
-        activo: true
-    },
-
-    // --- CATEGORÍA 3: BOCADILLOS & EVENTOS AL MAYOR (MÍNIMO 12-25 UDS) ---
-    {
-        id: "prod-bocadillos-queso",
-        nombre: "Bandeja de Bocadillos de Queso Criollo (24 uds)",
-        precio: 360,
-        categoria: "bocadillos-eventos",
-        tipo: "encargo",
-        badge: "Bandeja para Eventos",
-        descripcion: "Tequeños rellenos de queso criollo fundente horneados frescos para tus reuniones o fiestas familiares. Mínimo 24 uds. Se coordina el día que necesites con 48h.",
-        imagen: "/assets/images/bocadillos_queso.jpg",
+        id: "prod-brownies",
+        nombre: "Brownies Artesanales Melcochosos",
+        precio: 100,
+        categoria: "galletas-dulces",
+        tipo: "menu",
+        badge: "⭐ Favorito de la Casa",
+        descripcion: "Deliciosos brownies artesanales melcochosos, elaborados con puro chocolate, textura fudge densa y costra brillante craquelada.",
+        imagen: "/assets/images/menu/brownies.jpg",
         stock: 50,
         activo: true
     },
+    // 2. Pastisetas
     {
-        id: "prod-catibias-gourmet",
-        nombre: "Bandeja de Catibías de Yuca Gourmet (25 uds)",
-        precio: 950,
-        categoria: "bocadillos-eventos",
-        tipo: "encargo",
-        badge: "Bandeja para Eventos",
-        descripcion: "Mini empanadas crocantes de harina de yuca rellenas de res sazonada al estilo criollo. Perfectas para compartir en eventos. Entrega coordinada con 48h.",
-        imagen: "/assets/images/catibias_gourmet.jpg",
+        id: "prod-pastisetas",
+        nombre: "Pastisetas",
+        precio: 160,
+        categoria: "galletas-dulces",
+        tipo: "menu",
+        badge: "🌸 Flor Tradicional",
+        descripcion: "Galletas de mantequilla finas en forma de flor con centro de jalea dulce artesanal, tan suaves que se deshacen en el paladar.",
+        imagen: "/assets/images/menu/pastisetas.jpg",
+        stock: 40,
+        activo: true
+    },
+    // 3. Alfajores de dulce de leche
+    {
+        id: "prod-alfajores",
+        nombre: "Alfajores de Dulce de Leche",
+        precio: 130,
+        categoria: "galletas-dulces",
+        tipo: "menu",
+        badge: "✨ Clásico Criollo",
+        descripcion: "Suaves tapas de maicena rellenas con abundante dulce de leche criollo artesanal y espolvoreadas con azúcar glas fina.",
+        imagen: "/assets/images/menu/alfajores.jpg",
+        stock: 40,
+        activo: true
+    },
+    // 4. Tres leches tradicional
+    {
+        id: "prod-tres-leches-tradicional",
+        nombre: "Tres Leches Tradicional",
+        precio: 130,
+        categoria: "tres-leches-flanes",
+        tipo: "menu",
+        badge: "🥛 Receta Tradicional",
+        descripcion: "Bizcocho esponjoso bañado en nuestra clásica mezcla de tres leches y coronado con suspiro ligero y un toque de canela molida.",
+        imagen: "/assets/images/menu/tres_leches_tradicional.jpg",
+        stock: 35,
+        activo: true
+    },
+    // 5. Tres leches de coco
+    {
+        id: "prod-tres-leches-coco",
+        nombre: "Tres Leches de Coco",
+        precio: 150,
+        categoria: "tres-leches-flanes",
+        tipo: "menu",
+        badge: "🥥 Sabor Tropical",
+        descripcion: "Masa embebida en infusión de tres leches y leche de coco fresca, cubierta de crema sedosa y lluvia de coco rallado natural.",
+        imagen: "/assets/images/menu/tres_leches_coco.jpg",
         stock: 30,
         activo: true
     },
+    // 6. Tres leches de chocolate
     {
-        id: "prod-croissants-mantequilla",
-        nombre: "Bandeja de Croissants de Mantequilla (12 uds)",
-        precio: 700,
-        categoria: "bocadillos-eventos",
-        tipo: "encargo",
-        badge: "Bandeja para Eventos",
-        descripcion: "Hojaldre crujiente laminado con mantequilla pura en tamaño fiesta. Ideales para mesas de bocadillos y desayunos. Entrega programada con 48h.",
-        imagen: "/assets/images/bocadillos_queso.jpg",
+        id: "prod-tres-leches-chocolate",
+        nombre: "Tres Leches de Chocolate",
+        precio: 190,
+        categoria: "tres-leches-flanes",
+        tipo: "menu",
+        badge: "🍫 Cacao Dominicano",
+        descripcion: "Bizcocho de chocolate bañado en tres leches achocolatada, decorado con virutas de puro cacao artesanal.",
+        imagen: "/assets/images/menu/tres_leches_chocolate.jpg",
+        stock: 30,
+        activo: true
+    },
+    // 7. Flan (porción)
+    {
+        id: "prod-flan",
+        nombre: "Flan (Porción)",
+        precio: 200,
+        categoria: "tres-leches-flanes",
+        tipo: "menu",
+        badge: "🍮 Sedoso & Cremoso",
+        descripcion: "Porción de flan tradicional dominicano súper sedoso y suave, cocinado lentamente con abundante caramelo dorado líquido.",
+        imagen: "/assets/images/menu/flan.jpg",
+        stock: 30,
+        activo: true
+    },
+    // 8. Carrot cake
+    {
+        id: "prod-carrot-cake",
+        nombre: "Carrot Cake",
+        precio: 220,
+        categoria: "bizcochos-pasteles",
+        tipo: "menu",
+        badge: "🥕 Especial de Zanahoria",
+        descripcion: "Pastel húmedo de zanahoria fresca especiada con nueces y canela, relleno y cubierto con frosting suave de queso crema.",
+        imagen: "/assets/images/menu/carrot_cake.jpg",
+        stock: 25,
+        activo: true
+    },
+    // 9. Bizcocho de vainilla
+    {
+        id: "prod-bizcocho-vainilla",
+        nombre: "Bizcocho de Vainilla",
+        precio: 250,
+        categoria: "bizcochos-pasteles",
+        tipo: "menu",
+        badge: "🎂 Clásico Casero",
+        descripcion: "Clásico bizcocho esponjoso de vainilla natural, relleno artesanal y cobertura sedosa al auténtico estilo casero dominicano.",
+        imagen: "/assets/images/menu/bizcocho_vainilla.jpg",
+        stock: 25,
+        activo: true
+    },
+    // 10. Bizcocho de chocolate estilo Milky Way
+    {
+        id: "prod-bizcocho-milky-way",
+        nombre: "Bizcocho de Chocolate estilo Milky Way",
+        precio: 280,
+        categoria: "bizcochos-pasteles",
+        tipo: "menu",
+        badge: "🍫 Caramelo & Nougat",
+        descripcion: "Tarta húmeda de chocolate con generoso relleno de caramelo artesanal y nougat suave, cubierta de ganache y crocante.",
+        imagen: "/assets/images/menu/bizcocho_milky_way.jpg",
         stock: 20,
         activo: true
     },
+    // 11. Bizcocho de chocolate (Chocomatilda)
     {
-        id: "prod-mini-quiches",
-        nombre: "Bandeja de Mini Quiches Variados (16 uds)",
-        precio: 640,
-        categoria: "bocadillos-eventos",
-        tipo: "encargo",
-        badge: "Bandeja para Eventos",
-        descripcion: "Tartaletas saladas rellenas de queso gouda, jamón y espinacas con toque de nuez moscada. Mínimo 16 unidades. Entrega programada con 48h.",
-        imagen: "/assets/images/bocadillos_queso.jpg",
-        stock: 20,
+        id: "prod-bizcocho-chocomatilda",
+        nombre: "Bizcocho de Chocolate (Chocomatilda)",
+        precio: 225,
+        categoria: "bizcochos-pasteles",
+        tipo: "menu",
+        badge: "🍰 Tarta Matilda Legendaria",
+        descripcion: "Inspirado en la famosa tarta de chocolate: bizcocho súper húmedo con fudge cremoso y lluvia intensa de chocolate.",
+        imagen: "/assets/images/menu/bizcocho_chocomatilda.jpg",
+        stock: 25,
         activo: true
     },
-
-    // --- CATEGORÍA 4: PRÓXIMAS SEMANAS (INFORMATIVO) ---
+    // 12. Volteado de piña (porción)
     {
-        id: "prod-preview-chinola",
-        nombre: "Mousse de Chinola Silvestre en Vasitos",
-        precio: 350,
-        categoria: "proximas-semanas",
-        tipo: "proxima",
-        badge: "🗓️ Próxima Semana 2",
-        descripcion: "Postre cremoso de maracuyá criolla. Porciones individuales solo disponibles durante su semana temática. ¡Si deseas el pastel completo puedes pedirlo bajo encargo!",
-        imagen: "/assets/images/preview_chinola.jpg",
-        stock: 0,
-        activo: true
-    },
-    {
-        id: "prod-preview-cupcakes",
-        nombre: "Cupcakes Red Velvet & Zanahoria (Caja 6)",
-        precio: 450,
-        categoria: "proximas-semanas",
-        tipo: "proxima",
-        badge: "🗓️ Próxima Semana 3",
-        descripcion: "Masa terciopelo rojo aterciopelada con frosting de cream cheese. Porciones disponibles en su semana temática. Para eventos puedes pedir la bandeja al mayor.",
-        imagen: "/assets/images/preview_cupcakes.jpg",
-        stock: 0,
-        activo: true
-    },
-    {
-        id: "prod-preview-pudin",
-        nombre: "Pudin de Pan Tradicional Dominicano",
-        precio: 500,
-        categoria: "proximas-semanas",
-        tipo: "proxima",
-        badge: "🗓️ Próxima Semana 4",
-        descripcion: "Clásico pudin dominicano aromatizado con canela, pasas y caramelo rubio. Espéralo en su semana temática de entrega dominical.",
-        imagen: "/assets/images/preview_pudin.jpg",
-        stock: 0,
+        id: "prod-volteado-pina",
+        nombre: "Volteado de Piña (Porción)",
+        precio: 140,
+        categoria: "bizcochos-pasteles",
+        tipo: "menu",
+        badge: "🍍 Tradición Caribeña",
+        descripcion: "Tradicional volteado con rodajas de piña caramelizadas en azúcar morena y cerezas, sobre una masa dorada impregnada de almíbar.",
+        imagen: "/assets/images/menu/volteado_pina.jpg",
+        stock: 25,
         activo: true
     }
 ];
@@ -360,35 +342,15 @@ window.cardAddToCart = function(id, btnElement) {
     _lastAddToCartTime = now;
     _lastAddToCartId = id;
 
+    // Resolver alias de producto si aplica
+    let lookupId = id;
+    if (id === 'prod-brownie-clasico') lookupId = 'prod-brownies';
+
     // 1. Buscar en listaProductos, luego en defaultProducts, luego fallback específico
-    let prod = listaProductos.find(p => p.id === id) || defaultProducts.find(p => p.id === id);
+    let prod = listaProductos.find(p => p.id === lookupId || p.id === id) || defaultProducts.find(p => p.id === lookupId || p.id === id);
     if (!prod) {
-        if (id === 'prod-brownie-clasico') {
-            prod = {
-                id: "prod-brownie-clasico",
-                nombre: "Brownie Artesanal Melcochoso (Porción)",
-                precio: 180,
-                categoria: "semana",
-                tipo: "semana",
-                badge: "🔥 Producto de la Semana",
-                descripcion: "Hecho con cacao puro dominicano, centro húmedo súper fudge, corteza brillante y chispas de chocolate. Entrega exclusiva este Domingo en Los Alcarrizos.",
-                imagen: "/assets/images/brownie_clasico.jpg",
-                stock: 40,
-                activo: true
-            };
-        } else if (id === 'prod-caja-brownies') {
-            prod = {
-                id: "prod-caja-brownies",
-                nombre: "Caja Degustación de 4 Brownies Gourmet",
-                precio: 650,
-                categoria: "semana",
-                tipo: "semana",
-                badge: "⭐ Caja Favorita de la Semana",
-                descripcion: "Incluye 4 porciones surtidas: 1 clásico de chocolate puro, 1 con dulce de leche artesanal, 1 con Nutella y 1 con nueces tostadas. Entrega este Domingo.",
-                imagen: "/assets/images/caja_brownies.jpg",
-                stock: 25,
-                activo: true
-            };
+        if (id === 'prod-brownie-clasico' || id === 'prod-brownies' || id === 'prod-caja-brownies') {
+            prod = defaultProducts.find(p => p.id === 'prod-brownies');
         }
     }
 
@@ -523,7 +485,7 @@ function renderizarMenu() {
 
                     <div class="product-meta">
                         <div class="product-price-row">
-                            <span class="price-tag">${isUpcoming ? 'Próximamente' : `DOP$ ${p.precio.toLocaleString()}`}</span>
+                            <span class="price-tag">${isUpcoming ? 'Próximamente' : `RD$ ${p.precio.toLocaleString()} <small style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">c/u</small>`}</span>
                             ${!isUpcoming ? `
                             <div class="card-qty-stepper" aria-label="Selector de cantidad para ${p.nombre}">
                                 <button class="card-qty-btn" onclick="cardQtyChange('${p.id}', -1)" aria-label="Disminuir cantidad de ${p.nombre}">-</button>
@@ -948,17 +910,23 @@ function init() {
         try {
             const qProds = query(collection(db, "products"), orderBy("nombre"));
             onSnapshot(qProds, (snapshot) => {
+                const validIdSet = new Set(defaultProducts.map(p => p.id));
                 if (snapshot.empty) {
                     listaProductos = [...defaultProducts];
                 } else {
-                    const prods = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                    // Sincronizar catálogo para asegurar que los productos de la semana nunca desaparezcan
+                    const prods = snapshot.docs
+                        .map(d => ({ id: d.id, ...d.data() }))
+                        .filter(d => validIdSet.has(d.id)); // FILTRADO ESTRICTO: Solo los 12 del menú
+                    
                     const map = new Map();
                     defaultProducts.forEach(p => map.set(p.id, p));
                     prods.forEach(p => {
-                        if (p.id) map.set(p.id, { ...(map.get(p.id) || {}), ...p });
+                        if (p.id && map.has(p.id)) {
+                            map.set(p.id, { ...(map.get(p.id) || {}), ...p });
+                        }
                     });
-                    listaProductos = Array.from(map.values());
+                    // Mantener orden exacto del volante oficial (1 a 12)
+                    listaProductos = defaultProducts.map(p => map.get(p.id) || p);
                     hasDynamicFirestoreData = true;
                 }
                 renderizarMenu();
@@ -985,7 +953,7 @@ function init() {
     if (btnHeroPorcion) {
         btnHeroPorcion.addEventListener('click', (e) => {
             e.preventDefault();
-            window.cardAddToCart('prod-brownie-clasico', btnHeroPorcion);
+            window.cardAddToCart('prod-brownies', btnHeroPorcion);
         });
     }
 
@@ -1399,43 +1367,26 @@ window.handleReposteraQuickAction = function(key) {
     const domingoTexto = getProximoDomingoTexto();
 
     if (key === 'semana') {
-        const weeklyItem = listaProductos.find(p => p.id === 'prod-brownie-clasico') || {
-            nombre: 'Brownie Artesanal Melcochoso',
-            precio: 180,
-            id: 'prod-brownie-clasico',
-            desc: 'Elaborado con cacao criollo dominicano, textura húmeda y costra brillante craquelada.'
-        };
-        const weeklyBox = listaProductos.find(p => p.id === 'prod-caja-brownies') || {
-            nombre: 'Caja Degustación (4 unidades)',
-            precio: 650,
-            id: 'prod-caja-brownies',
-            desc: '4 porciones surtidas: Clásico, Dulce de Leche, Nutella y Nueces.'
+        const weeklyItem = listaProductos.find(p => p.id === 'prod-brownies') || {
+            nombre: 'Brownies Artesanales Melcochosos',
+            precio: 100,
+            id: 'prod-brownies',
+            desc: 'Puro chocolate con textura húmeda fudge y costra craquelada brillante.'
         };
 
         const replyHtml = `
             <p>✨ <strong>Postre Especial de Esta Semana:</strong></p>
-            <p>Nuestro horno está dedicado a: <strong>${weeklyItem.nombre}</strong>. Horneado fresco por lotes para entregar este <strong>${domingoTexto}</strong> en Los Alcarrizos.</p>
-            <p>Elige tu porción o caja y se agregará directamente a tu pedido:</p>
+            <p>Nuestro horno está dedicado a: <strong>${weeklyItem.nombre}</strong> (RD$ ${weeklyItem.precio} c/u). Horneado fresco por lotes para entregar este <strong>${domingoTexto}</strong> en Los Alcarrizos.</p>
+            <p>Agrégalo directamente a tu pedido:</p>
             
             <div class="chat-product-card">
                 <div class="chat-product-header">
-                    <span class="chat-product-title">${weeklyItem.nombre} (Porción)</span>
-                    <span class="chat-product-price">DOP$ ${weeklyItem.precio.toLocaleString()}</span>
+                    <span class="chat-product-title">${weeklyItem.nombre}</span>
+                    <span class="chat-product-price">RD$ ${weeklyItem.precio} c/u</span>
                 </div>
                 <p class="chat-product-desc">${weeklyItem.desc || 'Porción individual recién horneada para este domingo.'}</p>
                 <button type="button" class="chat-btn-add" onclick="window.cardAddToCart('${weeklyItem.id}', this)">
-                    <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar Porción (+1)
-                </button>
-            </div>
-
-            <div class="chat-product-card">
-                <div class="chat-product-header">
-                    <span class="chat-product-title">${weeklyBox.nombre}</span>
-                    <span class="chat-product-price">DOP$ ${weeklyBox.precio.toLocaleString()}</span>
-                </div>
-                <p class="chat-product-desc">${weeklyBox.desc || '4 porciones ideales para compartir.'}</p>
-                <button type="button" class="chat-btn-add" onclick="window.cardAddToCart('${weeklyBox.id}', this)">
-                    <i data-lucide="box" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar Caja 4x (+1)
+                    <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar Brownies (RD$ 100)
                 </button>
             </div>
         `;
@@ -1459,16 +1410,19 @@ window.handleReposteraQuickAction = function(key) {
         renderReposteraMessage('bot', replyHtml);
     } else if (key === 'pastel') {
         const replyHtml = `
-            <p>🎂 <strong>Pasteles Completos & Eventos bajo Encargo:</strong></p>
-            <p>¿Tienes un cumpleaños, bautizo o reunión en la semana? Los pasteles enteros los preparamos personalizados:</p>
+            <p>🎂 <strong>Bizcochos & Pasteles Artesanales:</strong></p>
+            <p>En nuestro menú oficial contamos con:</p>
             <ul style="padding-left: 1.2rem; margin: 0.4rem 0; font-size: 0.85rem; line-height: 1.5;">
-                <li><strong>Anticipación:</strong> Mínimo 48 horas de anticipación.</li>
-                <li><strong>Día de entrega:</strong> ¡Cualquier día de la semana coordinado contigo!</li>
-                <li><strong>Opciones:</strong> Bizcocho dominicano tradicional con suspiro, pudín de vainilla, red velvet, chocolate húmedo o zanahoria.</li>
+                <li><strong>Bizcocho de Vainilla:</strong> RD$ 250 c/u</li>
+                <li><strong>Bizcocho Milky Way (Caramelo):</strong> RD$ 280 c/u</li>
+                <li><strong>Bizcocho Chocomatilda:</strong> RD$ 225 c/u</li>
+                <li><strong>Carrot Cake:</strong> RD$ 220 c/u</li>
+                <li><strong>Volteado de Piña:</strong> RD$ 140 c/u</li>
+                <li><strong>Mini Cakes Personalizados:</strong> Desde RD$ 350</li>
             </ul>
             <div style="display: flex; gap: 0.5rem; flex-direction: column; margin-top: 0.6rem;">
-                <a href="#menu" class="btn-secondary" style="padding: 0.55rem; text-align: center; font-size: 0.82rem;" onclick="window.toggleReposteraChat(false)">Ver Pasteles en el Menú</a>
-                <a href="https://wa.me/${WHATSAPP_NUMBER}?text=Hola%20Chef%20Keyla,%20quisiera%20cotizar%20un%20pastel%20completo%20para%20un%20evento" target="_blank" rel="noopener noreferrer" class="btn-hero-whatsapp" style="padding: 0.55rem; font-size: 0.82rem; justify-content: center;">Coordinar Pastel por WhatsApp</a>
+                <a href="#menu" class="btn-secondary" style="padding: 0.55rem; text-align: center; font-size: 0.82rem;" onclick="window.toggleReposteraChat(false)">Ver Todo el Menú</a>
+                <a href="https://wa.me/${WHATSAPP_NUMBER}?text=Hola%20Chef%20Keyla,%20quisiera%20cotizar%20un%20bizcocho%20completo%20o%20pedido%20especial" target="_blank" rel="noopener noreferrer" class="btn-hero-whatsapp" style="padding: 0.55rem; font-size: 0.82rem; justify-content: center;">Coordinar por WhatsApp (809-656-4233)</a>
             </div>
         `;
         renderReposteraMessage('bot', replyHtml);
@@ -1479,10 +1433,10 @@ window.handleReposteraQuickAction = function(key) {
         if (totalItems === 0) {
             const replyHtml = `
                 <p>🛒 <strong>Tu carrito actualmente está vacío.</strong></p>
-                <p>¿Deseas consultar el postre activo de esta semana o explorar los pasteles completos en el menú?</p>
+                <p>¿Deseas pedir el postre de la semana o consultar el menú completo de postres artesanales?</p>
                 <div style="display: flex; gap: 0.45rem; flex-wrap: wrap; margin-top: 0.5rem;">
-                    <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('semana')">✨ Ver Postre de la Semana</button>
-                    <a href="#menu" class="repostera-chip" onclick="window.toggleReposteraChat(false)">🍰 Ver Menú</a>
+                    <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('semana')">✨ Postre de la Semana</button>
+                    <a href="#menu" class="repostera-chip" onclick="window.toggleReposteraChat(false)">🍰 Ver Menú Completo</a>
                 </div>
             `;
             renderReposteraMessage('bot', replyHtml);
@@ -1517,15 +1471,16 @@ window.handleReposteraQuickAction = function(key) {
         if (totalItems > 0) {
             txt += ` Tengo ${totalItems} productos en mi carrito y deseo coordinar mi pedido.`;
         } else {
-            txt += ` Deseo hacer un pedido para este domingo.`;
+            txt += ` Deseo hacer una consulta sobre el menú de postres artesanales.`;
         }
         const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(txt)}`;
 
         const replyHtml = `
             <p>💬 <strong>¡Con mucho gusto te atiendo en WhatsApp!</strong></p>
-            <p>Haz clic en el botón de abajo para abrir la conversación directa con nuestro equipo:</p>
+            <p>Teléfono: <strong>(809) 656-4233</strong></p>
+            <p>Haz clic abajo para abrir el chat directo:</p>
             <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="btn-hero-whatsapp" style="padding: 0.65rem; font-size: 0.84rem; justify-content: center; margin-top: 0.4rem;">
-                <i data-lucide="message-circle" style="width: 16px; height: 16px;" aria-hidden="true"></i> Abrir Chat en WhatsApp
+                <i data-lucide="message-circle" style="width: 16px; height: 16px;" aria-hidden="true"></i> Abrir WhatsApp (809-656-4233)
             </a>
         `;
         renderReposteraMessage('bot', replyHtml);
@@ -1600,11 +1555,51 @@ window.handleReposteraSubmit = async function(event) {
 
     if (q.includes('brownie') || q.includes('semana') || q.includes('lote') || q.includes('que tienen') || q.includes('que hay') || q.includes('postre de la semana') || q.includes('especial de la semana')) {
         renderReposteraMessage('bot', `
-            <p>✨ <strong>Postre Especial de Esta Semana:</strong></p>
-            <p>Esta semana tenemos activo nuestro lote de <strong>Brownies Artesanales Melcochosos</strong> 🍫 horneados con cacao criollo dominicano, textura húmeda y costra brillante.</p>
-            <p>Puedes pedir la porción individual por <strong>DOP$ 180</strong> o la caja degustación de 4 unidades por <strong>DOP$ 650</strong> con entrega este <strong>${domingoTexto}</strong> en Los Alcarrizos.</p>
-            <button type="button" class="chat-btn-add" style="margin-top: 0.3rem;" onclick="window.cardAddToCart('prod-brownie-clasico', this)">
-                <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Pedir Porción de la Semana (+1)
+            <p>✨ <strong>Brownies Artesanales Melcochosos:</strong></p>
+            <p>Horneados con chocolate puro, textura fudge húmeda y corteza brillante.</p>
+            <p>• <strong>Porción individual:</strong> RD$ 100 c/u<br>• <strong>Caja degustación 4x:</strong> RD$ 400</p>
+            <button type="button" class="chat-btn-add" style="margin-top: 0.3rem;" onclick="window.cardAddToCart('prod-brownies', this)">
+                <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Pedir Brownie (RD$ 100)
+            </button>
+        `);
+    } else if (q.includes('pastiseta') || q.includes('galleta')) {
+        renderReposteraMessage('bot', `
+            <p>🌸 <strong>Pastisetas Artesanales:</strong></p>
+            <p>Finas galletas de mantequilla pura en forma de flor con corazón de jalea dulce. Precio: <strong>RD$ 160 c/u</strong>.</p>
+            <button type="button" class="chat-btn-add" style="margin-top: 0.3rem;" onclick="window.cardAddToCart('prod-pastisetas', this)">
+                <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar Pastiseta (RD$ 160)
+            </button>
+        `);
+    } else if (q.includes('alfajor')) {
+        renderReposteraMessage('bot', `
+            <p>✨ <strong>Alfajores de Dulce de Leche:</strong></p>
+            <p>Tapas delicadas de maicena rellenas con abundante dulce de leche criollo artesanal y azúcar glas. Precio: <strong>RD$ 130 c/u</strong>.</p>
+            <button type="button" class="chat-btn-add" style="margin-top: 0.3rem;" onclick="window.cardAddToCart('prod-alfajores', this)">
+                <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar Alfajor (RD$ 130)
+            </button>
+        `);
+    } else if (q.includes('tres leches') || q.includes('leche')) {
+        renderReposteraMessage('bot', `
+            <p>🥛 <strong>Variedades de Tres Leches:</strong></p>
+            <p>• <strong>Tres Leches Tradicional:</strong> RD$ 130 c/u<br>• <strong>Tres Leches de Coco:</strong> RD$ 150 c/u<br>• <strong>Tres Leches de Chocolate:</strong> RD$ 190 c/u</p>
+            <button type="button" class="chat-btn-add" style="margin-top: 0.3rem;" onclick="window.cardAddToCart('prod-tres-leches-tradicional', this)">
+                <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar Tres Leches Tradicional (RD$ 130)
+            </button>
+        `);
+    } else if (q.includes('flan')) {
+        renderReposteraMessage('bot', `
+            <p>🍮 <strong>Flan Tradicional (Porción):</strong></p>
+            <p>Súper cremoso y sedoso, bañado en caramelo líquido rubio. Precio: <strong>RD$ 200 c/u</strong>.</p>
+            <button type="button" class="chat-btn-add" style="margin-top: 0.3rem;" onclick="window.cardAddToCart('prod-flan', this)">
+                <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar Flan (RD$ 200)
+            </button>
+        `);
+    } else if (q.includes('carrot') || q.includes('zanahoria')) {
+        renderReposteraMessage('bot', `
+            <p>🥕 <strong>Carrot Cake Especial:</strong></p>
+            <p>Pastel húmedo de zanahoria fresca con nueces, canela y suave frosting de queso crema. Precio: <strong>RD$ 220 c/u</strong>.</p>
+            <button type="button" class="chat-btn-add" style="margin-top: 0.3rem;" onclick="window.cardAddToCart('prod-carrot-cake', this)">
+                <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar Carrot Cake (RD$ 220)
             </button>
         `);
     } else if (q.includes('teleferico') || q.includes('donde') || q.includes('ubicacion') || q.includes('direccion') || q.includes('entrega') || q.includes('alcarrizos') || q.includes('parada')) {
@@ -1613,19 +1608,30 @@ window.handleReposteraSubmit = async function(event) {
             <p>Nuestras entregas son los <strong>domingos</strong> en:</p>
             <p>• <strong>Gratis:</strong> En nuestro taller de Los Alcarrizos.<br>• <strong>DOP$ 50:</strong> En las estaciones 1 (Entrada Duarte), 2 (Las Cangrejas), 3 (Puente Blanco) y 4 (Los Americanos).<br>• <strong>Delivery a Domicilio:</strong> Directo a tu puerta en tu sector.</p>
         `);
-    } else if (q.includes('pastel') || q.includes('bizcocho') || q.includes('torta') || q.includes('cumpleaños') || q.includes('boda') || q.includes('completo') || q.includes('libra')) {
+    } else if (q.includes('pastel') || q.includes('bizcocho') || q.includes('torta') || q.includes('milky') || q.includes('matilda') || q.includes('piña') || q.includes('pina')) {
         renderReposteraMessage('bot', `
-            <p>🎂 ¡Hacemos hermosos y deliciosos pasteles completos para tus celebraciones!</p>
-            <p>Los pasteles enteros se elaboran bajo encargo con <strong>mínimo 48h de anticipación</strong> y podemos coordinar la entrega el día de la semana que lo necesites (no solo domingo).</p>
-            <p>¿Deseas masa pudín tradicional con dulce de leche, tres leches o red velvet?</p>
-            <a href="https://wa.me/${WHATSAPP_NUMBER}?text=Hola%20Chef%20Keyla,%20quiero%20cotizar%20un%20pastel%20completo" target="_blank" rel="noopener noreferrer" class="btn-hero-whatsapp" style="padding: 0.55rem; font-size: 0.82rem; justify-content: center; margin-top: 0.3rem;">
-                <i data-lucide="message-circle" style="width: 14px; height: 14px;" aria-hidden="true"></i> Cotizar Pastel en WhatsApp
+            <p>🎂 <strong>Bizcochos y Pasteles Artesanales:</strong></p>
+            <p>• <strong>Bizcocho de Vainilla:</strong> RD$ 250 c/u<br>• <strong>Bizcocho Milky Way (Caramelo):</strong> RD$ 280 c/u<br>• <strong>Bizcocho Chocomatilda:</strong> RD$ 225 c/u<br>• <strong>Volteado de Piña:</strong> RD$ 140 c/u<br>• <strong>Carrot Cake:</strong> RD$ 220 c/u</p>
+            <a href="https://wa.me/${WHATSAPP_NUMBER}?text=Hola%20Chef%20Keyla,%20quiero%20cotizar%20un%20bizcocho" target="_blank" rel="noopener noreferrer" class="btn-hero-whatsapp" style="padding: 0.55rem; font-size: 0.82rem; justify-content: center; margin-top: 0.3rem;">
+                <i data-lucide="message-circle" style="width: 14px; height: 14px;" aria-hidden="true"></i> Coordinar por WhatsApp (809-656-4233)
             </a>
         `);
-    } else if (q.includes('precio') || q.includes('costo') || q.includes('cuanto') || q.includes('vale')) {
+    } else if (q.includes('precio') || q.includes('costo') || q.includes('cuanto') || q.includes('vale') || q.includes('menu') || q.includes('menú')) {
         renderReposteraMessage('bot', `
-            <p>💵 <strong>Precios Destacados de KeyBakery:</strong></p>
-            <p>• <strong>Postre de la Semana:</strong> DOP$ 180 (Porción) | DOP$ 650 (Caja 4 uds)<br>• <strong>Pastel Dominicano 1/2 lb:</strong> Desde DOP$ 750<br>• <strong>Pastel Dominicano 1 lb:</strong> Desde DOP$ 1,350<br>• <strong>Bandejas de Catibías (25 uds):</strong> DOP$ 950<br>• <strong>Bandeja Croissants (12 uds):</strong> DOP$ 700</p>
+            <p>💵 <strong>Menú Oficial de Postres Artesanales:</strong></p>
+            <p>• <strong>Brownies:</strong> RD$ 100 c/u<br>
+            • <strong>Pastisetas:</strong> RD$ 160 c/u<br>
+            • <strong>Alfajores de dulce de leche:</strong> RD$ 130 c/u<br>
+            • <strong>Tres leches tradicional:</strong> RD$ 130 c/u<br>
+            • <strong>Tres leches de coco:</strong> RD$ 150 c/u<br>
+            • <strong>Tres leches de chocolate:</strong> RD$ 190 c/u<br>
+            • <strong>Flan (porción):</strong> RD$ 200 c/u<br>
+            • <strong>Carrot cake:</strong> RD$ 220 c/u<br>
+            • <strong>Bizcocho de vainilla:</strong> RD$ 250 c/u<br>
+            • <strong>Bizcocho Milky Way:</strong> RD$ 280 c/u<br>
+            • <strong>Bizcocho Chocomatilda:</strong> RD$ 225 c/u<br>
+            • <strong>Volteado de piña (porción):</strong> RD$ 140 c/u</p>
+            <p style="font-size: 0.82rem; color: var(--pink);"><em>Entre otros: Mini cakes, Galletas, Tartaletas y Postres en vasitos bajo encargo.</em></p>
         `);
     } else if (q.includes('pago') || q.includes('pagar') || q.includes('transferencia') || q.includes('banco') || q.includes('tarjeta') || q.includes('efectivo')) {
         renderReposteraMessage('bot', `
@@ -1634,17 +1640,17 @@ window.handleReposteraSubmit = async function(event) {
         `);
     } else if (q.includes('gracias') || q.includes('ok') || q.includes('bien') || q.includes('excelente') || q.includes('perfecto')) {
         renderReposteraMessage('bot', `
-            <p>¡A la orden siempre! 🥰 En KeyBakery horneamos con mucho amor para endulzar tus momentos en Los Alcarrizos. Si necesitas algo más, solo dime.</p>
+            <p>¡A la orden siempre! 🥰 ¡Gracias por apoyar mi pequeño gran sueño! En KeyBakery horneamos con mucho amor para ti en Los Alcarrizos. Tel. 809-656-4233.</p>
         `);
     } else {
         renderReposteraMessage('bot', `
-            <p>¡Hola! Con mucho gusto te asisto. 👩‍🍳 En KeyBakery horneamos por lotes semanales para los <strong>domingos</strong>, y preparamos pasteles enteros por encargo con 48h de anticipación.</p>
-            <p>¿En qué puedo ayudarte? Puedes consultar el postre de esta semana, los puntos del Teleférico o cotizar un pastel para tu evento:</p>
+            <p>¡Hola! Con mucho gusto te asisto. 👩‍🍳 En KeyBakery preparamos deliciosos postres artesanales con amor y los mejores ingredientes.</p>
+            <p>¿Qué te gustaría ver hoy? Puedes elegir una de las opciones:</p>
             <div style="display: flex; gap: 0.45rem; flex-wrap: wrap; margin-top: 0.5rem;">
-                <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('semana')">✨ Postre de esta semana</button>
-                <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('teleferico')">🚡 Puntos Teleférico</button>
-                <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('pastel')">🎂 Pastel Entero</button>
-                <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('whatsapp')">💬 Abrir WhatsApp</button>
+                <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('semana')">✨ Postre de la Semana</button>
+                <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('pastel')">🎂 Bizcochos & Pasteles</button>
+                <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('teleferico')">🚡 Teleférico & Zonas</button>
+                <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('whatsapp')">💬 WhatsApp 809-656-4233</button>
             </div>
         `);
     }
