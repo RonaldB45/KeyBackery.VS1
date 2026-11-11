@@ -27,7 +27,7 @@ try {
     console.warn("Aviso de inicialización Firebase:", err);
 }
 
-const WHATSAPP_NUMBER = "18096564233"; 
+const WHATSAPP_NUMBER = "18094428442"; 
 const TELEFERICO_FEE = 50;
 
 // Calcular fecha amigable del próximo domingo de entrega
@@ -838,7 +838,7 @@ function getFacturaFallbackOrder() {
     return {
         numeroOrden: 'KB-' + Math.floor(100000 + Math.random() * 900000),
         cliente: "Cliente KeyBakery",
-        telefono: "809-656-4233",
+        telefono: "809-442-8442",
         items: [
             { id: "prod-brownies", nombre: "Brownies Artesanales Melcochosos", precio: 100, cantidad: 2 },
             { id: "prod-tres-leches-tradicional", nombre: "Tres Leches Tradicional", precio: 130, cantidad: 1 }
@@ -875,7 +875,7 @@ function renderFacturaSheet(format = 'a4') {
                 <div>
                     <h2 class="invoice-brand-title">KeyBakery</h2>
                     <span class="invoice-brand-subtitle">Pastelería Artesanal Dominicana</span>
-                    <small style="color: var(--text-muted); font-size: 0.78rem;">Los Alcarrizos, Santo Domingo Oeste • Tel. 809-656-4233</small>
+                    <small style="color: var(--text-muted); font-size: 0.78rem;">Los Alcarrizos, Santo Domingo Oeste • Tel. 809-442-8442</small>
                 </div>
             </div>
             <div class="invoice-tag-pill">
@@ -1015,7 +1015,7 @@ function descargarFacturaImagen() {
 
     ctx.fillStyle = '#6B5867';
     ctx.font = '13px sans-serif';
-    ctx.fillText('Los Alcarrizos, Santo Domingo Oeste • Tel. 809-656-4233', width / 2, currentY);
+    ctx.fillText('Los Alcarrizos, Santo Domingo Oeste • Tel. 809-442-8442', width / 2, currentY);
     currentY += 24;
 
     // Línea divisoria
@@ -1142,19 +1142,42 @@ function descargarFacturaImagen() {
     ctx.font = '12px sans-serif';
     ctx.fillText('¡Gracias por apoyar mi pequeño gran sueño en Los Alcarrizos!', width / 2, currentY);
 
-    // Disparar descarga en formato PNG
+    // Disparar descarga directa como archivo en el dispositivo (teléfono móvil o PC)
+    const fileName = `Factura_KeyBakery_${pedido.numeroOrden}.png`;
+
+    const triggerDirectDownload = (url, isBlob = false) => {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.setAttribute('download', fileName);
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(() => {
+            if (link.parentNode) link.parentNode.removeChild(link);
+            if (isBlob) URL.revokeObjectURL(url);
+        }, 3000);
+        showToast("¡Factura guardada directamente en tu dispositivo!");
+    };
+
     try {
-        const imageURL = canvas.toDataURL('image/png');
-        const downloadLink = document.createElement('a');
-        downloadLink.download = `Factura_KeyBakery_${pedido.numeroOrden}.png`;
-        downloadLink.href = imageURL;
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        showToast("¡Factura descargada en imagen PNG con éxito!");
+        if (canvas.toBlob) {
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    const blobUrl = URL.createObjectURL(blob);
+                    triggerDirectDownload(blobUrl, true);
+                } else {
+                    const dataUrl = canvas.toDataURL('image/png');
+                    triggerDirectDownload(dataUrl, false);
+                }
+            }, 'image/png');
+        } else {
+            const dataUrl = canvas.toDataURL('image/png');
+            triggerDirectDownload(dataUrl, false);
+        }
     } catch (err) {
-        console.warn("Error generando imagen PNG de factura:", err);
-        showToast("Abriendo vista para imprimir o guardar como PDF...");
+        console.warn("Aviso en descarga de factura:", err);
+        // Fallback: imprimir o guardar como PDF del navegador
         window.print();
     }
 }
@@ -1850,7 +1873,7 @@ window.handleReposteraQuickAction = function(key) {
                 <li><strong>🏪 Taller Los Alcarrizos:</strong> Retiro en persona sin costo adicional (Gratis).</li>
                 <li><strong>🚡 Paradas del Teleférico (DOP$ 50):</strong>
                     <br>• Estación 1: Los Alcarrizos (Entrada / Autopista Duarte)
-                    <br>• Estación 2: Las Cangrejas
+                    <br>• Estación 2: Las Toronjas (Cercana al Parque de las Toronjas)
                     <br>• Estación 3: Puente Blanco
                     <br>• Estación 4: Los Americanos
                 </li>
@@ -1873,7 +1896,7 @@ window.handleReposteraQuickAction = function(key) {
             </ul>
             <div style="display: flex; gap: 0.5rem; flex-direction: column; margin-top: 0.6rem;">
                 <a href="#menu" class="btn-secondary" style="padding: 0.55rem; text-align: center; font-size: 0.82rem;" onclick="window.toggleReposteraChat(false)">Ver Todo el Menú</a>
-                <a href="https://wa.me/${WHATSAPP_NUMBER}?text=Hola%20Chef%20Keyla,%20quisiera%20cotizar%20un%20bizcocho%20completo%20o%20pedido%20especial" target="_blank" rel="noopener noreferrer" class="btn-hero-whatsapp" style="padding: 0.55rem; font-size: 0.82rem; justify-content: center;">Coordinar por WhatsApp (809-656-4233)</a>
+                <a href="https://wa.me/${WHATSAPP_NUMBER}?text=Hola%20Chef%20Keyla,%20quisiera%20cotizar%20un%20bizcocho%20completo%20o%20pedido%20especial" target="_blank" rel="noopener noreferrer" class="btn-hero-whatsapp" style="padding: 0.55rem; font-size: 0.82rem; justify-content: center;">Coordinar por WhatsApp (809-442-8442)</a>
             </div>
         `;
         renderReposteraMessage('bot', replyHtml);
@@ -1928,10 +1951,10 @@ window.handleReposteraQuickAction = function(key) {
 
         const replyHtml = `
             <p>💬 <strong>¡Con mucho gusto te atiendo en WhatsApp!</strong></p>
-            <p>Teléfono: <strong>(809) 656-4233</strong></p>
+            <p>Teléfono: <strong>(809) 442-8442</strong></p>
             <p>Haz clic abajo para abrir el chat directo:</p>
             <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="btn-hero-whatsapp" style="padding: 0.65rem; font-size: 0.84rem; justify-content: center; margin-top: 0.4rem;">
-                <i data-lucide="message-circle" style="width: 16px; height: 16px;" aria-hidden="true"></i> Abrir WhatsApp (809-656-4233)
+                <i data-lucide="message-circle" style="width: 16px; height: 16px;" aria-hidden="true"></i> Abrir WhatsApp (809-442-8442)
             </a>
         `;
         renderReposteraMessage('bot', replyHtml);
@@ -2057,14 +2080,14 @@ window.handleReposteraSubmit = async function(event) {
         renderReposteraMessage('bot', `
             <p>📍 <strong>Estamos en Los Alcarrizos, Santo Domingo Oeste</strong>.</p>
             <p>Nuestras entregas son los <strong>domingos</strong> en:</p>
-            <p>• <strong>Gratis:</strong> En nuestro taller de Los Alcarrizos.<br>• <strong>DOP$ 50:</strong> En las estaciones 1 (Entrada Duarte), 2 (Las Cangrejas), 3 (Puente Blanco) y 4 (Los Americanos).<br>• <strong>Delivery a Domicilio:</strong> Directo a tu puerta en tu sector.</p>
+            <p>• <strong>Gratis:</strong> En nuestro taller de Los Alcarrizos.<br>• <strong>DOP$ 50:</strong> En las estaciones 1 (Entrada Duarte), 2 (Las Toronjas), 3 (Puente Blanco) y 4 (Los Americanos).<br>• <strong>Delivery a Domicilio:</strong> Directo a tu puerta en tu sector.</p>
         `);
     } else if (q.includes('pastel') || q.includes('bizcocho') || q.includes('torta') || q.includes('milky') || q.includes('matilda') || q.includes('piña') || q.includes('pina')) {
         renderReposteraMessage('bot', `
             <p>🎂 <strong>Bizcochos y Pasteles Artesanales:</strong></p>
             <p>• <strong>Bizcocho de Vainilla:</strong> RD$ 250 c/u<br>• <strong>Bizcocho Milky Way (Caramelo):</strong> RD$ 280 c/u<br>• <strong>Bizcocho Chocomatilda:</strong> RD$ 225 c/u<br>• <strong>Volteado de Piña:</strong> RD$ 140 c/u<br>• <strong>Carrot Cake:</strong> RD$ 220 c/u</p>
             <a href="https://wa.me/${WHATSAPP_NUMBER}?text=Hola%20Chef%20Keyla,%20quiero%20cotizar%20un%20bizcocho" target="_blank" rel="noopener noreferrer" class="btn-hero-whatsapp" style="padding: 0.55rem; font-size: 0.82rem; justify-content: center; margin-top: 0.3rem;">
-                <i data-lucide="message-circle" style="width: 14px; height: 14px;" aria-hidden="true"></i> Coordinar por WhatsApp (809-656-4233)
+                <i data-lucide="message-circle" style="width: 14px; height: 14px;" aria-hidden="true"></i> Coordinar por WhatsApp (809-442-8442)
             </a>
         `);
     } else if (q.includes('precio') || q.includes('costo') || q.includes('cuanto') || q.includes('vale') || q.includes('menu') || q.includes('menú')) {
@@ -2091,7 +2114,7 @@ window.handleReposteraSubmit = async function(event) {
         `);
     } else if (q.includes('gracias') || q.includes('ok') || q.includes('bien') || q.includes('excelente') || q.includes('perfecto')) {
         renderReposteraMessage('bot', `
-            <p>¡A la orden siempre! 🥰 ¡Gracias por apoyar mi pequeño gran sueño! En KeyBakery horneamos con mucho amor para ti en Los Alcarrizos. Tel. 809-656-4233.</p>
+            <p>¡A la orden siempre! 🥰 ¡Gracias por apoyar mi pequeño gran sueño! En KeyBakery horneamos con mucho amor para ti en Los Alcarrizos. Tel. 809-442-8442.</p>
         `);
     } else {
         renderReposteraMessage('bot', `
@@ -2101,7 +2124,7 @@ window.handleReposteraSubmit = async function(event) {
                 <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('semana')">✨ Postre de la Semana</button>
                 <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('pastel')">🎂 Bizcochos & Pasteles</button>
                 <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('teleferico')">🚡 Teleférico & Zonas</button>
-                <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('whatsapp')">💬 WhatsApp 809-656-4233</button>
+                <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('whatsapp')">💬 WhatsApp 809-442-8442</button>
             </div>
         `);
     }
