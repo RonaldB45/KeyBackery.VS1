@@ -73,15 +73,17 @@ html {
     -webkit-text-size-adjust: 100%;
     overflow-x: hidden;
     width: 100%;
+    background-color: var(--bg-canvas-tone, #FCF8FD);
 }
 
 body {
     font-family: 'Krub', sans-serif;
-    background-color: var(--white);
+    background: transparent;
     color: var(--text-body);
     line-height: 1.6;
     overflow-x: hidden;
-    background-image: url("https://www.transparenttextures.com/patterns/food.png");
+    position: relative;
+    min-height: 100vh;
 }
 
 h1, h2, h3, h4, .logo, .font-serif {
@@ -138,6 +140,8 @@ img {
 
 .section {
     padding: 5.5rem 1rem;
+    position: relative;
+    z-index: 1;
 }
 
 @media (max-width: 768px) {
@@ -147,11 +151,15 @@ img {
 }
 
 .bg-cream {
-    background-color: var(--cream);
+    background-color: rgba(252, 249, 253, 0.65);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .bg-white {
-    background-color: var(--white);
+    background-color: rgba(255, 255, 255, 0.70);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .text-center {
@@ -1582,7 +1590,9 @@ img {
 
 /* --- 14. Footer Completo (Sin Repetir Misión/Visión) --- */
 .footer {
-    background: linear-gradient(180deg, #20111E 0%, #140913 100%);
+    position: relative;
+    z-index: 20;
+    background: linear-gradient(180deg, #20111E 0%, #140913 100%) !important;
     color: rgba(255, 255, 255, 0.88);
     padding: 5rem 1rem 2.5rem;
     border-top: 1px solid rgba(223, 138, 247, 0.15);
@@ -3041,5 +3051,624 @@ img {
     background: var(--cream);
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
+}
+
+/* ===============================================================
+   AMBIENT BAKERY BACKGROUND CANVAS (PASTELES FLOTANTES & COLOR SHIFT)
+   =============================================================== */
+:root {
+    --bg-canvas-tone: #FCF8FD;
+    --pastry-color-base: #F8DDF5;
+    --pastry-color-frosting: #FFFFFF;
+    --pastry-color-accent: #B84EC7;
+    --pastry-color-stroke: rgba(184, 78, 199, 0.42);
+    --pastry-glow-color: rgba(184, 78, 199, 0.15);
+}
+
+.ambient-bakery-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: -1;
+    overflow: hidden;
+    background-color: var(--bg-canvas-tone);
+    transition: background-color 0.8s ease;
+}
+
+/* Orbes de luz pastel suave */
+.ambient-glow-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(85px);
+    pointer-events: none;
+    opacity: 0.55;
+    animation: orbFloatAnim 20s ease-in-out infinite alternate;
+}
+
+.ambient-glow-orb.orb-1 {
+    width: 580px;
+    height: 580px;
+    top: -120px;
+    left: -120px;
+    background: radial-gradient(circle, rgba(223, 138, 247, 0.35) 0%, rgba(250, 240, 253, 0) 70%);
+}
+
+.ambient-glow-orb.orb-2 {
+    width: 620px;
+    height: 620px;
+    top: 38%;
+    right: -160px;
+    background: radial-gradient(circle, rgba(245, 198, 98, 0.30) 0%, rgba(253, 249, 238, 0) 70%);
+    animation-delay: -7s;
+}
+
+.ambient-glow-orb.orb-3 {
+    width: 540px;
+    height: 540px;
+    bottom: -120px;
+    left: 25%;
+    background: radial-gradient(circle, rgba(0, 184, 244, 0.24) 0%, rgba(235, 248, 254, 0) 70%);
+    animation-delay: -14s;
+}
+
+@keyframes orbFloatAnim {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+    50% {
+        transform: translate(40px, 35px) scale(1.12);
+    }
+    100% {
+        transform: translate(-30px, -25px) scale(0.96);
+    }
+}
+
+/* Patrón sutil vectorial de repostería (Textura artesanal sin URLs externas) */
+.ambient-pattern-tile {
+    position: absolute;
+    inset: 0;
+    opacity: 0.055;
+    background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23B84EC7' fill-rule='evenodd'%3E%3Cpath d='M20 18c0-3.3 2.7-6 6-6s6 2.7 6 6v3h-12v-3zm2 5h8l-1 9h-6l-1-9zm30 18c-3 0-5.5-2.5-5.5-5.5S49 30 52 30s5.5 2.5 5.5 5.5S55 41 52 41zm-1-8a2.5 2.5 0 100 5 2.5 2.5 0 000-5zm-33 28c0-2.2 1.8-4 4-4s4 1.8 4 4v2h-8v-2zm1 3h6l-.8 7h-4.4l-.8-7zm45-16c0-2.8 2.2-5 5-5s5 2.2 5 5-2.2 5-5 5-5-2.2-5-5zm2 0a3 3 0 106 0 3 3 0 00-6 0z' /%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: repeat;
+}
+
+/* Contenedor de pasteles y motivos flotantes */
+.ambient-pastry-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.floating-pastry {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0.35;
+    filter: drop-shadow(0 4px 12px var(--pastry-glow-color));
+    transition: opacity 0.5s ease, filter 0.5s ease;
+    animation: floatPastryMotion var(--dur, 9s) ease-in-out infinite alternate;
+    animation-delay: var(--delay, 0s);
+    will-change: transform;
+    transform: translateY(var(--scroll-offset, 0px));
+}
+
+.pastry-svg {
+    width: 62px;
+    height: 62px;
+    display: block;
+}
+
+.pastry-svg-sm {
+    width: 32px;
+    height: 32px;
+    display: block;
+}
+
+.pastry-svg .pastry-base,
+.pastry-svg-sm .pastry-base {
+    fill: var(--pastry-color-base);
+    stroke: var(--pastry-color-stroke);
+    stroke-width: 1.6;
+    transition: fill 0.8s ease, stroke 0.8s ease;
+}
+
+.pastry-svg .pastry-frosting,
+.pastry-svg-sm .pastry-frosting {
+    fill: var(--pastry-color-frosting);
+    stroke: var(--pastry-color-stroke);
+    stroke-width: 1.6;
+    transition: fill 0.8s ease, stroke 0.8s ease;
+}
+
+.pastry-svg .pastry-accent,
+.pastry-svg-sm .pastry-accent {
+    fill: var(--pastry-color-accent);
+    stroke: none;
+    transition: fill 0.8s ease;
+}
+
+.pastry-svg .pastry-line,
+.pastry-svg-sm .pastry-line {
+    stroke: var(--pastry-color-stroke);
+    stroke-width: 1.3;
+    stroke-linecap: round;
+    transition: stroke 0.8s ease;
+}
+
+@keyframes floatPastryMotion {
+    0% {
+        transform: translate(0px, 0px) rotate(0deg) scale(1);
+    }
+    33% {
+        transform: translate(calc(var(--tx, 15px) * 0.7), calc(var(--ty, -15px) * 0.6)) rotate(4deg) scale(1.04);
+    }
+    66% {
+        transform: translate(calc(var(--tx, 15px) * -0.5), calc(var(--ty, -15px) * 1.1)) rotate(-3deg) scale(0.97);
+    }
+    100% {
+        transform: translate(var(--tx, 15px), var(--ty, -15px)) rotate(6deg) scale(1.06);
+    }
+}
+
+/* Posiciones fijas en los márgenes de la ventana (zonas rojas de la captura del usuario) */
+/* Lado Izquierdo */
+.pastry-pos-1 { top: 12%; left: 3%; }
+.pastry-pos-2 { top: 26%; left: 1.5%; }
+.pastry-pos-3 { top: 42%; left: 3.5%; }
+.pastry-pos-4 { top: 58%; left: 2%; }
+.pastry-pos-5 { top: 74%; left: 3.2%; }
+.pastry-pos-6 { top: 88%; left: 1.8%; }
+
+/* Lado Derecho */
+.pastry-pos-7  { top: 14%; right: 3%; }
+.pastry-pos-8  { top: 29%; right: 1.8%; }
+.pastry-pos-9  { top: 46%; right: 3.5%; }
+.pastry-pos-10 { top: 63%; right: 2%; }
+.pastry-pos-11 { top: 79%; right: 3.2%; }
+.pastry-pos-12 { top: 91%; right: 1.6%; }
+
+/* Suaves destellos flotantes cerca de las esquinas superiores */
+.pastry-pos-13 { top: 7%; left: 16%; }
+.pastry-pos-14 { top: 8%; right: 18%; }
+.pastry-pos-15 { top: 52%; left: 8%; }
+.pastry-pos-16 { top: 70%; right: 9%; }
+
+@media (max-width: 900px) {
+    .pastry-svg {
+        width: 44px;
+        height: 44px;
+    }
+    .floating-pastry {
+        opacity: 0.22;
+    }
+    .pastry-pos-1 { left: 1%; }
+    .pastry-pos-7 { right: 1%; }
+    .pastry-pos-13, .pastry-pos-14, .pastry-pos-15, .pastry-pos-16 {
+        display: none;
+    }
+}
+
+/* ===============================================================
+   ANIMACIÓN DEL BOTÓN DE CARRITO (FEEDBACK SIN ABRIR PANEL)
+   =============================================================== */
+@keyframes cartBumpAnim {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.3) rotate(-8deg); box-shadow: 0 0 20px rgba(184, 78, 199, 0.5); }
+    50% { transform: scale(1.15) rotate(6deg); }
+    75% { transform: scale(1.22) rotate(-3deg); }
+    100% { transform: scale(1) rotate(0); }
+}
+
+.cart-bump {
+    animation: cartBumpAnim 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+/* ===============================================================
+   SELECTOR DE LAS 4 ESTACIONES DEL TELEFÉRICO EN LOS ALCARRIZOS
+   =============================================================== */
+.teleferico-station-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 600px) {
+    .teleferico-station-cards-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.teleferico-station-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    background: #FFFFFF;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+    user-select: none;
+}
+
+.teleferico-station-card:hover {
+    border-color: var(--pink);
+    background: var(--pink-subtle);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(184, 78, 199, 0.12);
+}
+
+.teleferico-station-card input[type="radio"] {
+    display: none;
+}
+
+.teleferico-station-card.active {
+    border-color: var(--pink);
+    background: linear-gradient(135deg, #FAF0FD 0%, #FFFFFF 100%);
+    box-shadow: 0 6px 16px rgba(184, 78, 199, 0.18);
+    border-width: 2px;
+}
+
+.station-badge-num {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--pink);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 800;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(184, 78, 199, 0.35);
+}
+
+.station-card-text {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+
+.station-card-text strong {
+    font-size: 0.92rem;
+    color: var(--text-dark);
+}
+
+.station-card-text small {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.station-check-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--pink);
+    opacity: 0;
+    transform: scale(0.7);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.teleferico-station-card.active .station-check-icon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* ===============================================================
+   MODAL DE FACTURA OFICIAL KEYBAKERY (MÚLTIPLES TAMAÑOS & DESCARGAS)
+   =============================================================== */
+.invoice-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 9, 19, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 3100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.invoice-modal-overlay.open {
+    display: flex;
+}
+
+.invoice-modal-dialog {
+    background: #FFFFFF;
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 780px;
+    max-height: 94vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 60px rgba(40, 20, 36, 0.35);
+    border: 2px solid rgba(184, 78, 199, 0.25);
+    overflow: hidden;
+    animation: modalPopIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPopIn {
+    0% { transform: scale(0.92); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.invoice-modal-header {
+    background: linear-gradient(135deg, #FAF0FD 0%, #FFFFFF 100%);
+    padding: 1.2rem 1.6rem;
+    border-bottom: 1.5px solid rgba(184, 78, 199, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.invoice-format-switcher {
+    display: inline-flex;
+    background: #F3E8F5;
+    padding: 3px;
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(184, 78, 199, 0.2);
+}
+
+.invoice-format-btn {
+    padding: 0.45rem 1rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    border-radius: var(--radius-full);
+    color: var(--text-dark);
+    transition: all var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.invoice-format-btn.active {
+    background: #FFFFFF;
+    color: var(--pink);
+    box-shadow: 0 2px 8px rgba(184, 78, 199, 0.2);
+}
+
+.invoice-modal-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.invoice-modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    background: #F7F3F8;
+    display: flex;
+    justify-content: center;
+}
+
+/* Hoja de Factura Renderizada */
+.invoice-sheet {
+    background: #FFFFFF;
+    color: #281424;
+    font-family: 'Krub', sans-serif;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(184, 78, 199, 0.2);
+    transition: all 0.25s ease;
+}
+
+/* Modo Carta / A4 */
+.invoice-sheet.format-a4 {
+    width: 100%;
+    max-width: 680px;
+    padding: 2.8rem 2.4rem;
+    border-radius: 12px;
+}
+
+/* Modo Ticket Térmico 80mm */
+.invoice-sheet.format-ticket {
+    width: 100%;
+    max-width: 360px;
+    padding: 1.8rem 1.4rem;
+    border-radius: 8px;
+    border-top: 4px solid var(--pink);
+    border-bottom: 4px dashed #DDD;
+}
+
+/* Estilos internos de la Factura Oficial */
+.invoice-brand-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--pink);
+    margin-bottom: 1.5rem;
+}
+
+.format-ticket .invoice-brand-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.8rem;
+    padding-bottom: 1rem;
+}
+
+.invoice-logo-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.format-ticket .invoice-logo-group {
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.invoice-logo-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid var(--gold-light);
+    box-shadow: 0 3px 8px rgba(184, 78, 199, 0.2);
+}
+
+.invoice-brand-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin: 0;
+    line-height: 1.1;
+}
+
+.invoice-brand-subtitle {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--pink);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    display: block;
+    margin-top: 2px;
+}
+
+.invoice-tag-pill {
+    background: #FAF0FD;
+    border: 1px solid rgba(184, 78, 199, 0.3);
+    padding: 0.35rem 0.85rem;
+    border-radius: var(--radius-full);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--pink);
+    text-align: right;
+}
+
+.format-ticket .invoice-tag-pill {
+    text-align: center;
+    width: 100%;
+}
+
+.invoice-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.88rem;
+}
+
+.format-ticket .invoice-meta-grid {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+    font-size: 0.82rem;
+}
+
+.invoice-meta-box {
+    background: #FCF8FD;
+    border: 1px solid rgba(184, 78, 199, 0.15);
+    border-radius: 8px;
+    padding: 0.9rem;
+}
+
+.invoice-meta-box strong {
+    color: var(--text-dark);
+}
+
+.invoice-meta-box span.val {
+    color: var(--text-body);
+}
+
+.invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+    font-size: 0.88rem;
+}
+
+.format-ticket .invoice-table {
+    font-size: 0.8rem;
+}
+
+.invoice-table th {
+    background: #FAF0FD;
+    color: var(--text-dark);
+    padding: 0.75rem 0.8rem;
+    text-align: left;
+    border-bottom: 2px solid var(--pink);
+    font-family: 'Playfair Display', serif;
+    font-size: 0.92rem;
+}
+
+.invoice-table td {
+    padding: 0.75rem 0.8rem;
+    border-bottom: 1px solid rgba(184, 78, 199, 0.12);
+}
+
+.invoice-table tr:nth-child(even) td {
+    background: #FFFDF9;
+}
+
+.invoice-totals-box {
+    margin-left: auto;
+    width: 100%;
+    max-width: 320px;
+    background: #FAF0FD;
+    border: 1.5px solid rgba(184, 78, 199, 0.3);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.format-ticket .invoice-totals-box {
+    max-width: 100%;
+}
+
+.invoice-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.4rem;
+    font-size: 0.88rem;
+}
+
+.invoice-grand-total {
+    border-top: 2px dashed var(--pink);
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--pink-hover);
+}
+
+.invoice-footer-notes {
+    border-top: 1px solid rgba(184, 78, 199, 0.18);
+    padding-top: 1.2rem;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* Reglas de Impresión Directa */
+@media print {
+    body * {
+        visibility: hidden !important;
+    }
+    #invoice-sheet, #invoice-sheet * {
+        visibility: visible !important;
+    }
+    #invoice-sheet {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+    .no-print {
+        display: none !important;
+    }
 }
 

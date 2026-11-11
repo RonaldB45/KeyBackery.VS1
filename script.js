@@ -240,13 +240,24 @@ function inicializarDOM() {
         deliveryMethods: document.getElementsByName('delivery-method'),
         telefericoSelectorBox: document.getElementById('teleferico-station-box'),
         telefericoStationSelect: document.getElementById('teleferico-station'),
+        telefericoStationsGrid: document.getElementById('teleferico-stations-grid'),
         customerAddress: document.getElementById('customer-address'),
         customerAddressLabel: document.getElementById('label-customer-address'),
         deliveryWarning: document.getElementById('delivery-warning'),
         encargoDateBox: document.getElementById('encargo-date-box'),
         encargoDateInput: document.getElementById('encargo-date'),
         downloadInvoiceBtn: document.getElementById('download-invoice'),
+        whatsappOrderLink: document.getElementById('whatsapp-order-link'),
         closeSuccessBtn: document.getElementById('close-success'),
+        // Referencias del Modal de Factura Oficial
+        invoiceModal: document.getElementById('invoice-modal'),
+        invoiceSheet: document.getElementById('invoice-sheet'),
+        invoicePrintBtn: document.getElementById('invoice-print-btn'),
+        invoiceDownloadPngBtn: document.getElementById('invoice-download-png-btn'),
+        invoiceCloseBtn: document.getElementById('invoice-close-btn'),
+        btnFormatA4: document.getElementById('btn-format-a4'),
+        btnFormatTicket: document.getElementById('btn-format-ticket'),
+        invoiceCanvas: document.getElementById('invoice-canvas'),
         contactForm: document.getElementById('contact-form'),
         contactPhone: document.getElementById('contact-phone'),
         customerPhone: document.getElementById('customer-phone'),
@@ -394,11 +405,17 @@ window.cardAddToCart = function(id, btnElement) {
 
     showToast(`¡Agregado ${qty}x ${prod.nombre} al carrito!`);
 
-    // ABRIR EL CARRITO AUTOMÁTICAMENTE para confirmar la acción inmediatamente
-    if (DOM.cartSidebar) {
-        DOM.cartSidebar.classList.add('open');
-        DOM.cartSidebar.setAttribute('aria-hidden', 'false');
-    }
+    // Animación y efecto visual en el botón del carrito SIN abrirlo automáticamente
+    [DOM.openCartBtn, DOM.mobileOpenCartBtn].forEach(btn => {
+        if (btn) {
+            btn.classList.remove('cart-bump');
+            void btn.offsetWidth; // Forzar reflow para reiniciar la animación
+            btn.classList.add('cart-bump');
+            setTimeout(() => {
+                btn.classList.remove('cart-bump');
+            }, 700);
+        }
+    });
 };
 
 window.__realCardAddToCart = window.cardAddToCart;
@@ -679,6 +696,8 @@ window.abrirModalPago = abrirModalPago;
 window.cerrarModalPago = cerrarModalPago;
 
 // --- 8. ENVÍO DEL PEDIDO A WHATSAPP Y FIRESTORE ---
+let currentInvoiceFormat = 'a4';
+
 async function procesarPedido(e) {
     e.preventDefault();
 
@@ -686,7 +705,9 @@ async function procesarPedido(e) {
     const telefonoCliente = document.getElementById('customer-phone').value.trim();
     const metodoEntregaInput = document.querySelector('input[name="delivery-method"]:checked');
     const metodo = metodoEntregaInput ? metodoEntregaInput.value : 'pickup';
-    const estacionTeleferico = DOM.telefericoStationSelect ? DOM.telefericoStationSelect.value : '';
+    
+    // Obtener la estación seleccionada del Teleférico (desde el input oculto o el selector activo)
+    const estacionTeleferico = (DOM.telefericoStationSelect ? DOM.telefericoStationSelect.value : '') || 'Estación 1: Los Alcarrizos (Entrada / Autopista Duarte)';
     const direccion = document.getElementById('customer-address').value.trim();
     const fechaEncargo = DOM.encargoDateInput ? DOM.encargoDateInput.value.trim() : '';
 
@@ -705,7 +726,7 @@ async function procesarPedido(e) {
     const subtotal = carrito.reduce((acc, i) => acc + (i.precio * i.cantidad), 0);
     let costoEnvio = 0;
     let metodoTexto = "Recoger en Taller (Los Alcarrizos) - Domingo";
-    let detalleUbicacion = "";
+    let detalleUbicacion = "Taller Central KeyBakery en Los Alcarrizos";
 
     if (metodo === 'teleferico') {
         costoEnvio = TELEFERICO_FEE;
@@ -721,8 +742,10 @@ async function procesarPedido(e) {
 
     const totalFinal = subtotal + costoEnvio;
     const proximoDomingoStr = getProximoDomingoTexto();
+    const numeroOrden = 'KB-' + Math.floor(100000 + Math.random() * 900000);
 
     ultimoPedido = {
+        numeroOrden,
         cliente: nombreCliente,
         telefono: telefonoCliente,
         items: carrito.map(i => ({ id: i.id, nombre: i.nombre, precio: i.precio, cantidad: i.cantidad, categoria: i.categoria })),
@@ -732,52 +755,67 @@ async function procesarPedido(e) {
         metodoTexto,
         detalleUbicacion,
         proximoDomingo: proximoDomingoStr,
-        fechaOrden: new Date().toLocaleString('es-DO')
+        fechaOrden: new Date().toLocaleDateString('es-DO', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
     };
 
-    // 1. Guardar en Firestore
+    // 1. Guardar en Firestore en segundo plano (SIN bloquear con await para no perder el gesto del usuario y evitar bloqueo de popups)
     if (db) {
-        try {
-            await addDoc(collection(db, "orders"), {
-                cliente: nombreCliente,
-                telefono: telefonoCliente,
-                items: ultimoPedido.items,
-                total: totalFinal,
-                metodoEntrega: metodoTexto,
-                ubicacionDetalle: detalleUbicacion,
-                proximoDomingo: proximoDomingoStr,
-                fecha: serverTimestamp(),
-                status: "pending",
-                ciudad: "Los Alcarrizos"
-            });
-        } catch (err) {
-            console.warn("Firestore notice (continuando hacia WhatsApp):", err);
-        }
+        addDoc(collection(db, "orders"), {
+            numeroOrden,
+            cliente: nombreCliente,
+            telefono: telefonoCliente,
+            items: ultimoPedido.items,
+            total: totalFinal,
+            metodoEntrega: metodoTexto,
+            ubicacionDetalle: detalleUbicacion,
+            proximoDomingo: proximoDomingoStr,
+            fecha: serverTimestamp(),
+            status: "pending",
+            ciudad: "Los Alcarrizos"
+        }).catch(err => {
+            console.warn("Firestore notice en segundo plano:", err);
+        });
     }
 
-    // 2. Construir Mensaje de WhatsApp
-    let mensaje = `🎂 *NUEVO PEDIDO - KEYBAKERY (LOS ALCARRIZOS)* 🎂\n\n`;
+    // 2. Construir Mensaje Oficial de WhatsApp
+    let mensaje = `🎂 *NUEVO PEDIDO - KEYBAKERY (LOS ALCARRIZOS)* 🎂\n`;
+    mensaje += `*Orden N°:* #${numeroOrden}\n\n`;
     mensaje += `👤 *Cliente:* ${nombreCliente}\n`;
-    mensaje += `📱 *Teléfono:* ${telefonoCliente}\n`;
-    mensaje += `📍 *Método de Entrega:* ${metodoTexto}\n`;
-    if (detalleUbicacion) mensaje += `📌 *Detalle / Ubicación:* ${detalleUbicacion}\n`;
+    mensaje += `📱 *WhatsApp:* ${telefonoCliente}\n`;
+    mensaje += `📍 *Entrega:* ${metodoTexto}\n`;
+    if (detalleUbicacion) mensaje += `📌 *Ubicación / Parada:* ${detalleUbicacion}\n`;
     mensaje += `🗓️ *Fecha Estimada:* ${metodo === 'encargo' ? (fechaEncargo || 'A coordinar') : proximoDomingoStr}\n`;
     mensaje += `\n🛒 *DETALLE DEL PEDIDO:*\n`;
 
     ultimoPedido.items.forEach(i => {
-        mensaje += `• ${i.cantidad}x ${i.nombre} - DOP$ ${(i.precio * i.cantidad).toLocaleString()}\n`;
+        mensaje += `• ${i.cantidad}x ${i.nombre} — DOP$ ${(i.precio * i.cantidad).toLocaleString()}\n`;
     });
 
     mensaje += `\n💵 *Subtotal:* DOP$ ${subtotal.toLocaleString()}`;
-    if (costoEnvio > 0) mensaje += `\n📦 *Punto de Encuentro:* DOP$ ${costoEnvio.toLocaleString()}`;
+    if (costoEnvio > 0) mensaje += `\n📦 *Punto de Teleférico:* DOP$ ${costoEnvio.toLocaleString()}`;
     mensaje += `\n💰 *TOTAL FINAL:* DOP$ ${totalFinal.toLocaleString()}\n\n`;
-    mensaje += `🍰 _KeyBakery Los Alcarrizos • Pedidos semanales horneados por lotes._`;
+    mensaje += `🍰 _KeyBakery Los Alcarrizos • Hecho con amor y los mejores ingredientes._`;
 
     const encoded = encodeURIComponent(mensaje);
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encoded}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encoded}`;
 
-    // Abrir WhatsApp
-    window.open(whatsappUrl, '_blank');
+    // Actualizar el enlace directo en la pantalla de éxito
+    if (DOM.whatsappOrderLink) {
+        DOM.whatsappOrderLink.href = whatsappUrl;
+    }
+
+    // 3. Abrir WhatsApp inmediatamente mediante clic directo
+    try {
+        const tempLink = document.createElement('a');
+        tempLink.href = whatsappUrl;
+        tempLink.target = '_blank';
+        tempLink.rel = 'noopener noreferrer';
+        document.body.appendChild(tempLink);
+        tempLink.click();
+        document.body.removeChild(tempLink);
+    } catch (err) {
+        console.warn("Aviso abriendo WhatsApp directamente:", err);
+    }
 
     // Limpiar carrito y mostrar confirmación
     carrito = [];
@@ -786,95 +824,347 @@ async function procesarPedido(e) {
     DOM.stepPayment.classList.add('hidden');
     DOM.successMessage.classList.remove('hidden');
 
+    // Pre-cargar la factura oficial en el modal
+    renderFacturaSheet(currentInvoiceFormat);
+
     setTimeout(() => {
-        if (DOM.closeSuccessBtn) DOM.closeSuccessBtn.focus();
-    }, 50);
+        if (DOM.whatsappOrderLink) DOM.whatsappOrderLink.focus();
+    }, 60);
 }
 
-// --- 9. FACTURA DESCARGABLE ---
-function descargarFactura() {
-    if (!ultimoPedido) return;
+// --- 9. FACTURA OFICIAL KEYBAKERY CON DISEÑO DE MARCA & MÚLTIPLES FORMATOS ---
 
-    const invoiceWindow = window.open('', '_blank');
-    if (!invoiceWindow) return;
+function getFacturaFallbackOrder() {
+    return {
+        numeroOrden: 'KB-' + Math.floor(100000 + Math.random() * 900000),
+        cliente: "Cliente KeyBakery",
+        telefono: "809-656-4233",
+        items: [
+            { id: "prod-brownies", nombre: "Brownies Artesanales Melcochosos", precio: 100, cantidad: 2 },
+            { id: "prod-tres-leches-tradicional", nombre: "Tres Leches Tradicional", precio: 130, cantidad: 1 }
+        ],
+        subtotal: 330,
+        costoEnvio: 50,
+        total: 380,
+        metodoTexto: "Parada Teleférico Los Alcarrizos: Estación 1: Los Alcarrizos (Entrada / Duarte)",
+        detalleUbicacion: "Estación 1: Los Alcarrizos (Entrada / Duarte)",
+        proximoDomingo: getProximoDomingoTexto(),
+        fechaOrden: new Date().toLocaleDateString('es-DO', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    };
+}
 
-    const itemsHtml = ultimoPedido.items.map(item => `
+function renderFacturaSheet(format = 'a4') {
+    if (!DOM.invoiceSheet) return;
+    const pedido = ultimoPedido || getFacturaFallbackOrder();
+
+    DOM.invoiceSheet.className = `invoice-sheet format-${format}`;
+
+    const itemsRows = pedido.items.map(item => `
         <tr>
-            <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.nombre}</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.cantidad}</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">DOP$ ${item.precio.toLocaleString()}</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">DOP$ ${(item.precio * item.cantidad).toLocaleString()}</td>
+            <td style="font-weight: 600;">${item.nombre}</td>
+            <td style="text-align: center; font-weight: 700;">${item.cantidad}</td>
+            <td style="text-align: right; color: var(--text-muted);">RD$ ${item.precio.toLocaleString()}</td>
+            <td style="text-align: right; font-weight: 800; color: var(--pink-hover);">RD$ ${(item.precio * item.cantidad).toLocaleString()}</td>
         </tr>
     `).join('');
 
-    invoiceWindow.document.write(`
-        <!DOCTYPE html>
-        <html lang="es-DO">
-        <head>
-            <meta charset="UTF-8">
-            <title>Resumen de Orden - KeyBakery Los Alcarrizos</title>
-            <style>
-                body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1F1916; padding: 40px; margin: 0; }
-                .invoice-box { max-width: 650px; margin: auto; border: 1px solid #eee; padding: 30px; border-radius: 12px; }
-                .header { text-align: center; border-bottom: 2px solid #D81B60; padding-bottom: 20px; margin-bottom: 25px; }
-                .header h1 { margin: 0; color: #D81B60; font-size: 28px; letter-spacing: 1px; }
-                .meta { display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 14px; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 14px; }
-                th { background: #FFF9F5; padding: 10px; text-align: left; border-bottom: 2px solid #ddd; }
-                .totals { text-align: right; font-size: 15px; }
-                .grand-total { font-size: 20px; font-weight: bold; color: #7D5515; margin-top: 8px; }
-                .footer { text-align: center; margin-top: 35px; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 20px; }
-                @media print { .no-print { display: none; } }
-            </style>
-        </head>
-        <body>
-            <div class="invoice-box">
-                <div class="header">
-                    <h1>KEYBAKERY</h1>
-                    <p style="margin: 4px 0 0; color: #666; font-size: 13px;">Repostería Artesanal Dominicana • Los Alcarrizos, Santo Domingo Oeste</p>
-                </div>
-                <div class="meta">
-                    <div>
-                        <strong>Cliente:</strong> ${ultimoPedido.cliente}<br>
-                        <strong>Teléfono:</strong> ${ultimoPedido.telefono}<br>
-                        <strong>Fecha de Orden:</strong> ${ultimoPedido.fechaOrden}
-                    </div>
-                    <div style="text-align: right;">
-                        <strong>Entrega:</strong> ${ultimoPedido.metodoTexto}<br>
-                        ${ultimoPedido.detalleUbicacion ? `<strong>Punto:</strong> ${ultimoPedido.detalleUbicacion}<br>` : ''}
-                        <strong>Fecha Programada:</strong> ${ultimoPedido.proximoDomingo}
-                    </div>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Producto</th>
-                            <th style="text-align: center;">Cant.</th>
-                            <th style="text-align: right;">Precio</th>
-                            <th style="text-align: right;">Subtotal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${itemsHtml}
-                    </tbody>
-                </table>
-                <div class="totals">
-                    <p>Subtotal: <strong>DOP$ ${ultimoPedido.subtotal.toLocaleString()}</strong></p>
-                    ${ultimoPedido.costoEnvio > 0 ? `<p>Tarifa de Entrega: <strong>DOP$ ${ultimoPedido.costoEnvio.toLocaleString()}</strong></p>` : ''}
-                    <p class="grand-total">Total: DOP$ ${ultimoPedido.total.toLocaleString()}</p>
-                </div>
-                <div class="footer">
-                    <p>¡Gracias por endulzar tus momentos con KeyBakery en Los Alcarrizos!</p>
-                    <button class="no-print" onclick="window.print()" style="margin-top: 15px; padding: 8px 18px; background: #D81B60; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
-                        Imprimir / Guardar como PDF
-                    </button>
+    DOM.invoiceSheet.innerHTML = `
+        <header class="invoice-brand-header">
+            <div class="invoice-logo-group">
+                <img src="/assets/images/keybakery-logo.png" alt="Logo KeyBakery" class="invoice-logo-img" onerror="this.style.display='none'">
+                <div>
+                    <h2 class="invoice-brand-title">KeyBakery</h2>
+                    <span class="invoice-brand-subtitle">Pastelería Artesanal Dominicana</span>
+                    <small style="color: var(--text-muted); font-size: 0.78rem;">Los Alcarrizos, Santo Domingo Oeste • Tel. 809-656-4233</small>
                 </div>
             </div>
-        </body>
-        </html>
-    `);
-    invoiceWindow.document.close();
+            <div class="invoice-tag-pill">
+                <strong style="display: block; font-size: 0.95rem; color: var(--text-dark);">ORDEN #${pedido.numeroOrden}</strong>
+                <span>ESTADO: CONFIRMADO</span>
+            </div>
+        </header>
+
+        <section class="invoice-meta-grid">
+            <div class="invoice-meta-box">
+                <div style="margin-bottom: 0.35rem;"><strong>Cliente:</strong> <span class="val">${pedido.cliente}</span></div>
+                <div style="margin-bottom: 0.35rem;"><strong>Teléfono:</strong> <span class="val">${pedido.telefono}</span></div>
+                <div><strong>Fecha de Emisión:</strong> <span class="val">${pedido.fechaOrden}</span></div>
+            </div>
+            <div class="invoice-meta-box">
+                <div style="margin-bottom: 0.35rem;"><strong>Entrega:</strong> <span class="val">${pedido.metodoTexto}</span></div>
+                <div style="margin-bottom: 0.35rem;"><strong>Ubicación:</strong> <span class="val">${pedido.detalleUbicacion || 'Los Alcarrizos'}</span></div>
+                <div><strong>Programado:</strong> <span class="val" style="color: var(--pink); font-weight: 700;">${pedido.proximoDomingo}</span></div>
+            </div>
+        </section>
+
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th>Postre Artesanal</th>
+                    <th style="text-align: center;">Cant.</th>
+                    <th style="text-align: right;">Precio</th>
+                    <th style="text-align: right;">Importe</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${itemsRows}
+            </tbody>
+        </table>
+
+        <div class="invoice-totals-box">
+            <div class="invoice-total-row">
+                <span style="color: var(--text-muted);">Subtotal Postres:</span>
+                <strong>RD$ ${pedido.subtotal.toLocaleString()}</strong>
+            </div>
+            <div class="invoice-total-row">
+                <span style="color: var(--text-muted);">Entrega / Teleférico:</span>
+                <strong>${pedido.costoEnvio > 0 ? `RD$ ${pedido.costoEnvio.toLocaleString()}` : 'Gratis (En Taller)'}</strong>
+            </div>
+            <div class="invoice-total-row invoice-grand-total">
+                <span>TOTAL A PAGAR:</span>
+                <span>RD$ ${pedido.total.toLocaleString()}</span>
+            </div>
+        </div>
+
+        <footer class="invoice-footer-notes">
+            <p style="margin: 0 0 0.35rem 0; font-weight: 700; color: var(--pink);">¡Hecho con amor y los mejores ingredientes! ♡</p>
+            <p style="margin: 0; color: var(--text-muted);">Gracias por apoyar mi pequeño gran sueño en Los Alcarrizos. Presenta esta factura digital al recibir tu pedido.</p>
+        </footer>
+    `;
+
+    if (window.lucide) lucide.createIcons();
 }
+
+function setInvoiceFormat(format) {
+    currentInvoiceFormat = format;
+    if (DOM.btnFormatA4 && DOM.btnFormatTicket) {
+        DOM.btnFormatA4.classList.toggle('active', format === 'a4');
+        DOM.btnFormatA4.setAttribute('aria-pressed', format === 'a4');
+        DOM.btnFormatTicket.classList.toggle('active', format === 'ticket');
+        DOM.btnFormatTicket.setAttribute('aria-pressed', format === 'ticket');
+    }
+    renderFacturaSheet(format);
+}
+
+function abrirModalFactura() {
+    renderFacturaSheet(currentInvoiceFormat);
+    if (DOM.invoiceModal) {
+        DOM.invoiceModal.style.display = 'flex';
+        DOM.invoiceModal.classList.add('open');
+        DOM.invoiceModal.setAttribute('aria-hidden', 'false');
+    }
+}
+
+function cerrarModalFactura() {
+    if (DOM.invoiceModal) {
+        DOM.invoiceModal.style.display = 'none';
+        DOM.invoiceModal.classList.remove('open');
+        DOM.invoiceModal.setAttribute('aria-hidden', 'true');
+    }
+}
+
+function imprimirFactura() {
+    window.print();
+}
+
+// Descarga en formato imagen (PNG) de alta resolución usando HTML5 Canvas con la paleta de KeyBakery
+function descargarFacturaImagen() {
+    const pedido = ultimoPedido || getFacturaFallbackOrder();
+    const canvas = DOM.invoiceCanvas || document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const isTicket = currentInvoiceFormat === 'ticket';
+    const width = isTicket ? 640 : 880;
+    const padding = isTicket ? 35 : 55;
+    
+    // Calcular altura dinámica en base a cantidad de productos
+    const itemHeight = 36;
+    const baseHeight = isTicket ? 680 : 660;
+    const height = baseHeight + (pedido.items.length * itemHeight);
+
+    canvas.width = width;
+    canvas.height = height;
+
+    // 1. Fondo suave crema de repostería
+    ctx.fillStyle = '#FFFDFB';
+    ctx.fillRect(0, 0, width, height);
+
+    // 2. Borde exterior decorativo lila orquídea y oro
+    ctx.strokeStyle = '#B84EC7';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(12, 12, width - 24, height - 24);
+
+    ctx.strokeStyle = '#E5BA68';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(18, 18, width - 36, height - 36);
+
+    let currentY = padding + 15;
+
+    // 3. Encabezado de Marca
+    ctx.fillStyle = '#B84EC7';
+    ctx.font = 'bold 32px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('KeyBakery', width / 2, currentY);
+    currentY += 24;
+
+    ctx.fillStyle = '#D4AF37';
+    ctx.font = 'bold 15px sans-serif';
+    ctx.fillText('PASTELERÍA ARTESANAL DOMINICANA', width / 2, currentY);
+    currentY += 20;
+
+    ctx.fillStyle = '#6B5867';
+    ctx.font = '13px sans-serif';
+    ctx.fillText('Los Alcarrizos, Santo Domingo Oeste • Tel. 809-656-4233', width / 2, currentY);
+    currentY += 24;
+
+    // Línea divisoria
+    ctx.strokeStyle = 'rgba(184, 78, 199, 0.3)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(padding, currentY);
+    ctx.lineTo(width - padding, currentY);
+    ctx.stroke();
+    currentY += 24;
+
+    // 4. Datos del Pedido
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#281424';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText(`ORDEN: #${pedido.numeroOrden}`, padding, currentY);
+    
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#B84EC7';
+    ctx.fillText(`FECHA: ${pedido.fechaOrden}`, width - padding, currentY);
+    currentY += 22;
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#281424';
+    ctx.font = '13px sans-serif';
+    ctx.fillText(`Cliente: ${pedido.cliente}`, padding, currentY);
+    
+    ctx.textAlign = 'right';
+    ctx.fillText(`WhatsApp: ${pedido.telefono}`, width - padding, currentY);
+    currentY += 20;
+
+    ctx.textAlign = 'left';
+    ctx.fillText(`Entrega: ${pedido.metodoTexto}`, padding, currentY);
+    currentY += 20;
+    if (pedido.detalleUbicacion) {
+        ctx.fillText(`Punto/Sector: ${pedido.detalleUbicacion}`, padding, currentY);
+        currentY += 22;
+    }
+
+    currentY += 10;
+
+    // 5. Tabla de Productos
+    ctx.fillStyle = '#FAF0FD';
+    ctx.fillRect(padding, currentY, width - (padding * 2), 30);
+    
+    ctx.fillStyle = '#281424';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('POSTRE ARTESANAL', padding + 12, currentY + 20);
+    ctx.textAlign = 'center';
+    ctx.fillText('CANT.', width - padding - 170, currentY + 20);
+    ctx.textAlign = 'right';
+    ctx.fillText('PRECIO', width - padding - 90, currentY + 20);
+    ctx.fillText('TOTAL', width - padding - 12, currentY + 20);
+    currentY += 34;
+
+    pedido.items.forEach((item, idx) => {
+        if (idx % 2 === 1) {
+            ctx.fillStyle = '#FCF8FD';
+            ctx.fillRect(padding, currentY - 4, width - (padding * 2), itemHeight);
+        }
+        ctx.fillStyle = '#281424';
+        ctx.font = '13px sans-serif';
+        ctx.textAlign = 'left';
+        
+        let itemName = item.nombre;
+        if (isTicket && itemName.length > 25) itemName = itemName.substring(0, 23) + '...';
+        ctx.fillText(itemName, padding + 12, currentY + 18);
+        
+        ctx.textAlign = 'center';
+        ctx.fillText(item.cantidad.toString(), width - padding - 170, currentY + 18);
+        
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#6B5867';
+        ctx.fillText(`RD$ ${item.precio.toLocaleString()}`, width - padding - 90, currentY + 18);
+        
+        ctx.fillStyle = '#B84EC7';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillText(`RD$ ${(item.precio * item.cantidad).toLocaleString()}`, width - padding - 12, currentY + 18);
+        
+        currentY += itemHeight;
+    });
+
+    currentY += 14;
+
+    // 6. Resumen de Totales
+    const totalBoxW = isTicket ? width - (padding * 2) : 340;
+    const totalBoxX = width - padding - totalBoxW;
+    
+    ctx.fillStyle = '#FAF0FD';
+    ctx.fillRect(totalBoxX, currentY, totalBoxW, 95);
+    ctx.strokeStyle = 'rgba(184, 78, 199, 0.4)';
+    ctx.strokeRect(totalBoxX, currentY, totalBoxW, 95);
+
+    ctx.fillStyle = '#281424';
+    ctx.font = '13px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Subtotal:', totalBoxX + 16, currentY + 25);
+    ctx.textAlign = 'right';
+    ctx.fillText(`RD$ ${pedido.subtotal.toLocaleString()}`, totalBoxX + totalBoxW - 16, currentY + 25);
+
+    ctx.textAlign = 'left';
+    ctx.fillText('Entrega / Teleférico:', totalBoxX + 16, currentY + 50);
+    ctx.textAlign = 'right';
+    ctx.fillText(pedido.costoEnvio > 0 ? `RD$ ${pedido.costoEnvio.toLocaleString()}` : 'Gratis', totalBoxX + totalBoxW - 16, currentY + 50);
+
+    ctx.fillStyle = '#B84EC7';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('TOTAL A PAGAR:', totalBoxX + 16, currentY + 80);
+    ctx.textAlign = 'right';
+    ctx.fillText(`RD$ ${pedido.total.toLocaleString()}`, totalBoxX + totalBoxW - 16, currentY + 80);
+
+    currentY += 120;
+
+    // 7. Pie de Factura
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#B84EC7';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText('¡Hecho con amor y los mejores ingredientes! ♡', width / 2, currentY);
+    currentY += 20;
+
+    ctx.fillStyle = '#8C7588';
+    ctx.font = '12px sans-serif';
+    ctx.fillText('¡Gracias por apoyar mi pequeño gran sueño en Los Alcarrizos!', width / 2, currentY);
+
+    // Disparar descarga en formato PNG
+    try {
+        const imageURL = canvas.toDataURL('image/png');
+        const downloadLink = document.createElement('a');
+        downloadLink.download = `Factura_KeyBakery_${pedido.numeroOrden}.png`;
+        downloadLink.href = imageURL;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        showToast("¡Factura descargada en imagen PNG con éxito!");
+    } catch (err) {
+        console.warn("Error generando imagen PNG de factura:", err);
+        showToast("Abriendo vista para imprimir o guardar como PDF...");
+        window.print();
+    }
+}
+
+window.abrirModalFactura = abrirModalFactura;
+window.cerrarModalFactura = cerrarModalFactura;
+window.setInvoiceFormat = setInvoiceFormat;
+window.imprimirFactura = imprimirFactura;
+window.descargarFacturaImagen = descargarFacturaImagen;
+window.descargarFactura = abrirModalFactura;
 
 // --- 10. SCROLL REVEAL OPTIMIZADO ---
 function initScrollReveal() {
@@ -893,9 +1183,115 @@ function initScrollReveal() {
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 }
 
+// --- 10.1 FONDO DINÁMICO & PASTELES FLOTANTES CON CAMBIO DE COLOR AL DESLIZAR ---
+function initAmbientBakeryBackground() {
+    const bgContainer = document.getElementById('ambient-bakery-bg');
+    if (!bgContainer) return;
+
+    let ticking = false;
+
+    // Paleta cromática de repostería artesanal que transiciona suavemente según la posición del scroll
+    const colorStops = [
+        {
+            pos: 0.0,   // Arriba: Rosa Orquídea Pastel y Merengue (Hero / Semana)
+            canvas: '#FCF8FD',
+            base: '#F9DDF6',
+            frosting: '#FFFFFF',
+            accent: '#B84EC7',
+            stroke: 'rgba(184, 78, 199, 0.40)',
+            glow: 'rgba(184, 78, 199, 0.16)'
+        },
+        {
+            pos: 0.28,  // Menú Completo: Miel de Caramelo & Vainilla Dorada
+            canvas: '#FDF9F2',
+            base: '#FDECC8',
+            frosting: '#FFFFFF',
+            accent: '#D4AF37',
+            stroke: 'rgba(168, 118, 31, 0.40)',
+            glow: 'rgba(212, 175, 55, 0.18)'
+        },
+        {
+            pos: 0.58,  // Teleférico & Zonas: Glaseado de Fresa & Flor Criolla
+            canvas: '#FDF5F8',
+            base: '#FCD8E4',
+            frosting: '#FFFFFF',
+            accent: '#E05388',
+            stroke: 'rgba(224, 83, 136, 0.40)',
+            glow: 'rgba(224, 83, 136, 0.16)'
+        },
+        {
+            pos: 0.84,  // Preguntas & Modelos: Azul Batidor Cyan Pastel
+            canvas: '#F4FAFD',
+            base: '#CFEFFC',
+            frosting: '#FFFFFF',
+            accent: '#0096C7',
+            stroke: 'rgba(0, 150, 199, 0.40)',
+            glow: 'rgba(0, 150, 199, 0.18)'
+        },
+        {
+            pos: 1.0,   // Pie de Página & Contacto: Lila Púrpura Dulce
+            canvas: '#FAF5FD',
+            base: '#EEDAF7',
+            frosting: '#FFFFFF',
+            accent: '#9E35AE',
+            stroke: 'rgba(158, 53, 174, 0.40)',
+            glow: 'rgba(158, 53, 174, 0.16)'
+        }
+    ];
+
+    function updateBackground() {
+        const scrollY = window.scrollY || window.pageYOffset || 0;
+        const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+        const progress = Math.min(1, Math.max(0, scrollY / maxScroll));
+
+        // Encontrar los stops activos
+        let lower = colorStops[0];
+        let upper = colorStops[colorStops.length - 1];
+
+        for (let i = 0; i < colorStops.length - 1; i++) {
+            if (progress >= colorStops[i].pos && progress <= colorStops[i + 1].pos) {
+                lower = colorStops[i];
+                upper = colorStops[i + 1];
+                break;
+            }
+        }
+
+        const segmentProgress = (progress - lower.pos) / (upper.pos - lower.pos || 1);
+        const chosen = segmentProgress > 0.5 ? upper : lower;
+
+        // Actualizar variables CSS en el fondo
+        bgContainer.style.setProperty('--bg-canvas-tone', chosen.canvas);
+        bgContainer.style.setProperty('--pastry-color-base', chosen.base);
+        bgContainer.style.setProperty('--pastry-color-accent', chosen.accent);
+        bgContainer.style.setProperty('--pastry-color-stroke', chosen.stroke);
+        bgContainer.style.setProperty('--pastry-glow-color', chosen.glow);
+
+        // Suave desplazamiento de paralaje en los motivos flotantes
+        const pastries = bgContainer.querySelectorAll('.floating-pastry');
+        pastries.forEach((p, idx) => {
+            const speed = ((idx % 4) + 1) * 0.05;
+            const yOffset = (scrollY * speed) % 50;
+            p.style.setProperty('--scroll-offset', `${-yOffset}px`);
+        });
+
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            window.requestAnimationFrame(updateBackground);
+            ticking = true;
+        }
+    }, { passive: true });
+
+    // Ejecución inicial
+    updateBackground();
+}
+
 // --- 11. INICIALIZACIÓN DE LA APLICACIÓN ---
 function init() {
     inicializarDOM();
+    initAmbientBakeryBackground();
 
     // Actualizar fecha del próximo domingo en todos los indicadores
     const proximoDomingoTexto = getProximoDomingoTexto();
@@ -1116,6 +1512,10 @@ function init() {
     // Cierre global con la tecla Escape
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' || e.key === 'Esc') {
+            if (DOM.invoiceModal && DOM.invoiceModal.style.display !== 'none' && DOM.invoiceModal.style.display !== '') {
+                cerrarModalFactura();
+                return;
+            }
             if (DOM.paymentModal && DOM.paymentModal.style.display !== 'none' && DOM.paymentModal.style.display !== '') {
                 cerrarModalPago();
                 return;
@@ -1157,6 +1557,57 @@ function init() {
                     DOM.encargoDateBox.classList.toggle('hidden', val !== 'encargo');
                 }
             });
+        });
+    }
+
+    // 7.1 Selector interactivo de las 4 estaciones del Teleférico en Los Alcarrizos
+    if (DOM.telefericoStationsGrid) {
+        const stationCards = DOM.telefericoStationsGrid.querySelectorAll('.teleferico-station-card');
+        stationCards.forEach(card => {
+            const selectStation = () => {
+                stationCards.forEach(c => {
+                    c.classList.remove('active');
+                    c.setAttribute('aria-checked', 'false');
+                });
+                card.classList.add('active');
+                card.setAttribute('aria-checked', 'true');
+                const stationVal = card.dataset.station;
+                if (DOM.telefericoStationSelect) {
+                    DOM.telefericoStationSelect.value = stationVal;
+                }
+            };
+
+            card.addEventListener('click', selectStation);
+            card.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    selectStation();
+                }
+            });
+        });
+    }
+
+    // 7.2 Conexión de Botones del Modal de Factura Oficial
+    if (DOM.invoiceCloseBtn) {
+        DOM.invoiceCloseBtn.addEventListener('click', cerrarModalFactura);
+    }
+    if (DOM.invoicePrintBtn) {
+        DOM.invoicePrintBtn.addEventListener('click', imprimirFactura);
+    }
+    if (DOM.invoiceDownloadPngBtn) {
+        DOM.invoiceDownloadPngBtn.addEventListener('click', descargarFacturaImagen);
+    }
+    if (DOM.btnFormatA4) {
+        DOM.btnFormatA4.addEventListener('click', () => setInvoiceFormat('a4'));
+    }
+    if (DOM.btnFormatTicket) {
+        DOM.btnFormatTicket.addEventListener('click', () => setInvoiceFormat('ticket'));
+    }
+    if (DOM.invoiceModal) {
+        DOM.invoiceModal.addEventListener('click', (e) => {
+            if (e.target === DOM.invoiceModal) {
+                cerrarModalFactura();
+            }
         });
     }
 
