@@ -207,6 +207,82 @@ let listaProductos = [...defaultProducts];
 let hasDynamicFirestoreData = false;
 let carrito = JSON.parse(localStorage.getItem('keybakery_cart')) || [];
 let activeCategory = 'todos';
+let isFullMenuExpanded = false;
+const FEATURED_PRODUCT_IDS = new Set([
+    'prod-brownies',
+    'prod-tres-leches-tradicional',
+    'prod-bizcocho-milky-way'
+]);
+const WEEKLY_SPECIAL_IDS = new Set([
+    'prod-brownies',
+    'prod-brownie-clasico',
+    'prod-caja-brownies'
+]);
+
+function resolveProductForMinRule(prodOrId) {
+    if (!prodOrId) return null;
+    if (typeof prodOrId === 'string') {
+        const lookupId = prodOrId === 'prod-brownie-clasico' ? 'prod-brownies' : prodOrId;
+        return (
+            listaProductos.find(p => p.id === lookupId || p.id === prodOrId) ||
+            defaultProducts.find(p => p.id === lookupId || p.id === prodOrId) ||
+            { id: prodOrId }
+        );
+    }
+    return prodOrId;
+}
+
+function isWeeklySpecialProduct(prodOrId) {
+    const prod = resolveProductForMinRule(prodOrId);
+    if (!prod) return false;
+    return (
+        WEEKLY_SPECIAL_IDS.has(prod.id) ||
+        prod.esSemana === true ||
+        prod.tipo === 'semana' ||
+        prod.categoria === 'semana'
+    );
+}
+
+function isWholeOrCustomProduct(prodOrId) {
+    const prod = resolveProductForMinRule(prodOrId);
+    if (!prod) return false;
+    const nombre = (prod.nombre || '').toLowerCase();
+    return (
+        prod.esCompleto === true ||
+        prod.esPersonalizado === true ||
+        prod.tipo === 'completo' ||
+        prod.tipo === 'personalizado' ||
+        prod.categoria === 'pasteles-completos' ||
+        prod.categoria === 'personalizados' ||
+        prod.categoria === 'bocadillos-eventos' ||
+        /(completo|entero|personalizado|mini cake|caja|pack)/i.test(nombre)
+    );
+}
+
+function getMinOrderQty(prodOrId) {
+    if (isWeeklySpecialProduct(prodOrId) || isWholeOrCustomProduct(prodOrId)) {
+        return 1;
+    }
+    return 3;
+}
+
+function sanitizeCartQuantities() {
+    let changed = false;
+    carrito.forEach(item => {
+        const minQty = getMinOrderQty(item);
+        if (!item.cantidad || item.cantidad < minQty) {
+            item.cantidad = minQty;
+            changed = true;
+        }
+    });
+    if (changed) {
+        localStorage.setItem('keybakery_cart', JSON.stringify(carrito));
+    }
+    return changed;
+}
+
+sanitizeCartQuantities();
+
 let productQuantities = {};
 let ultimoPedido = null;
 let lastFocusedElement = null;
@@ -219,6 +295,16 @@ function inicializarDOM() {
     DOM = {
         productsContainer: document.getElementById('products-container'),
         categoryTabs: document.querySelectorAll('.category-tab'),
+        menuExpandBar: document.getElementById('menu-expand-bar'),
+        toggleFullMenuBtn: document.getElementById('toggle-full-menu-btn'),
+        toggleFullMenuLabel: document.getElementById('toggle-full-menu-label'),
+        toggleFullMenuBadge: document.getElementById('toggle-full-menu-badge'),
+        toggleModelBtn: document.getElementById('toggle-model-btn'),
+        modelStepsCollapsible: document.getElementById('model-steps-collapsible'),
+        toggleOtrosBtn: document.getElementById('toggle-otros-btn'),
+        otrosDetailsCollapsible: document.getElementById('otros-details-collapsible'),
+        toggleMapBtn: document.getElementById('toggle-map-btn'),
+        deliveryMapCollapsible: document.getElementById('delivery-map-collapsible'),
         cartSidebar: document.getElementById('cart-sidebar'),
         openCartBtn: document.getElementById('open-cart'),
         mobileOpenCartBtn: document.getElementById('mobile-open-cart'),
@@ -329,12 +415,24 @@ function showToast(message) {
 
 // --- 5. RENDERIZADO DEL MENÚ Y FILTROS ACCESIBLES ---
 function getProductQuantity(id) {
-    return productQuantities[id] || 1;
+    const minQty = getMinOrderQty(id);
+    return Math.max(minQty, productQuantities[id] || minQty);
 }
 
 window.cardQtyChange = function(id, delta) {
+    const minQty = getMinOrderQty(id);
     const current = getProductQuantity(id);
-    const newQty = Math.max(1, Math.min(99, current + delta));
+    const attempted = current + delta;
+
+    if (delta < 0 && attempted < minQty) {
+        productQuantities[id] = minQty;
+        const numEl = document.getElementById(`qty-num-${id}`);
+        if (numEl) numEl.textContent = minQty;
+        showToast(`Pedido mínimo de ${minQty} unidades para este postre del menú (solo el Especial de la Semana o completos se piden desde 1).`);
+        return;
+    }
+
+    const newQty = Math.max(minQty, Math.min(99, attempted));
     productQuantities[id] = newQty;
     const numEl = document.getElementById(`qty-num-${id}`);
     if (numEl) numEl.textContent = newQty;
@@ -375,18 +473,19 @@ window.cardAddToCart = function(id, btnElement) {
         return;
     }
 
-    const qty = getProductQuantity(id);
-    const existe = carrito.find(i => i.id === id);
+    const minQty = getMinOrderQty(prod);
+    const qty = Math.max(minQty, getProductQuantity(id));
+    const existe = carrito.find(i => i.id === prod.id || i.id === id);
     if (existe) {
-        existe.cantidad += qty;
+        existe.cantidad = Math.max(minQty, existe.cantidad + qty);
     } else {
         carrito.push({ ...prod, cantidad: qty });
     }
 
-    // Reset cantidad temporal del stepper
-    productQuantities[id] = 1;
+    // Reset cantidad temporal del stepper al mínimo permitido del producto
+    productQuantities[id] = minQty;
     const numEl = document.getElementById(`qty-num-${id}`);
-    if (numEl) numEl.textContent = '1';
+    if (numEl) numEl.textContent = String(minQty);
 
     actualizarCarrito();
 
@@ -427,6 +526,49 @@ if (window._pendingCartAdds && window._pendingCartAdds.length > 0) {
     pendings.forEach(p => window.cardAddToCart(p.id, p.btn));
 }
 
+function updateMenuExpandButton(totalAllCount, visibleCount) {
+    if (!DOM.menuExpandBar || !DOM.toggleFullMenuBtn) return;
+
+    if (activeCategory !== 'todos' || totalAllCount <= 3) {
+        DOM.menuExpandBar.classList.add('hidden');
+        return;
+    }
+
+    DOM.menuExpandBar.classList.remove('hidden');
+    DOM.toggleFullMenuBtn.setAttribute('aria-expanded', String(isFullMenuExpanded));
+
+    if (isFullMenuExpanded) {
+        if (DOM.toggleFullMenuLabel) {
+            DOM.toggleFullMenuLabel.textContent = 'Mostrar menos postres (Ver 3 destacados)';
+        }
+        if (DOM.toggleFullMenuBadge) {
+            DOM.toggleFullMenuBadge.style.display = 'none';
+        }
+    } else {
+        const remaining = Math.max(0, totalAllCount - visibleCount);
+        if (DOM.toggleFullMenuLabel) {
+            DOM.toggleFullMenuLabel.textContent = `Ver el Menú Completo (${totalAllCount} Postres)`;
+        }
+        if (DOM.toggleFullMenuBadge) {
+            DOM.toggleFullMenuBadge.textContent = `+${remaining} más`;
+            DOM.toggleFullMenuBadge.style.display = remaining > 0 ? 'inline-block' : 'none';
+        }
+    }
+}
+
+window.expandFullMenu = function() {
+    isFullMenuExpanded = true;
+    activeCategory = 'todos';
+    if (DOM.categoryTabs) {
+        DOM.categoryTabs.forEach(t => {
+            const isTodos = t.dataset.category === 'todos';
+            t.classList.toggle('active', isTodos);
+            t.setAttribute('aria-selected', String(isTodos));
+        });
+    }
+    renderizarMenu();
+};
+
 function renderizarMenu() {
     if (!DOM.productsContainer) return;
 
@@ -436,10 +578,15 @@ function renderizarMenu() {
         let visibleCount = 0;
         existingCards.forEach(card => {
             const cardCat = card.dataset.category;
-            const matches = (activeCategory === 'todos' || cardCat === activeCategory);
+            const prodId = (card.id || '').replace(/^card-/, '');
+            const matches = activeCategory === 'todos'
+                ? (isFullMenuExpanded || FEATURED_PRODUCT_IDS.has(prodId))
+                : (cardCat === activeCategory);
             card.style.display = matches ? '' : 'none';
             if (matches) visibleCount++;
         });
+
+        updateMenuExpandButton(existingCards.length, visibleCount);
 
         let emptyMsg = document.getElementById('menu-empty-message');
         if (visibleCount === 0) {
@@ -461,10 +608,17 @@ function renderizarMenu() {
     }
 
     // Si viene de Firestore con datos actualizados:
-    let filtrados = listaProductos.filter(p => p.activo !== false);
-    if (activeCategory !== 'todos') {
-        filtrados = filtrados.filter(p => p.categoria === activeCategory);
+    const activeProducts = listaProductos.filter(p => p.activo !== false);
+    let filtrados = activeCategory === 'todos'
+        ? activeProducts
+        : activeProducts.filter(p => p.categoria === activeCategory);
+
+    if (activeCategory === 'todos' && !isFullMenuExpanded) {
+        const featured = filtrados.filter(p => FEATURED_PRODUCT_IDS.has(p.id));
+        filtrados = featured.length > 0 ? featured : filtrados.slice(0, 3);
     }
+
+    updateMenuExpandButton(activeProducts.length, filtrados.length);
 
     if (filtrados.length === 0) {
         DOM.productsContainer.innerHTML = `
@@ -475,10 +629,17 @@ function renderizarMenu() {
     }
 
     DOM.productsContainer.innerHTML = filtrados.map(p => {
-        const qty = getProductQuantity(p.id);
+        const minQty = getMinOrderQty(p);
+        const qty = Math.max(minQty, getProductQuantity(p.id));
         const badgeHtml = p.badge ? `<span class="product-badge">${p.badge}</span>` : '';
         const descHtml = p.descripcion || 'Elaborado artesanalmente en Los Alcarrizos.';
         const isUpcoming = p.tipo === 'proxima';
+        const isWeekly = isWeeklySpecialProduct(p);
+        const minPillHtml = isWeekly
+            ? `<span class="min-qty-pill weekly">🔥 Especial de la Semana • Desde 1 unidad</span>`
+            : (minQty === 1
+                ? `<span class="min-qty-pill weekly">🎂 Completo / Personalizado • Desde 1 unidad</span>`
+                : `<span class="min-qty-pill">📦 Pedido mínimo: ${minQty} unidades</span>`);
 
         return `
             <article class="product-card" id="card-${p.id}" data-category="${p.categoria}">
@@ -501,6 +662,7 @@ function renderizarMenu() {
                     </div>
 
                     <div class="product-meta">
+                        ${!isUpcoming ? minPillHtml : ''}
                         <div class="product-price-row">
                             <span class="price-tag">${isUpcoming ? 'Próximamente' : `RD$ ${p.precio.toLocaleString()} <small style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">c/u</small>`}</span>
                             ${!isUpcoming ? `
@@ -532,72 +694,118 @@ function renderizarMenu() {
 }
 
 // --- 6. LÓGICA DEL CARRITO ACCESIBLE & PERSISTENCIA ---
+window.eliminarDelCarrito = function(id) {
+    const item = carrito.find(i => i.id === id);
+    carrito = carrito.filter(i => i.id !== id);
+    actualizarCarrito();
+    if (item) {
+        showToast(`"${item.nombre}" eliminado del carrito.`);
+    }
+};
+
 window.cambiarCant = function(id, delta) {
     const item = carrito.find(i => i.id === id);
-    if (item) {
-        item.cantidad += delta;
-        if (item.cantidad <= 0) {
+    if (!item) return;
+
+    const minQty = getMinOrderQty(item);
+    const nextQty = item.cantidad + delta;
+
+    if (delta < 0 && nextQty < minQty) {
+        if (minQty <= 1) {
             carrito = carrito.filter(i => i.id !== id);
+        } else {
+            item.cantidad = minQty;
+            showToast(`Pedido mínimo de ${minQty} unidades para "${item.nombre}". Usa el ícono 🗑️ si deseas quitarlo del carrito.`);
         }
+    } else {
+        item.cantidad = Math.min(99, nextQty);
     }
     actualizarCarrito();
 };
 
 function actualizarCarrito() {
     if (!DOM.cartItemsContainer) return;
+    sanitizeCartQuantities();
     DOM.cartItemsContainer.innerHTML = '';
     let total = 0;
     let itemsContador = 0;
 
     let hasWeeklyItem = false;
     let hasCustomCake = false;
+    let hasMinThreeItem = false;
 
     if (carrito.length === 0) {
         DOM.cartItemsContainer.innerHTML = `
             <div style="text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
                 <i data-lucide="shopping-basket" style="width: 56px; height: 56px; opacity: 0.3; margin: 0 auto 1rem;" aria-hidden="true"></i>
                 <h4 style="margin-bottom: 0.5rem; color: var(--text-dark);">Tu carrito está vacío</h4>
-                <p class="text-sm mb-4">Elige tu porción del Producto de la Semana (Brownies) o tu pastel completo.</p>
+                <p class="text-sm mb-4">Elige el Especial de la Semana (desde 1 unidad) o tus favoritos del menú (mínimo 3 unidades).</p>
                 <a href="#menu" class="btn-secondary" onclick="window.closeCart();">Ver Menú</a>
             </div>`;
     } else {
         carrito.forEach(item => {
+            const minQty = getMinOrderQty(item);
+            const isWeekly = isWeeklySpecialProduct(item);
+            const isWholeOrCustom = isWholeOrCustomProduct(item);
+
             total += item.precio * item.cantidad;
             itemsContador += item.cantidad;
-            if (item.categoria === 'semana') hasWeeklyItem = true;
-            if (item.categoria === 'pasteles-completos' || item.categoria === 'bocadillos-eventos') hasCustomCake = true;
 
-            const badgeNota = item.categoria === 'semana' ? '📦 Entrega este Domingo' : '🎂 Coordinar Día (48h mín)';
+            if (isWeekly) hasWeeklyItem = true;
+            if (isWholeOrCustom) hasCustomCake = true;
+            if (minQty >= 3) hasMinThreeItem = true;
+
+            const badgeNota = isWeekly
+                ? '🔥 Especial de la Semana • Desde 1 u.'
+                : (isWholeOrCustom
+                    ? '🎂 Completo / Personalizado • Desde 1 u.'
+                    : `📦 Menú Regular • Mínimo ${minQty} unidades`);
+
+            const atMinClass = item.cantidad <= minQty ? 'at-min' : '';
 
             DOM.cartItemsContainer.innerHTML += `
                 <div class="cart-item">
                     <img src="${item.imagen}" class="cart-item-img" alt="${item.nombre}" width="70" height="70" loading="lazy" referrerpolicy="no-referrer">
                     <div class="cart-item-info">
-                        <p class="cart-item-title">${item.nombre}</p>
+                        <div class="cart-item-header-row">
+                            <p class="cart-item-title">${item.nombre}</p>
+                            <button type="button" class="btn-cart-remove" onclick="eliminarDelCarrito('${item.id}')" aria-label="Eliminar ${item.nombre} del carrito" title="Quitar del carrito">
+                                <i data-lucide="trash-2" aria-hidden="true"></i>
+                            </button>
+                        </div>
                         <p class="text-xs color-gold font-bold">${badgeNota}</p>
-                        <p class="cart-item-price">DOP$ ${item.precio.toLocaleString()}</p>
-                        <div class="cart-item-controls" aria-label="Controles de cantidad para ${item.nombre}">
-                            <button class="btn-qty" onclick="cambiarCant('${item.id}', -1)" aria-label="Restar una unidad de ${item.nombre}">-</button>
-                            <span class="cart-item-qty" aria-live="polite">${item.cantidad}</span>
-                            <button class="btn-qty" onclick="cambiarCant('${item.id}', 1)" aria-label="Sumar una unidad de ${item.nombre}">+</button>
+                        <p class="cart-item-price">DOP$ ${item.precio.toLocaleString()} <small style="font-weight: 500; color: var(--text-muted);">c/u • Subtotal: DOP$ ${(item.precio * item.cantidad).toLocaleString()}</small></p>
+                        <div class="cart-item-actions-row">
+                            <div class="cart-item-controls" aria-label="Controles de cantidad para ${item.nombre}">
+                                <button class="btn-qty ${atMinClass}" onclick="cambiarCant('${item.id}', -1)" aria-label="Restar una unidad de ${item.nombre}">-</button>
+                                <span class="cart-item-qty" aria-live="polite">${item.cantidad}</span>
+                                <button class="btn-qty" onclick="cambiarCant('${item.id}', 1)" aria-label="Sumar una unidad de ${item.nombre}">+</button>
+                            </div>
+                            ${minQty > 1 ? `<span class="cart-min-tag">Mín. ${minQty} u.</span>` : ''}
                         </div>
                     </div>
                 </div>`;
         });
 
-        // Banner informativo dentro del carrito sobre días de entrega
+        // Banner informativo dentro del carrito sobre entrega y regla de pedido mínimo
         let avisoEntrega = '';
         if (hasWeeklyItem && !hasCustomCake) {
-            avisoEntrega = `<div style="background: var(--pink-subtle); padding: 0.7rem; border-radius: 8px; font-size: 0.8rem; color: var(--pink-hover); margin-bottom: 1rem; border: 1px solid rgba(216,27,96,0.2);">
-                📅 <strong>Producto de la Semana:</strong> Tu orden se horneará y entregará este <strong>${getProximoDomingoTexto()}</strong> en Los Alcarrizos.
+            avisoEntrega = `<div style="background: var(--pink-subtle); padding: 0.7rem; border-radius: 8px; font-size: 0.8rem; color: var(--pink-hover); margin-bottom: 0.75rem; border: 1px solid rgba(216,27,96,0.2);">
+                📅 <strong>Entrega Dominical:</strong> Tu orden se horneará y entregará este <strong>${getProximoDomingoTexto()}</strong> en Los Alcarrizos.
             </div>`;
         } else if (hasCustomCake && !hasWeeklyItem) {
-            avisoEntrega = `<div style="background: var(--gold-subtle); padding: 0.7rem; border-radius: 8px; font-size: 0.8rem; color: var(--gold); margin-bottom: 1rem; border: 1px solid rgba(125,85,21,0.2);">
+            avisoEntrega = `<div style="background: var(--gold-subtle); padding: 0.7rem; border-radius: 8px; font-size: 0.8rem; color: var(--gold); margin-bottom: 0.75rem; border: 1px solid rgba(125,85,21,0.2);">
                 🎂 <strong>Pastel Completo / Evento:</strong> Coordinaremos el día que lo necesites con mínimo 48h de anticipación.
             </div>`;
-        } else if (hasWeeklyItem && hasCustomCake) {
-            avisoEntrega = `<div style="background: var(--cream-dark); padding: 0.7rem; border-radius: 8px; font-size: 0.8rem; color: var(--text-dark); margin-bottom: 1rem; border: 1px solid var(--border-color);">
-                📦 Tu carrito combina porciones de la semana (entrega domingo) y pastel completo bajo encargo.
+        } else {
+            avisoEntrega = `<div style="background: var(--cream-dark); padding: 0.7rem; border-radius: 8px; font-size: 0.8rem; color: var(--text-dark); margin-bottom: 0.75rem; border: 1px solid var(--border-color);">
+                📅 <strong>Entregas:</strong> Domingos en nuestro taller o paradas del Teleférico en Los Alcarrizos.
+            </div>`;
+        }
+
+        if (hasMinThreeItem) {
+            avisoEntrega += `<div style="background: #FDF9EE; padding: 0.65rem 0.75rem; border-radius: 8px; font-size: 0.78rem; color: var(--gold-hover); margin-bottom: 1rem; border: 1px solid rgba(168,118,31,0.24);">
+                📦 <strong>Regla de Pedido:</strong> Los postres regulares del menú requieren <strong>3 unidades o más</strong> por sabor (el Especial de la Semana y completos se piden desde 1).
             </div>`;
         }
         DOM.cartItemsContainer.insertAdjacentHTML('afterbegin', avisoEntrega);
@@ -621,35 +829,39 @@ window.actualizarCarrito = actualizarCarrito;
 window.agregarSugerencia = function(prodId) {
     const p = listaProductos.find(item => item.id === prodId) || defaultProducts.find(item => item.id === prodId);
     if (!p) return;
+    const minQty = getMinOrderQty(p);
     const itemEnCarrito = carrito.find(item => item.id === prodId);
     if (itemEnCarrito) {
         itemEnCarrito.cantidad += 1;
     } else {
-        carrito.push({ ...p, cantidad: 1 });
+        carrito.push({ ...p, cantidad: minQty });
     }
     actualizarCarrito();
     window.cargarSugerencias();
-    showToast(`¡${p.nombre} agregado al pedido!`);
+    const modalTotal = carrito.reduce((acc, i) => acc + (i.precio * i.cantidad), 0);
+    if (DOM.modalTotal) DOM.modalTotal.textContent = `DOP$ ${modalTotal.toLocaleString()}`;
+    showToast(`¡Agregado ${minQty}x ${p.nombre} al pedido!`);
 };
 
 window.cargarSugerencias = function() {
     if (!DOM.upsellContainer) return;
     DOM.upsellContainer.innerHTML = '';
     
-    // Sugerir brownies adicionales u opción de pastel
+    // Sugerir productos activos respetando la cantidad mínima al añadir
     const sugeridos = listaProductos
         .filter(p => p.activo !== false && p.tipo !== 'proxima' && !carrito.find(item => item.id === p.id))
         .slice(0, 2);
 
     sugeridos.forEach(p => {
+        const minQty = getMinOrderQty(p);
         DOM.upsellContainer.innerHTML += `
             <div class="cart-item" style="border: 1.5px dashed var(--gold-light);">
                 <img src="${p.imagen}" class="cart-item-img" alt="${p.nombre}" width="70" height="70" loading="lazy" referrerpolicy="no-referrer">
                 <div style="flex-grow: 1;">
                     <p class="font-bold" style="font-size: 0.95rem; margin-bottom: 0.2rem;">${p.nombre}</p>
-                    <p class="text-sm color-gold font-bold mb-2">DOP$ ${p.precio.toLocaleString()}</p>
+                    <p class="text-sm color-gold font-bold mb-2">DOP$ ${p.precio.toLocaleString()} c/u ${minQty > 1 ? `<small style="color: var(--text-muted); font-weight: 600;">(Mín. ${minQty} u.)</small>` : ''}</p>
                     <button type="button" class="btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.8rem;" aria-label="Añadir ${p.nombre} al pedido" onclick="window.agregarSugerencia('${p.id}')">
-                        + Añadir al Pedido
+                        ${minQty > 1 ? `+ Añadir ${minQty} u. (Mín.)` : '+ Añadir al Pedido'}
                     </button>
                 </div>
             </div>`;
@@ -660,6 +872,10 @@ function abrirModalPago() {
     if (carrito.length === 0) {
         showToast("Tu carrito está vacío. Elige tus postres primero.");
         return;
+    }
+    if (sanitizeCartQuantities()) {
+        actualizarCarrito();
+        showToast("Se ajustaron las cantidades al mínimo permitido (3 u. en menú regular).");
     }
 
     lastFocusedElement = document.activeElement;
@@ -720,6 +936,15 @@ async function procesarPedido(e) {
     if (!telefonoCliente) {
         showToast("Por favor ingresa tu teléfono WhatsApp de Los Alcarrizos / RD.");
         document.getElementById('customer-phone')?.focus();
+        return;
+    }
+
+    const invalidItem = carrito.find(i => i.cantidad < getMinOrderQty(i));
+    if (invalidItem) {
+        const minQty = getMinOrderQty(invalidItem);
+        invalidItem.cantidad = minQty;
+        actualizarCarrito();
+        showToast(`"${invalidItem.nombre}" requiere mínimo ${minQty} unidades. Actualizamos tu carrito.`);
         return;
     }
 
@@ -841,11 +1066,11 @@ function getFacturaFallbackOrder() {
         telefono: "809-442-8442",
         items: [
             { id: "prod-brownies", nombre: "Brownies Artesanales Melcochosos", precio: 100, cantidad: 2 },
-            { id: "prod-tres-leches-tradicional", nombre: "Tres Leches Tradicional", precio: 130, cantidad: 1 }
+            { id: "prod-tres-leches-tradicional", nombre: "Tres Leches Tradicional", precio: 130, cantidad: 3 }
         ],
-        subtotal: 330,
+        subtotal: 590,
         costoEnvio: 50,
-        total: 380,
+        total: 640,
         metodoTexto: "Parada Teleférico Los Alcarrizos: Estación 1: Los Alcarrizos (Entrada / Duarte)",
         detalleUbicacion: "Estación 1: Los Alcarrizos (Entrada / Duarte)",
         proximoDomingo: getProximoDomingoTexto(),
@@ -1384,7 +1609,7 @@ function init() {
         });
     }
 
-    // 2. Filtros de Categorías Accesibles
+    // 2. Filtros de Categorías Accesibles y Botones Expandibles
     if (DOM.categoryTabs) {
         DOM.categoryTabs.forEach(tab => {
             tab.addEventListener('click', () => {
@@ -1399,6 +1624,52 @@ function init() {
             });
         });
     }
+
+    if (DOM.toggleFullMenuBtn) {
+        DOM.toggleFullMenuBtn.addEventListener('click', () => {
+            isFullMenuExpanded = !isFullMenuExpanded;
+            renderizarMenu();
+            if (!isFullMenuExpanded) {
+                const menuSection = document.getElementById('menu');
+                if (menuSection) {
+                    menuSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        });
+    }
+
+    const setupCollapsibleToggle = (btn, panel, labelOpen, labelClosed) => {
+        if (!btn || !panel) return;
+        btn.addEventListener('click', () => {
+            const isOpen = panel.classList.toggle('open');
+            btn.setAttribute('aria-expanded', String(isOpen));
+            panel.setAttribute('aria-hidden', String(!isOpen));
+            const labelSpan = btn.querySelector('span');
+            if (labelSpan) {
+                labelSpan.textContent = isOpen ? labelOpen : labelClosed;
+            }
+            if (window.lucide) lucide.createIcons();
+        });
+    };
+
+    setupCollapsibleToggle(
+        DOM.toggleModelBtn,
+        DOM.modelStepsCollapsible,
+        'Ocultar explicación paso a paso',
+        'Ver explicación paso a paso'
+    );
+    setupCollapsibleToggle(
+        DOM.toggleOtrosBtn,
+        DOM.otrosDetailsCollapsible,
+        'Ocultar opciones de eventos',
+        'Ver opciones para eventos y encargos'
+    );
+    setupCollapsibleToggle(
+        DOM.toggleMapBtn,
+        DOM.deliveryMapCollapsible,
+        'Ocultar Mapa',
+        'Ver Mapa'
+    );
 
     // 3. Menú Móvil Drawer con Accesibilidad
     if (DOM.mobileMenuToggle && DOM.mobileDrawer && DOM.mobileDrawerOverlay) {
@@ -1895,7 +2166,7 @@ window.handleReposteraQuickAction = function(key) {
                 <li><strong>Mini Cakes Personalizados:</strong> Desde RD$ 350</li>
             </ul>
             <div style="display: flex; gap: 0.5rem; flex-direction: column; margin-top: 0.6rem;">
-                <a href="#menu" class="btn-secondary" style="padding: 0.55rem; text-align: center; font-size: 0.82rem;" onclick="window.toggleReposteraChat(false)">Ver Todo el Menú</a>
+                <a href="#menu" class="btn-secondary" style="padding: 0.55rem; text-align: center; font-size: 0.82rem;" onclick="window.expandFullMenu && window.expandFullMenu(); window.toggleReposteraChat(false)">Ver Todo el Menú</a>
                 <a href="https://wa.me/${WHATSAPP_NUMBER}?text=Hola%20Chef%20Keyla,%20quisiera%20cotizar%20un%20bizcocho%20completo%20o%20pedido%20especial" target="_blank" rel="noopener noreferrer" class="btn-hero-whatsapp" style="padding: 0.55rem; font-size: 0.82rem; justify-content: center;">Coordinar por WhatsApp (809-442-8442)</a>
             </div>
         `;
@@ -1910,7 +2181,7 @@ window.handleReposteraQuickAction = function(key) {
                 <p>¿Deseas pedir el postre de la semana o consultar el menú completo de postres artesanales?</p>
                 <div style="display: flex; gap: 0.45rem; flex-wrap: wrap; margin-top: 0.5rem;">
                     <button type="button" class="repostera-chip" onclick="window.handleReposteraQuickAction('semana')">✨ Postre de la Semana</button>
-                    <a href="#menu" class="repostera-chip" onclick="window.toggleReposteraChat(false)">🍰 Ver Menú Completo</a>
+                    <a href="#menu" class="repostera-chip" onclick="window.expandFullMenu && window.expandFullMenu(); window.toggleReposteraChat(false)">🍰 Ver Menú Completo</a>
                 </div>
             `;
             renderReposteraMessage('bot', replyHtml);
@@ -2039,41 +2310,41 @@ window.handleReposteraSubmit = async function(event) {
     } else if (q.includes('pastiseta') || q.includes('galleta')) {
         renderReposteraMessage('bot', `
             <p>🌸 <strong>Pastisetas Artesanales:</strong></p>
-            <p>Finas galletas de mantequilla pura en forma de flor con corazón de jalea dulce. Precio: <strong>RD$ 160 c/u</strong>.</p>
+            <p>Finas galletas de mantequilla pura en forma de flor con corazón de jalea dulce. Precio: <strong>RD$ 160 c/u</strong> (pedido mínimo: 3 unidades).</p>
             <button type="button" class="chat-btn-add" style="margin-top: 0.3rem;" onclick="window.cardAddToCart('prod-pastisetas', this)">
-                <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar Pastiseta (RD$ 160)
+                <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar 3 Pastisetas (Mín. 3 • RD$ 480)
             </button>
         `);
     } else if (q.includes('alfajor')) {
         renderReposteraMessage('bot', `
             <p>✨ <strong>Alfajores de Dulce de Leche:</strong></p>
-            <p>Tapas delicadas de maicena rellenas con abundante dulce de leche criollo artesanal y azúcar glas. Precio: <strong>RD$ 130 c/u</strong>.</p>
+            <p>Tapas delicadas de maicena rellenas con abundante dulce de leche criollo artesanal y azúcar glas. Precio: <strong>RD$ 130 c/u</strong> (pedido mínimo: 3 unidades).</p>
             <button type="button" class="chat-btn-add" style="margin-top: 0.3rem;" onclick="window.cardAddToCart('prod-alfajores', this)">
-                <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar Alfajor (RD$ 130)
+                <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar 3 Alfajores (Mín. 3 • RD$ 390)
             </button>
         `);
     } else if (q.includes('tres leches') || q.includes('leche')) {
         renderReposteraMessage('bot', `
-            <p>🥛 <strong>Variedades de Tres Leches:</strong></p>
+            <p>🥛 <strong>Variedades de Tres Leches (Mín. 3 u.):</strong></p>
             <p>• <strong>Tres Leches Tradicional:</strong> RD$ 130 c/u<br>• <strong>Tres Leches de Coco:</strong> RD$ 150 c/u<br>• <strong>Tres Leches de Chocolate:</strong> RD$ 190 c/u</p>
             <button type="button" class="chat-btn-add" style="margin-top: 0.3rem;" onclick="window.cardAddToCart('prod-tres-leches-tradicional', this)">
-                <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar Tres Leches Tradicional (RD$ 130)
+                <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar 3 Tres Leches (Mín. 3 • RD$ 390)
             </button>
         `);
     } else if (q.includes('flan')) {
         renderReposteraMessage('bot', `
             <p>🍮 <strong>Flan Tradicional (Porción):</strong></p>
-            <p>Súper cremoso y sedoso, bañado en caramelo líquido rubio. Precio: <strong>RD$ 200 c/u</strong>.</p>
+            <p>Súper cremoso y sedoso, bañado en caramelo líquido rubio. Precio: <strong>RD$ 200 c/u</strong> (pedido mínimo: 3 unidades).</p>
             <button type="button" class="chat-btn-add" style="margin-top: 0.3rem;" onclick="window.cardAddToCart('prod-flan', this)">
-                <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar Flan (RD$ 200)
+                <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar 3 Flanes (Mín. 3 • RD$ 600)
             </button>
         `);
     } else if (q.includes('carrot') || q.includes('zanahoria')) {
         renderReposteraMessage('bot', `
             <p>🥕 <strong>Carrot Cake Especial:</strong></p>
-            <p>Pastel húmedo de zanahoria fresca con nueces, canela y suave frosting de queso crema. Precio: <strong>RD$ 220 c/u</strong>.</p>
+            <p>Pastel húmedo de zanahoria fresca con nueces, canela y suave frosting de queso crema. Precio: <strong>RD$ 220 c/u</strong> (pedido mínimo: 3 porciones, o 1 si es pastel completo).</p>
             <button type="button" class="chat-btn-add" style="margin-top: 0.3rem;" onclick="window.cardAddToCart('prod-carrot-cake', this)">
-                <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar Carrot Cake (RD$ 220)
+                <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar 3 Carrot Cakes (Mín. 3 • RD$ 660)
             </button>
         `);
     } else if (q.includes('teleferico') || q.includes('donde') || q.includes('ubicacion') || q.includes('direccion') || q.includes('entrega') || q.includes('alcarrizos') || q.includes('parada')) {
@@ -2086,6 +2357,7 @@ window.handleReposteraSubmit = async function(event) {
         renderReposteraMessage('bot', `
             <p>🎂 <strong>Bizcochos y Pasteles Artesanales:</strong></p>
             <p>• <strong>Bizcocho de Vainilla:</strong> RD$ 250 c/u<br>• <strong>Bizcocho Milky Way (Caramelo):</strong> RD$ 280 c/u<br>• <strong>Bizcocho Chocomatilda:</strong> RD$ 225 c/u<br>• <strong>Volteado de Piña:</strong> RD$ 140 c/u<br>• <strong>Carrot Cake:</strong> RD$ 220 c/u</p>
+            <p style="font-size: 0.8rem; color: var(--text-muted);"><em>Porciones del menú: mínimo 3 u. Pasteles completos o personalizados: desde 1 unidad.</em></p>
             <a href="https://wa.me/${WHATSAPP_NUMBER}?text=Hola%20Chef%20Keyla,%20quiero%20cotizar%20un%20bizcocho" target="_blank" rel="noopener noreferrer" class="btn-hero-whatsapp" style="padding: 0.55rem; font-size: 0.82rem; justify-content: center; margin-top: 0.3rem;">
                 <i data-lucide="message-circle" style="width: 14px; height: 14px;" aria-hidden="true"></i> Coordinar por WhatsApp (809-442-8442)
             </a>
@@ -2093,7 +2365,7 @@ window.handleReposteraSubmit = async function(event) {
     } else if (q.includes('precio') || q.includes('costo') || q.includes('cuanto') || q.includes('vale') || q.includes('menu') || q.includes('menú')) {
         renderReposteraMessage('bot', `
             <p>💵 <strong>Menú Oficial de Postres Artesanales:</strong></p>
-            <p>• <strong>Brownies:</strong> RD$ 100 c/u<br>
+            <p>• <strong>Brownies (Semana - desde 1 u.):</strong> RD$ 100 c/u<br>
             • <strong>Pastisetas:</strong> RD$ 160 c/u<br>
             • <strong>Alfajores de dulce de leche:</strong> RD$ 130 c/u<br>
             • <strong>Tres leches tradicional:</strong> RD$ 130 c/u<br>
@@ -2105,7 +2377,7 @@ window.handleReposteraSubmit = async function(event) {
             • <strong>Bizcocho Milky Way:</strong> RD$ 280 c/u<br>
             • <strong>Bizcocho Chocomatilda:</strong> RD$ 225 c/u<br>
             • <strong>Volteado de piña (porción):</strong> RD$ 140 c/u</p>
-            <p style="font-size: 0.82rem; color: var(--pink);"><em>Entre otros: Mini cakes, Galletas, Tartaletas y Postres en vasitos bajo encargo.</em></p>
+            <p style="font-size: 0.82rem; color: var(--pink);"><em>📌 Otros postres del menú: mínimo 3 u. Pasteles completos/personalizados y Brownies (Semana): desde 1 unidad.</em></p>
         `);
     } else if (q.includes('pago') || q.includes('pagar') || q.includes('transferencia') || q.includes('banco') || q.includes('tarjeta') || q.includes('efectivo')) {
         renderReposteraMessage('bot', `

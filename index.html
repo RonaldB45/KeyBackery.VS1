@@ -570,37 +570,62 @@
                 </div>
             </div>
 
-            <!-- Caja Explicativa del Modelo de Negocio -->
+            <!-- Caja Explicativa del Modelo de Negocio (Compacta + Expandible) -->
             <div id="como-funciona" class="model-explainer-card">
                 <div class="model-explainer-header">
                     <span class="section-tag"><i data-lucide="info" aria-hidden="true"></i> Nuestro Modelo de Trabajo</span>
-                    <h3 class="model-explainer-title">¿Cómo Funcionan los Pedidos en KeyBakery Los Alcarrizos?</h3>
-                    <p class="text-muted">Trabajamos en empleos formales de lunes a viernes, por lo que creamos este modelo organizado para garantizarte postres 100% frescos, sin desperdicios ni masas congeladas.</p>
+                    <h3 class="model-explainer-title">¿Cómo Funcionan los Pedidos en KeyBakery?</h3>
+                    <p class="text-muted">Horneamos lotes frescos cada fin de semana para garantizarte sabor artesanal sin masas congeladas.</p>
                 </div>
 
-                <div class="model-steps-grid">
-                    <div class="model-step-box">
-                        <div class="model-step-icon">
-                            <i data-lucide="calendar" aria-hidden="true"></i>
-                        </div>
-                        <h4>1. Producto de la Semana</h4>
-                        <p>Cada semana elegimos un postre protagonista (ej: Brownies, Mousses, Cupcakes). Solo se venden porciones individuales del postre de la semana activa.</p>
+                <!-- Resumen compacto siempre visible -->
+                <div class="model-summary-strip" aria-label="Resumen de nuestro modelo">
+                    <div class="model-summary-pill">
+                        <span class="model-pill-num">1</span>
+                        <span>Lote Semanal Fresco</span>
                     </div>
-
-                    <div class="model-step-box">
-                        <div class="model-step-icon">
-                            <i data-lucide="truck" aria-hidden="true"></i>
-                        </div>
-                        <h4>2. Entregas Fijas los Domingos</h4>
-                        <p>Horneamos tu pedido durante el fin de semana y lo entregamos los <strong>domingos</strong> en nuestro taller en Los Alcarrizos o paradas del Teleférico.</p>
+                    <div class="model-summary-pill">
+                        <span class="model-pill-num">2</span>
+                        <span>Entregas Domingos</span>
                     </div>
+                    <div class="model-summary-pill">
+                        <span class="model-pill-num">3</span>
+                        <span>Pasteles Enteros (48h)</span>
+                    </div>
+                </div>
 
-                    <div class="model-step-box">
-                        <div class="model-step-icon">
-                            <i data-lucide="cake" aria-hidden="true"></i>
+                <div class="section-toggle-bar">
+                    <button type="button" id="toggle-model-btn" class="btn-soft-toggle" aria-expanded="false" aria-controls="model-steps-collapsible">
+                        <i data-lucide="chevron-down" class="toggle-chevron" aria-hidden="true"></i>
+                        <span>Ver explicación paso a paso</span>
+                    </button>
+                </div>
+
+                <div id="model-steps-collapsible" class="collapsible-panel" aria-hidden="true">
+                    <div class="model-steps-grid">
+                        <div class="model-step-box">
+                            <div class="model-step-icon">
+                                <i data-lucide="calendar" aria-hidden="true"></i>
+                            </div>
+                            <h4>1. Producto de la Semana</h4>
+                            <p>Cada semana elegimos un postre estrella (esta semana: <strong>Brownies</strong>) que puedes pedir desde <strong>1 unidad</strong>. Los demás postres individuales del menú requieren un <strong>mínimo de 3 unidades</strong>.</p>
                         </div>
-                        <h4>3. Pasteles Completos & Eventos</h4>
-                        <p>¿Quieres un pastel entero de 1 libra o bocadillos al mayor? ¡Sí los preparamos cualquier día! Solo se requiere encargar con <strong>mínimo 48h</strong> para coordinar.</p>
+
+                        <div class="model-step-box">
+                            <div class="model-step-icon">
+                                <i data-lucide="truck" aria-hidden="true"></i>
+                            </div>
+                            <h4>2. Entregas Fijas los Domingos</h4>
+                            <p>Horneamos tu pedido durante el fin de semana y lo entregamos los <strong>domingos</strong> en nuestro taller en Los Alcarrizos o paradas del Teleférico.</p>
+                        </div>
+
+                        <div class="model-step-box">
+                            <div class="model-step-icon">
+                                <i data-lucide="cake" aria-hidden="true"></i>
+                            </div>
+                            <h4>3. Pasteles Completos & Eventos</h4>
+                            <p>¿Quieres un pastel entero de 1 libra o bocadillos al mayor? ¡Sí los preparamos cualquier día! Solo se requiere encargar con <strong>mínimo 48h</strong> para coordinar.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -614,7 +639,11 @@
             <div class="section-header">
                 <span class="section-tag"><i data-lucide="heart" aria-hidden="true" style="color: var(--pink);"></i> Hechos con amor y los mejores ingredientes ♡</span>
                 <h2 class="section-title">Menú de Postres Artesanales</h2>
-                <p class="section-subtitle">Descubre nuestros postres hechos a mano en Los Alcarrizos. Puedes agregar al carrito porciones individuales o packs para compartir.</p>
+                <p class="section-subtitle">Descubre nuestros postres hechos a mano en Los Alcarrizos. Puedes agregar al carrito tus favoritos para disfrutar este domingo.</p>
+                <div class="menu-rule-banner" role="note">
+                    <i data-lucide="sparkles" aria-hidden="true"></i>
+                    <span><strong>Especial de la Semana (Brownies)</strong> y <strong>pasteles completos o personalizados</strong>: desde 1 unidad • <strong>Demás postres del menú:</strong> pedido mínimo de 3 unidades.</span>
+                </div>
             </div>
 
             <!-- Filtros por Categoría Adaptados al Menú Oficial -->
@@ -648,6 +677,7 @@
                             <p class="product-desc">Deliciosos brownies artesanales melcochosos, elaborados con puro chocolate, textura fudge densa y costra brillante craquelada.</p>
                         </div>
                         <div class="product-meta">
+                            <span class="min-qty-pill weekly">🔥 Especial de la Semana • Desde 1 unidad</span>
                             <div class="product-price-row">
                                 <span class="price-tag">RD$ 100 <small style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">c/u</small></span>
                                 <div class="card-qty-stepper" aria-label="Selector de cantidad para Brownies">
@@ -675,11 +705,12 @@
                             <p class="product-desc">Galletas de mantequilla finas en forma de flor con centro de jalea dulce artesanal, tan suaves que se deshacen en el paladar.</p>
                         </div>
                         <div class="product-meta">
+                            <span class="min-qty-pill">📦 Pedido mínimo: 3 unidades</span>
                             <div class="product-price-row">
                                 <span class="price-tag">RD$ 160 <small style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">c/u</small></span>
                                 <div class="card-qty-stepper" aria-label="Selector de cantidad para Pastisetas">
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-pastisetas', -1)" aria-label="Disminuir cantidad">-</button>
-                                    <span class="card-qty-num" id="qty-num-prod-pastisetas" aria-live="polite">1</span>
+                                    <span class="card-qty-num" id="qty-num-prod-pastisetas" aria-live="polite">3</span>
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-pastisetas', 1)" aria-label="Aumentar cantidad">+</button>
                                 </div>
                             </div>
@@ -702,11 +733,12 @@
                             <p class="product-desc">Suaves tapas de maicena rellenas con abundante dulce de leche criollo artesanal y espolvoreadas con azúcar glas fina.</p>
                         </div>
                         <div class="product-meta">
+                            <span class="min-qty-pill">📦 Pedido mínimo: 3 unidades</span>
                             <div class="product-price-row">
                                 <span class="price-tag">RD$ 130 <small style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">c/u</small></span>
                                 <div class="card-qty-stepper" aria-label="Selector de cantidad para Alfajores">
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-alfajores', -1)" aria-label="Disminuir cantidad">-</button>
-                                    <span class="card-qty-num" id="qty-num-prod-alfajores" aria-live="polite">1</span>
+                                    <span class="card-qty-num" id="qty-num-prod-alfajores" aria-live="polite">3</span>
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-alfajores', 1)" aria-label="Aumentar cantidad">+</button>
                                 </div>
                             </div>
@@ -729,11 +761,12 @@
                             <p class="product-desc">Bizcocho esponjoso bañado en nuestra clásica mezcla de tres leches y coronado con suspiro ligero y un toque de canela molida.</p>
                         </div>
                         <div class="product-meta">
+                            <span class="min-qty-pill">📦 Pedido mínimo: 3 unidades</span>
                             <div class="product-price-row">
                                 <span class="price-tag">RD$ 130 <small style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">c/u</small></span>
                                 <div class="card-qty-stepper" aria-label="Selector de cantidad para Tres Leches Tradicional">
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-tres-leches-tradicional', -1)" aria-label="Disminuir cantidad">-</button>
-                                    <span class="card-qty-num" id="qty-num-prod-tres-leches-tradicional" aria-live="polite">1</span>
+                                    <span class="card-qty-num" id="qty-num-prod-tres-leches-tradicional" aria-live="polite">3</span>
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-tres-leches-tradicional', 1)" aria-label="Aumentar cantidad">+</button>
                                 </div>
                             </div>
@@ -756,11 +789,12 @@
                             <p class="product-desc">Masa embebida en infusión de tres leches y leche de coco fresca, cubierta de crema sedosa y lluvia de coco rallado natural.</p>
                         </div>
                         <div class="product-meta">
+                            <span class="min-qty-pill">📦 Pedido mínimo: 3 unidades</span>
                             <div class="product-price-row">
                                 <span class="price-tag">RD$ 150 <small style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">c/u</small></span>
                                 <div class="card-qty-stepper" aria-label="Selector de cantidad para Tres Leches de Coco">
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-tres-leches-coco', -1)" aria-label="Disminuir cantidad">-</button>
-                                    <span class="card-qty-num" id="qty-num-prod-tres-leches-coco" aria-live="polite">1</span>
+                                    <span class="card-qty-num" id="qty-num-prod-tres-leches-coco" aria-live="polite">3</span>
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-tres-leches-coco', 1)" aria-label="Aumentar cantidad">+</button>
                                 </div>
                             </div>
@@ -783,11 +817,12 @@
                             <p class="product-desc">Bizcocho de chocolate bañado en tres leches achocolatada, decorado con virutas de puro cacao artesanal.</p>
                         </div>
                         <div class="product-meta">
+                            <span class="min-qty-pill">📦 Pedido mínimo: 3 unidades</span>
                             <div class="product-price-row">
                                 <span class="price-tag">RD$ 190 <small style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">c/u</small></span>
                                 <div class="card-qty-stepper" aria-label="Selector de cantidad para Tres Leches de Chocolate">
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-tres-leches-chocolate', -1)" aria-label="Disminuir cantidad">-</button>
-                                    <span class="card-qty-num" id="qty-num-prod-tres-leches-chocolate" aria-live="polite">1</span>
+                                    <span class="card-qty-num" id="qty-num-prod-tres-leches-chocolate" aria-live="polite">3</span>
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-tres-leches-chocolate', 1)" aria-label="Aumentar cantidad">+</button>
                                 </div>
                             </div>
@@ -810,11 +845,12 @@
                             <p class="product-desc">Porción de flan tradicional dominicano súper sedoso y suave, cocinado lentamente con abundante caramelo dorado líquido.</p>
                         </div>
                         <div class="product-meta">
+                            <span class="min-qty-pill">📦 Pedido mínimo: 3 unidades</span>
                             <div class="product-price-row">
                                 <span class="price-tag">RD$ 200 <small style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">c/u</small></span>
                                 <div class="card-qty-stepper" aria-label="Selector de cantidad para Flan">
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-flan', -1)" aria-label="Disminuir cantidad">-</button>
-                                    <span class="card-qty-num" id="qty-num-prod-flan" aria-live="polite">1</span>
+                                    <span class="card-qty-num" id="qty-num-prod-flan" aria-live="polite">3</span>
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-flan', 1)" aria-label="Aumentar cantidad">+</button>
                                 </div>
                             </div>
@@ -837,11 +873,12 @@
                             <p class="product-desc">Pastel húmedo de zanahoria fresca especiada con nueces y canela, relleno y cubierto con frosting suave de queso crema.</p>
                         </div>
                         <div class="product-meta">
+                            <span class="min-qty-pill">📦 Pedido mínimo: 3 unidades</span>
                             <div class="product-price-row">
                                 <span class="price-tag">RD$ 220 <small style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">c/u</small></span>
                                 <div class="card-qty-stepper" aria-label="Selector de cantidad para Carrot Cake">
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-carrot-cake', -1)" aria-label="Disminuir cantidad">-</button>
-                                    <span class="card-qty-num" id="qty-num-prod-carrot-cake" aria-live="polite">1</span>
+                                    <span class="card-qty-num" id="qty-num-prod-carrot-cake" aria-live="polite">3</span>
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-carrot-cake', 1)" aria-label="Aumentar cantidad">+</button>
                                 </div>
                             </div>
@@ -864,11 +901,12 @@
                             <p class="product-desc">Clásico bizcocho esponjoso de vainilla natural, relleno artesanal y cobertura sedosa al auténtico estilo casero dominicano.</p>
                         </div>
                         <div class="product-meta">
+                            <span class="min-qty-pill">📦 Pedido mínimo: 3 unidades</span>
                             <div class="product-price-row">
                                 <span class="price-tag">RD$ 250 <small style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">c/u</small></span>
                                 <div class="card-qty-stepper" aria-label="Selector de cantidad para Bizcocho de Vainilla">
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-bizcocho-vainilla', -1)" aria-label="Disminuir cantidad">-</button>
-                                    <span class="card-qty-num" id="qty-num-prod-bizcocho-vainilla" aria-live="polite">1</span>
+                                    <span class="card-qty-num" id="qty-num-prod-bizcocho-vainilla" aria-live="polite">3</span>
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-bizcocho-vainilla', 1)" aria-label="Aumentar cantidad">+</button>
                                 </div>
                             </div>
@@ -891,11 +929,12 @@
                             <p class="product-desc">Tarta húmeda de chocolate con generoso relleno de caramelo artesanal y nougat suave, cubierta de ganache y crocante.</p>
                         </div>
                         <div class="product-meta">
+                            <span class="min-qty-pill">📦 Pedido mínimo: 3 unidades</span>
                             <div class="product-price-row">
                                 <span class="price-tag">RD$ 280 <small style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">c/u</small></span>
                                 <div class="card-qty-stepper" aria-label="Selector de cantidad para Bizcocho Milky Way">
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-bizcocho-milky-way', -1)" aria-label="Disminuir cantidad">-</button>
-                                    <span class="card-qty-num" id="qty-num-prod-bizcocho-milky-way" aria-live="polite">1</span>
+                                    <span class="card-qty-num" id="qty-num-prod-bizcocho-milky-way" aria-live="polite">3</span>
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-bizcocho-milky-way', 1)" aria-label="Aumentar cantidad">+</button>
                                 </div>
                             </div>
@@ -918,11 +957,12 @@
                             <p class="product-desc">Inspirado en la famosa tarta de chocolate: bizcocho súper húmedo con fudge cremoso y lluvia intensa de chocolate.</p>
                         </div>
                         <div class="product-meta">
+                            <span class="min-qty-pill">📦 Pedido mínimo: 3 unidades</span>
                             <div class="product-price-row">
                                 <span class="price-tag">RD$ 225 <small style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">c/u</small></span>
                                 <div class="card-qty-stepper" aria-label="Selector de cantidad para Chocomatilda">
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-bizcocho-chocomatilda', -1)" aria-label="Disminuir cantidad">-</button>
-                                    <span class="card-qty-num" id="qty-num-prod-bizcocho-chocomatilda" aria-live="polite">1</span>
+                                    <span class="card-qty-num" id="qty-num-prod-bizcocho-chocomatilda" aria-live="polite">3</span>
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-bizcocho-chocomatilda', 1)" aria-label="Aumentar cantidad">+</button>
                                 </div>
                             </div>
@@ -945,11 +985,12 @@
                             <p class="product-desc">Tradicional volteado con rodajas de piña caramelizadas en azúcar morena y cerezas, sobre una masa dorada impregnada de almíbar.</p>
                         </div>
                         <div class="product-meta">
+                            <span class="min-qty-pill">📦 Pedido mínimo: 3 unidades</span>
                             <div class="product-price-row">
                                 <span class="price-tag">RD$ 140 <small style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">c/u</small></span>
                                 <div class="card-qty-stepper" aria-label="Selector de cantidad para Volteado de Piña">
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-volteado-pina', -1)" aria-label="Disminuir cantidad">-</button>
-                                    <span class="card-qty-num" id="qty-num-prod-volteado-pina" aria-live="polite">1</span>
+                                    <span class="card-qty-num" id="qty-num-prod-volteado-pina" aria-live="polite">3</span>
                                     <button class="card-qty-btn" onclick="cardQtyChange('prod-volteado-pina', 1)" aria-label="Aumentar cantidad">+</button>
                                 </div>
                             </div>
@@ -962,30 +1003,52 @@
 
             </div>
 
-            <!-- Banner Sección "Entre otros... ♡" del Menú Oficial -->
-            <div class="menu-flyer-banner" style="margin-top: 3.5rem; background: #FFFDF9; border: 2px dashed rgba(184, 78, 199, 0.35); border-radius: var(--radius-lg); padding: 2.5rem 2rem; box-shadow: var(--shadow-sm);">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; align-items: center;">
-                    <div>
-                        <span style="font-family: 'Playfair Display', Georgia, serif; font-size: 1.8rem; font-weight: 800; color: var(--text-dark); display: block; margin-bottom: 0.5rem;">
-                            — Entre otros... ♡ —
-                        </span>
-                        <p style="font-size: 1.05rem; color: var(--text-body); line-height: 1.6; margin-bottom: 1.2rem;">
-                            ¿Planeas un cumpleaños, baby shower o mesa de postres? También elaboramos bajo encargo:
+            <!-- Botón para Desplegar / Contraer el Menú Completo -->
+            <div id="menu-expand-bar" class="menu-expand-bar">
+                <button type="button" id="toggle-full-menu-btn" class="btn-expand-menu" aria-expanded="false" aria-controls="products-container">
+                    <i data-lucide="utensils" aria-hidden="true"></i>
+                    <span id="toggle-full-menu-label">Ver el Menú Completo (12 Postres)</span>
+                    <span class="expand-count-pill" id="toggle-full-menu-badge">+9 más</span>
+                    <i data-lucide="chevron-down" class="toggle-chevron" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <!-- Banner Sección "Entre otros... ♡" del Menú Oficial (Compacto + Expandible) -->
+            <div class="menu-flyer-banner">
+                <div class="menu-flyer-top">
+                    <div class="menu-flyer-intro">
+                        <span class="menu-flyer-title">— Entre otros... ♡ —</span>
+                        <p class="menu-flyer-subtitle">
+                            ¿Planeas un cumpleaños, baby shower o mesa de postres? También elaboramos mini cakes, galletas, tartaletas y vasitos bajo encargo.
                         </p>
-                        <ul style="list-style: none; padding-left: 0; display: flex; flex-direction: column; gap: 0.5rem; font-weight: 600; color: var(--text-dark); margin-bottom: 1.5rem;">
-                            <li style="display: flex; align-items: center; gap: 0.6rem;"><i data-lucide="heart" style="width: 16px; color: var(--pink);" aria-hidden="true"></i> Mini cakes personalizados</li>
-                            <li style="display: flex; align-items: center; gap: 0.6rem;"><i data-lucide="heart" style="width: 16px; color: var(--pink);" aria-hidden="true"></i> Galletas decoradas</li>
-                            <li style="display: flex; align-items: center; gap: 0.6rem;"><i data-lucide="heart" style="width: 16px; color: var(--pink);" aria-hidden="true"></i> Tartaletas frutales y de crema</li>
-                            <li style="display: flex; align-items: center; gap: 0.6rem;"><i data-lucide="heart" style="width: 16px; color: var(--pink);" aria-hidden="true"></i> Postres en vasitos para eventos</li>
-                            <li style="display: flex; align-items: center; gap: 0.6rem;"><i data-lucide="sparkles" style="width: 16px; color: var(--gold);" aria-hidden="true"></i> ¡Y mucho más por encargo!</li>
-                        </ul>
-                        <div style="background: rgba(184, 78, 199, 0.08); padding: 1rem 1.4rem; border-radius: var(--radius-md); border-left: 4px solid var(--pink); margin-bottom: 1.5rem;">
-                            <p style="margin: 0; font-style: italic; font-weight: 700; color: var(--text-dark); font-size: 1.05rem;">
-                                «¡Gracias por apoyar mi pequeño gran sueño! ♡»
-                            </p>
-                            <span style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-top: 0.3rem;">— KeyBakery Pastelería Artesanal • Tel. (809) 442-8442</span>
+                        <div class="menu-flyer-toggle-row">
+                            <button type="button" id="toggle-otros-btn" class="btn-soft-toggle" aria-expanded="false" aria-controls="otros-details-collapsible">
+                                <i data-lucide="chevron-down" class="toggle-chevron" aria-hidden="true"></i>
+                                <span>Ver opciones para eventos y encargos</span>
+                            </button>
                         </div>
-                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    </div>
+                    <div class="menu-flyer-photos">
+                        <img src="/assets/images/menu/minicakes_cupcakes.jpg" alt="Mini cakes artesanales" class="flyer-circle-img">
+                        <img src="/assets/images/menu/cupcakes_variados.jpg" alt="Cupcakes y tartaletas" class="flyer-circle-img featured">
+                        <img src="/assets/images/menu/galletas_pastisetas.jpg" alt="Galletas y pastisetas" class="flyer-circle-img">
+                    </div>
+                </div>
+
+                <div id="otros-details-collapsible" class="collapsible-panel" aria-hidden="true">
+                    <div class="menu-flyer-details-inner">
+                        <ul class="menu-flyer-list">
+                            <li><i data-lucide="heart" style="width: 16px; color: var(--pink);" aria-hidden="true"></i> Mini cakes personalizados</li>
+                            <li><i data-lucide="heart" style="width: 16px; color: var(--pink);" aria-hidden="true"></i> Galletas decoradas</li>
+                            <li><i data-lucide="heart" style="width: 16px; color: var(--pink);" aria-hidden="true"></i> Tartaletas frutales y de crema</li>
+                            <li><i data-lucide="heart" style="width: 16px; color: var(--pink);" aria-hidden="true"></i> Postres en vasitos para eventos</li>
+                            <li><i data-lucide="sparkles" style="width: 16px; color: var(--gold);" aria-hidden="true"></i> ¡Y mucho más por encargo!</li>
+                        </ul>
+                        <div class="menu-flyer-quote">
+                            <p>«¡Gracias por apoyar mi pequeño gran sueño! ♡»</p>
+                            <span>— KeyBakery Pastelería Artesanal • Tel. (809) 442-8442</span>
+                        </div>
+                        <div class="menu-flyer-actions">
                             <a href="https://wa.me/18094428442?text=Hola%20KeyBakery,%20quisiera%20hacer%20un%20encargo%20especial%20del%20menú" target="_blank" rel="noopener noreferrer" class="btn-hero-whatsapp" aria-label="Escribir al WhatsApp de KeyBakery">
                                 <i data-lucide="message-circle" aria-hidden="true"></i> Escribir por WhatsApp (809-442-8442)
                             </a>
@@ -993,11 +1056,6 @@
                                 <i data-lucide="image" aria-hidden="true"></i> Ver Menú en Imagen
                             </a>
                         </div>
-                    </div>
-                    <div style="display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap;">
-                        <img src="/assets/images/menu/minicakes_cupcakes.jpg" alt="Mini cakes artesanales" style="width: 130px; height: 130px; border-radius: 50%; object-fit: cover; border: 3px solid var(--pink-subtle); box-shadow: var(--shadow-md);">
-                        <img src="/assets/images/menu/cupcakes_variados.jpg" alt="Cupcakes y tartaletas" style="width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 3px solid var(--gold); box-shadow: var(--shadow-lg);">
-                        <img src="/assets/images/menu/galletas_pastisetas.jpg" alt="Galletas y pastisetas" style="width: 130px; height: 130px; border-radius: 50%; object-fit: cover; border: 3px solid var(--pink-subtle); box-shadow: var(--shadow-md);">
                     </div>
                 </div>
             </div>
@@ -1052,13 +1110,31 @@
                     </div>
                 </div>
 
-                <div class="delivery-map-wrapper">
-                    <iframe 
-                        title="Mapa de cobertura de KeyBakery en Los Alcarrizos y Teleférico"
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15129.897284732152!2d-70.02484915!3d18.52084915!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8eaf8bd35c24e65d%3A0x6b77ea8c6c40683a!2sLos%20Alcarrizos%2C%20Dominican%20Republic!5e0!3m2!1ses!2sdo!4v1690000000000!5m2!1ses!2sdo" 
-                        loading="lazy" 
-                        allowfullscreen="">
-                    </iframe>
+                <div class="delivery-map-panel">
+                    <div class="map-toggle-card" id="map-toggle-card">
+                        <div class="map-toggle-icon">
+                            <i data-lucide="map-pinned" aria-hidden="true"></i>
+                        </div>
+                        <div class="map-toggle-info">
+                            <h4>Mapa Interactivo de Los Alcarrizos</h4>
+                            <p>Consulta la ubicación de nuestro taller y las 4 estaciones del Teleférico.</p>
+                        </div>
+                        <button type="button" id="toggle-map-btn" class="btn-soft-toggle" aria-expanded="false" aria-controls="delivery-map-collapsible">
+                            <i data-lucide="map" aria-hidden="true"></i>
+                            <span>Ver Mapa</span>
+                        </button>
+                    </div>
+
+                    <div id="delivery-map-collapsible" class="collapsible-panel" aria-hidden="true">
+                        <div class="delivery-map-wrapper">
+                            <iframe 
+                                title="Mapa de cobertura de KeyBakery en Los Alcarrizos y Teleférico"
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15129.897284732152!2d-70.02484915!3d18.52084915!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8eaf8bd35c24e65d%3A0x6b77ea8c6c40683a!2sLos%20Alcarrizos%2C%20Dominican%20Republic!5e0!3m2!1ses!2sdo!4v1690000000000!5m2!1ses!2sdo" 
+                                loading="lazy" 
+                                allowfullscreen="">
+                            </iframe>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1074,8 +1150,8 @@
             </div>
 
             <div class="faq-accordion" id="faq-accordion">
-                <div class="faq-item active">
-                    <button class="faq-question" aria-expanded="true">
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
                         <span>¿Por qué solo venden porciones del Producto de la Semana y entregan los domingos?</span>
                         <i data-lucide="chevron-down" class="faq-icon" aria-hidden="true"></i>
                     </button>
@@ -1086,11 +1162,11 @@
 
                 <div class="faq-item">
                     <button class="faq-question" aria-expanded="false">
-                        <span>¿Puedo pedir una porción individual de otro postre que no sea el de la semana?</span>
+                        <span>¿Puedo pedir una sola porción de otro postre que no sea el de la semana?</span>
                         <i data-lucide="chevron-down" class="faq-icon" aria-hidden="true"></i>
                     </button>
                     <div class="faq-answer">
-                        Por motivos de producción y frescura, horneamos lotes frescos con entregas los domingos. En nuestro menú oficial puedes pedir tus favoritos (Brownies, Pastisetas, Alfajores, Tres Leches, Flanes y Bizcochos). Si deseas un pastel entero personalizado para una fecha especial, también lo preparamos bajo encargo con 48h de anticipación.
+                        Para mantener nuestra producción fresca y artesanal, los postres del menú que no son el <strong>Producto de la Semana</strong> tienen un pedido mínimo de <strong>3 unidades en adelante</strong> por sabor. Si deseas pedir <strong>desde 1 sola unidad</strong>, puedes elegir nuestro Especial de la Semana (Brownies) o encargar un <strong>pastel completo o personalizado</strong>.
                     </div>
                 </div>
 
