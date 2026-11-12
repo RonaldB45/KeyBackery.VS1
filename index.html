@@ -1052,7 +1052,7 @@
                             <a href="https://wa.me/18094428442?text=Hola%20KeyBakery,%20quisiera%20hacer%20un%20encargo%20especial%20del%20menú" target="_blank" rel="noopener noreferrer" class="btn-hero-whatsapp" aria-label="Escribir al WhatsApp de KeyBakery">
                                 <i data-lucide="message-circle" aria-hidden="true"></i> Escribir por WhatsApp (809-442-8442)
                             </a>
-                            <a href="/assets/aistudio/0ba41b17-1c43-42d2-ad7f-f73f849eccb1_002f2b20.jpeg" target="_blank" rel="noopener noreferrer" class="btn-secondary" aria-label="Ver el menú oficial impreso en tamaño completo">
+                            <a href="/assets/images/menu-oficial.jpeg" target="_blank" rel="noopener noreferrer" class="btn-secondary" aria-label="Ver el menú oficial impreso en tamaño completo">
                                 <i data-lucide="image" aria-hidden="true"></i> Ver Menú en Imagen
                             </a>
                         </div>
@@ -1236,17 +1236,17 @@
                 <form id="contact-form" class="contact-form" novalidate>
                     <div class="form-group">
                         <label for="contact-name" class="form-label">Tu Nombre</label>
-                        <input type="text" id="contact-name" name="name" class="form-input" autocomplete="name" placeholder="Ej: Ramón Batista" required>
+                        <input type="text" id="contact-name" name="name" class="form-input" autocomplete="name" maxlength="120" placeholder="Ej: Ramón Batista" required>
                     </div>
 
                     <div class="form-group">
                         <label for="contact-phone" class="form-label">Teléfono WhatsApp (RD)</label>
-                        <input type="tel" id="contact-phone" name="tel" class="form-input" autocomplete="tel" inputmode="tel" placeholder="809-442-8442" pattern="^(?:\+?1[-. ]?)?(809|829|849)[-. ]?[0-9]{3}[-. ]?[0-9]{4}$" title="Ingresa un teléfono dominicano válido (809, 829 o 849)" required>
+                        <input type="tel" id="contact-phone" name="tel" class="form-input" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="809-442-8442" pattern="^(?:\+?1[-. ]?)?(809|829|849)[-. ]?[0-9]{3}[-. ]?[0-9]{4}$" title="Ingresa un teléfono dominicano válido (809, 829 o 849)" required>
                     </div>
 
                     <div class="form-group">
                         <label for="contact-message" class="form-label">Tu Consulta o Tipo de Encargo</label>
-                        <textarea id="contact-message" name="message" class="form-textarea" placeholder="Indícanos si deseas reservar porciones del Producto de la Semana o cotizar un pastel entero..." rows="4" required></textarea>
+                        <textarea id="contact-message" name="message" class="form-textarea" maxlength="600" placeholder="Indícanos si deseas reservar porciones del Producto de la Semana o cotizar un pastel entero..." rows="4" required></textarea>
                     </div>
 
                     <button type="submit" class="btn-primary w-full" style="padding: 1rem;">
@@ -1472,6 +1472,7 @@
                     type="text" 
                     id="repostera-chat-input" 
                     class="repostera-chat-input" 
+                    maxlength="500"
                     placeholder="Escríbele a Chef Keyla (ej: ¿Cómo son las entregas?)..." 
                     autocomplete="off"
                     aria-label="Escribe tu mensaje para Chef Keyla"
@@ -1530,12 +1531,12 @@
                 <form id="payment-form" class="contact-form" novalidate>
                     <div class="form-group">
                         <label class="form-label" for="card-name">Tu Nombre y Apellido</label>
-                        <input type="text" id="card-name" name="name" class="form-input" autocomplete="name" placeholder="Ej: Ramón Batista" required>
+                        <input type="text" id="card-name" name="name" class="form-input" autocomplete="name" maxlength="120" placeholder="Ej: Ramón Batista" required>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="customer-phone">Teléfono Móvil (WhatsApp - RD)</label>
-                        <input type="tel" id="customer-phone" name="tel" class="form-input" autocomplete="tel" inputmode="tel" placeholder="809-000-0000" pattern="^(?:\+?1[-. ]?)?(809|829|849)[-. ]?[0-9]{3}[-. ]?[0-9]{4}$" title="Ingresa un número dominicano válido (809, 829 o 849)" required>
+                        <input type="tel" id="customer-phone" name="tel" class="form-input" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="809-000-0000" pattern="^(?:\+?1[-. ]?)?(809|829|849)[-. ]?[0-9]{3}[-. ]?[0-9]{4}$" title="Ingresa un número dominicano válido (809, 829 o 849)" required>
                     </div>
                     
                     <div class="form-group">
@@ -1611,13 +1612,13 @@
                     <!-- Campo de dirección para delivery en Los Alcarrizos -->
                     <div class="form-group">
                         <label class="form-label hidden" for="customer-address" id="label-customer-address">Sector y Dirección en Los Alcarrizos</label>
-                        <textarea id="customer-address" name="street-address" class="form-textarea hidden" autocomplete="street-address" placeholder="Ej: Savica, Calle 4ta #12 / Los Americanos..." rows="2"></textarea>
+                        <textarea id="customer-address" name="street-address" class="form-textarea hidden" autocomplete="street-address" maxlength="250" placeholder="Ej: Savica, Calle 4ta #12 / Los Americanos..." rows="2"></textarea>
                     </div>
 
                     <!-- Campo de fecha deseada para pasteles completos -->
                     <div class="form-group hidden" id="encargo-date-box">
                         <label class="form-label" for="encargo-date">¿Para qué fecha necesitas tu pastel o evento? (Mín. 48h):</label>
-                        <input type="text" id="encargo-date" class="form-input" placeholder="Ej: Viernes 6 de Noviembre a las 4:00 PM">
+                        <input type="text" id="encargo-date" class="form-input" maxlength="120" placeholder="Ej: Viernes 6 de Noviembre a las 4:00 PM">
                     </div>
                     
                     <div id="delivery-warning" class="text-sm color-gold hidden">

@@ -1,17 +1,59 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function isValidOrder(data) {
+      return data.keys().hasAll([
+          'numeroOrden', 'cliente', 'telefono', 'items', 'total',
+          'metodoEntrega', 'ubicacionDetalle', 'proximoDomingo',
+          'fecha', 'status', 'ciudad'
+        ])
+        && data.keys().hasOnly([
+          'numeroOrden', 'cliente', 'telefono', 'items', 'total',
+          'metodoEntrega', 'ubicacionDetalle', 'proximoDomingo',
+          'fecha', 'status', 'ciudad'
+        ])
+        && data.numeroOrden is string && data.numeroOrden.size() <= 16 && data.numeroOrden.matches('^KB-[0-9]{6}$')
+        && data.cliente is string && data.cliente.size() >= 1 && data.cliente.size() <= 120
+        && data.telefono is string && data.telefono.size() >= 7 && data.telefono.size() <= 30
+        && data.items is list && data.items.size() >= 1 && data.items.size() <= 50 && data.items[0] is map
+        && data.total is number && data.total > 0 && data.total <= 1000000
+        && data.metodoEntrega is string && data.metodoEntrega.size() >= 1 && data.metodoEntrega.size() <= 200
+        && data.ubicacionDetalle is string && data.ubicacionDetalle.size() >= 1 && data.ubicacionDetalle.size() <= 300
+        && data.proximoDomingo is string && data.proximoDomingo.size() >= 1 && data.proximoDomingo.size() <= 100
+        && data.fecha == request.time
+        && data.status == 'pending'
+        && data.ciudad is string && data.ciudad.size() >= 1 && data.ciudad.size() <= 100;
+    }
+
+    // Catálogo público de solo lectura (sin escrituras anónimas desde cliente)
     match /products/{productId} {
-      allow read, write: if true;
+      allow get: if isValidId(productId);
+      allow list: if true;
+      allow create, update, delete: if false;
     }
 
+    // Pedidos: solo creación validada desde tienda pública; lectura/edición/borrado bloqueados para proteger PII de clientes
     match /orders/{orderId} {
-      allow read, write: if true;
+      allow get, list, update, delete: if false;
+      allow create: if isValidId(orderId) && isValidOrder(incoming());
     }
 
+    // Colección interna bloqueada
     match /users/{userId} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }
-

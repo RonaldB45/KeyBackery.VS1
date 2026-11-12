@@ -1,5 +1,4 @@
 # robots.txt para KeyBakery
 User-agent: *
 Allow: /
-
-Sitemap: https://keybakery.com.do/sitemap.xml
+Disallow: /api/

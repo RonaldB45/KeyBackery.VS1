@@ -5,44 +5,50 @@
       "description": "A bakery product available for purchase.",
       "type": "object",
       "properties": {
-        "id": { "type": "string", "description": "Unique identifier for the product." },
-        "nombre": { "type": "string", "description": "Name of the product." },
+        "id": { "type": "string", "description": "Unique identifier for the product.", "maxLength": 128 },
+        "nombre": { "type": "string", "description": "Name of the product.", "maxLength": 120 },
         "precio": { "type": "number", "description": "Price of the product in DOP." },
-        "imagen": { "type": "string", "description": "URL of the product image." },
+        "imagen": { "type": "string", "description": "URL of the product image.", "maxLength": 500 },
         "stock": { "type": "number", "description": "Current inventory count." },
         "activo": { "type": "boolean", "description": "Whether the product is visible in the shop." },
-        "categoria": { "type": "string", "description": "Category of the product (e.g., Dulces, Salados)." }
+        "categoria": { "type": "string", "description": "Category of the product.", "maxLength": 60 }
       },
       "required": ["nombre", "precio", "imagen"]
     },
     "Order": {
       "title": "Order",
-      "description": "A customer order.",
+      "description": "A customer order submitted via checkout.",
       "type": "object",
       "properties": {
-        "cliente": { "type": "string", "description": "Name of the customer." },
-        "total": { "type": "number", "description": "Total amount of the order." },
-        "fecha": { "type": "string", "format": "date-time", "description": "When the order was placed." },
-        "items": { "type": "array", "items": { "type": "object" }, "description": "List of items purchased." },
-        "status": { "type": "string", "enum": ["pending", "completed", "cancelled"], "description": "Current status of the order." }
+        "numeroOrden": { "type": "string", "pattern": "^KB-[0-9]{6}$", "maxLength": 16, "description": "Order reference code." },
+        "cliente": { "type": "string", "minLength": 1, "maxLength": 120, "description": "Name of the customer." },
+        "telefono": { "type": "string", "minLength": 7, "maxLength": 30, "description": "Customer WhatsApp phone number." },
+        "items": { "type": "array", "description": "List of items purchased (max 50)." },
+        "total": { "type": "number", "description": "Total amount of the order in DOP." },
+        "metodoEntrega": { "type": "string", "minLength": 1, "maxLength": 200, "description": "Selected delivery method." },
+        "ubicacionDetalle": { "type": "string", "minLength": 1, "maxLength": 300, "description": "Delivery station, address, or date detail." },
+        "proximoDomingo": { "type": "string", "minLength": 1, "maxLength": 100, "description": "Next Sunday delivery label." },
+        "fecha": { "type": "string", "format": "date-time", "description": "Server timestamp when the order was placed." },
+        "status": { "type": "string", "enum": ["pending", "completed", "cancelled"], "description": "Current status of the order." },
+        "ciudad": { "type": "string", "minLength": 1, "maxLength": 100, "description": "City of delivery." }
       },
-      "required": ["cliente", "total", "items", "fecha"]
+      "required": ["numeroOrden", "cliente", "telefono", "items", "total", "metodoEntrega", "ubicacionDetalle", "proximoDomingo", "fecha", "status", "ciudad"]
     },
     "User": {
       "title": "User",
-      "description": "A user of the application.",
+      "description": "An internal application user.",
       "type": "object",
       "properties": {
-        "uid": { "type": "string" },
-        "email": { "type": "string" },
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 160 },
         "role": { "type": "string", "enum": ["admin", "customer"] }
       },
       "required": ["uid", "email", "role"]
     }
   },
   "firestore": {
-    "products": { "schema": "Product", "description": "Collection of products." },
-    "orders": { "schema": "Order", "description": "Collection of orders." },
-    "users": { "schema": "User", "description": "Collection of users and their roles." }
+    "products": { "schema": "Product", "description": "Read-only public catalog of bakery products." },
+    "orders": { "schema": "Order", "description": "Write-only validated customer orders (no public PII reads)." },
+    "users": { "schema": "User", "description": "Locked internal user collection." }
   }
 }

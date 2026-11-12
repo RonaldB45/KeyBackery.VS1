@@ -203,9 +203,69 @@ const defaultProducts = [
     }
 ];
 
+// --- Utilidades de Seguridad y Sanitización (XSS / Storage / URL) ---
+function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function sanitizeImageUrl(url) {
+    if (typeof url !== 'string') return '/assets/images/brownie_clasico.jpg';
+    const trimmed = url.trim();
+    if (trimmed.startsWith('/assets/')) return trimmed;
+    try {
+        const parsed = new URL(trimmed);
+        if (parsed.protocol === 'https:') return parsed.href;
+    } catch {
+        // Invalid URL falls back safely
+    }
+    return '/assets/images/brownie_clasico.jpg';
+}
+
+function sanitizeSafeId(id) {
+    if (typeof id !== 'string') return '';
+    return id.replace(/[^a-zA-Z0-9_-]/g, '');
+}
+
+function loadSafeCart() {
+    try {
+        const raw = localStorage.getItem('keybakery_cart');
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+            .filter(item =>
+                item &&
+                typeof item === 'object' &&
+                typeof item.id === 'string' &&
+                typeof item.nombre === 'string' &&
+                typeof item.precio === 'number' &&
+                Number.isFinite(item.precio) &&
+                item.precio > 0
+            )
+            .slice(0, 30)
+            .map(item => ({
+                ...item,
+                id: sanitizeSafeId(item.id),
+                nombre: item.nombre.slice(0, 120),
+                imagen: sanitizeImageUrl(item.imagen),
+                cantidad: Math.max(1, Math.min(99, Math.floor(Number(item.cantidad) || 1)))
+            }))
+            .filter(item => item.id.length > 0);
+    } catch {
+        localStorage.removeItem('keybakery_cart');
+        return [];
+    }
+}
+
 let listaProductos = [...defaultProducts];
 let hasDynamicFirestoreData = false;
-let carrito = JSON.parse(localStorage.getItem('keybakery_cart')) || [];
+let carrito = loadSafeCart();
 let activeCategory = 'todos';
 let isFullMenuExpanded = false;
 const FEATURED_PRODUCT_IDS = new Set([
@@ -214,18 +274,15 @@ const FEATURED_PRODUCT_IDS = new Set([
     'prod-bizcocho-milky-way'
 ]);
 const WEEKLY_SPECIAL_IDS = new Set([
-    'prod-brownies',
-    'prod-brownie-clasico',
-    'prod-caja-brownies'
+    'prod-brownies'
 ]);
 
 function resolveProductForMinRule(prodOrId) {
     if (!prodOrId) return null;
     if (typeof prodOrId === 'string') {
-        const lookupId = prodOrId === 'prod-brownie-clasico' ? 'prod-brownies' : prodOrId;
         return (
-            listaProductos.find(p => p.id === lookupId || p.id === prodOrId) ||
-            defaultProducts.find(p => p.id === lookupId || p.id === prodOrId) ||
+            listaProductos.find(p => p.id === prodOrId) ||
+            defaultProducts.find(p => p.id === prodOrId) ||
             { id: prodOrId }
         );
     }
@@ -451,17 +508,7 @@ window.cardAddToCart = function(id, btnElement) {
     _lastAddToCartTime = now;
     _lastAddToCartId = id;
 
-    // Resolver alias de producto si aplica
-    let lookupId = id;
-    if (id === 'prod-brownie-clasico') lookupId = 'prod-brownies';
-
-    // 1. Buscar en listaProductos, luego en defaultProducts, luego fallback específico
-    let prod = listaProductos.find(p => p.id === lookupId || p.id === id) || defaultProducts.find(p => p.id === lookupId || p.id === id);
-    if (!prod) {
-        if (id === 'prod-brownie-clasico' || id === 'prod-brownies' || id === 'prod-caja-brownies') {
-            prod = defaultProducts.find(p => p.id === 'prod-brownies');
-        }
-    }
+    const prod = listaProductos.find(p => p.id === id) || defaultProducts.find(p => p.id === id);
 
     if (!prod) {
         console.warn("Producto no encontrado:", id);
@@ -629,10 +676,16 @@ function renderizarMenu() {
     }
 
     DOM.productsContainer.innerHTML = filtrados.map(p => {
+        const safeId = escapeHtml(sanitizeSafeId(p.id));
+        const safeName = escapeHtml(p.nombre || '');
+        const safeDesc = escapeHtml(p.descripcion || 'Elaborado artesanalmente en Los Alcarrizos.');
+        const safeBadge = p.badge ? `<span class="product-badge">${escapeHtml(p.badge)}</span>` : '';
+        const safeCat = escapeHtml(p.categoria || '');
+        const safeImg = escapeHtml(sanitizeImageUrl(p.imagen));
+        const priceNum = Number(p.precio) || 0;
+
         const minQty = getMinOrderQty(p);
         const qty = Math.max(minQty, getProductQuantity(p.id));
-        const badgeHtml = p.badge ? `<span class="product-badge">${p.badge}</span>` : '';
-        const descHtml = p.descripcion || 'Elaborado artesanalmente en Los Alcarrizos.';
         const isUpcoming = p.tipo === 'proxima';
         const isWeekly = isWeeklySpecialProduct(p);
         const minPillHtml = isWeekly
@@ -642,12 +695,12 @@ function renderizarMenu() {
                 : `<span class="min-qty-pill">📦 Pedido mínimo: ${minQty} unidades</span>`);
 
         return `
-            <article class="product-card" id="card-${p.id}" data-category="${p.categoria}">
+            <article class="product-card" id="card-${safeId}" data-category="${safeCat}">
                 <div class="product-image-wrapper">
-                    ${badgeHtml}
+                    ${safeBadge}
                     <img 
-                        src="${p.imagen}" 
-                        alt="${p.nombre}" 
+                        src="${safeImg}" 
+                        alt="${safeName}" 
                         width="400" 
                         height="260" 
                         loading="lazy" 
@@ -657,30 +710,30 @@ function renderizarMenu() {
                 </div>
                 <div class="product-info">
                     <div>
-                        <h3>${p.nombre}</h3>
-                        <p class="product-desc">${descHtml}</p>
+                        <h3>${safeName}</h3>
+                        <p class="product-desc">${safeDesc}</p>
                     </div>
 
                     <div class="product-meta">
                         ${!isUpcoming ? minPillHtml : ''}
                         <div class="product-price-row">
-                            <span class="price-tag">${isUpcoming ? 'Próximamente' : `RD$ ${p.precio.toLocaleString()} <small style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">c/u</small>`}</span>
+                            <span class="price-tag">${isUpcoming ? 'Próximamente' : `RD$ ${priceNum.toLocaleString()} <small style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">c/u</small>`}</span>
                             ${!isUpcoming ? `
-                            <div class="card-qty-stepper" aria-label="Selector de cantidad para ${p.nombre}">
-                                <button class="card-qty-btn" onclick="cardQtyChange('${p.id}', -1)" aria-label="Disminuir cantidad de ${p.nombre}">-</button>
-                                <span class="card-qty-num" id="qty-num-${p.id}" aria-live="polite">${qty}</span>
-                                <button class="card-qty-btn" onclick="cardQtyChange('${p.id}', 1)" aria-label="Aumentar cantidad de ${p.nombre}">+</button>
+                            <div class="card-qty-stepper" aria-label="Selector de cantidad para ${safeName}">
+                                <button class="card-qty-btn" onclick="cardQtyChange('${safeId}', -1)" aria-label="Disminuir cantidad de ${safeName}">-</button>
+                                <span class="card-qty-num" id="qty-num-${safeId}" aria-live="polite">${qty}</span>
+                                <button class="card-qty-btn" onclick="cardQtyChange('${safeId}', 1)" aria-label="Aumentar cantidad de ${safeName}">+</button>
                             </div>
                             ` : `
                             <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Semana Temática</span>
                             `}
                         </div>
                         ${!isUpcoming ? `
-                        <button class="btn-card-add" onclick="cardAddToCart('${p.id}', this)" aria-label="Agregar ${p.nombre} al Carrito">
+                        <button class="btn-card-add" onclick="cardAddToCart('${safeId}', this)" aria-label="Agregar ${safeName} al Carrito">
                             <i data-lucide="shopping-basket" style="width: 18px; height: 18px;" aria-hidden="true"></i> Agregar al Carrito
                         </button>
                         ` : `
-                        <a href="https://wa.me/${WHATSAPP_NUMBER}?text=Hola%20KeyBakery,%20quisiera%20saber%20cuándo%20toca%20la%20semana%20de%20${encodeURIComponent(p.nombre)}%20o%20encargarlo%20completo" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full text-center" style="padding: 0.65rem;" aria-label="Consultar fecha o encargar pastel completo de ${p.nombre}">
+                        <a href="https://wa.me/${WHATSAPP_NUMBER}?text=Hola%20KeyBakery,%20quisiera%20saber%20cuándo%20toca%20la%20semana%20de%20${encodeURIComponent(p.nombre || '')}%20o%20encargarlo%20completo" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full text-center" style="padding: 0.65rem;" aria-label="Consultar fecha o encargar pastel completo de ${safeName}">
                             <i data-lucide="calendar" style="width: 16px; height: 16px;" aria-hidden="true"></i> Consultar Fecha
                         </a>
                         `}
@@ -744,11 +797,15 @@ function actualizarCarrito() {
             </div>`;
     } else {
         carrito.forEach(item => {
+            const safeId = escapeHtml(sanitizeSafeId(item.id));
+            const safeName = escapeHtml(item.nombre || '');
+            const safeImg = escapeHtml(sanitizeImageUrl(item.imagen));
+            const priceNum = Number(item.precio) || 0;
             const minQty = getMinOrderQty(item);
             const isWeekly = isWeeklySpecialProduct(item);
             const isWholeOrCustom = isWholeOrCustomProduct(item);
 
-            total += item.precio * item.cantidad;
+            total += priceNum * item.cantidad;
             itemsContador += item.cantidad;
 
             if (isWeekly) hasWeeklyItem = true;
@@ -765,21 +822,21 @@ function actualizarCarrito() {
 
             DOM.cartItemsContainer.innerHTML += `
                 <div class="cart-item">
-                    <img src="${item.imagen}" class="cart-item-img" alt="${item.nombre}" width="70" height="70" loading="lazy" referrerpolicy="no-referrer">
+                    <img src="${safeImg}" class="cart-item-img" alt="${safeName}" width="70" height="70" loading="lazy" referrerpolicy="no-referrer">
                     <div class="cart-item-info">
                         <div class="cart-item-header-row">
-                            <p class="cart-item-title">${item.nombre}</p>
-                            <button type="button" class="btn-cart-remove" onclick="eliminarDelCarrito('${item.id}')" aria-label="Eliminar ${item.nombre} del carrito" title="Quitar del carrito">
+                            <p class="cart-item-title">${safeName}</p>
+                            <button type="button" class="btn-cart-remove" onclick="eliminarDelCarrito('${safeId}')" aria-label="Eliminar ${safeName} del carrito" title="Quitar del carrito">
                                 <i data-lucide="trash-2" aria-hidden="true"></i>
                             </button>
                         </div>
                         <p class="text-xs color-gold font-bold">${badgeNota}</p>
-                        <p class="cart-item-price">DOP$ ${item.precio.toLocaleString()} <small style="font-weight: 500; color: var(--text-muted);">c/u • Subtotal: DOP$ ${(item.precio * item.cantidad).toLocaleString()}</small></p>
+                        <p class="cart-item-price">DOP$ ${priceNum.toLocaleString()} <small style="font-weight: 500; color: var(--text-muted);">c/u • Subtotal: DOP$ ${(priceNum * item.cantidad).toLocaleString()}</small></p>
                         <div class="cart-item-actions-row">
-                            <div class="cart-item-controls" aria-label="Controles de cantidad para ${item.nombre}">
-                                <button class="btn-qty ${atMinClass}" onclick="cambiarCant('${item.id}', -1)" aria-label="Restar una unidad de ${item.nombre}">-</button>
+                            <div class="cart-item-controls" aria-label="Controles de cantidad para ${safeName}">
+                                <button class="btn-qty ${atMinClass}" onclick="cambiarCant('${safeId}', -1)" aria-label="Restar una unidad de ${safeName}">-</button>
                                 <span class="cart-item-qty" aria-live="polite">${item.cantidad}</span>
-                                <button class="btn-qty" onclick="cambiarCant('${item.id}', 1)" aria-label="Sumar una unidad de ${item.nombre}">+</button>
+                                <button class="btn-qty" onclick="cambiarCant('${safeId}', 1)" aria-label="Sumar una unidad de ${safeName}">+</button>
                             </div>
                             ${minQty > 1 ? `<span class="cart-min-tag">Mín. ${minQty} u.</span>` : ''}
                         </div>
@@ -854,13 +911,17 @@ window.cargarSugerencias = function() {
 
     sugeridos.forEach(p => {
         const minQty = getMinOrderQty(p);
+        const safeId = escapeHtml(sanitizeSafeId(p.id));
+        const safeName = escapeHtml(p.nombre || '');
+        const safeImg = escapeHtml(sanitizeImageUrl(p.imagen));
+        const priceNum = Number(p.precio) || 0;
         DOM.upsellContainer.innerHTML += `
             <div class="cart-item" style="border: 1.5px dashed var(--gold-light);">
-                <img src="${p.imagen}" class="cart-item-img" alt="${p.nombre}" width="70" height="70" loading="lazy" referrerpolicy="no-referrer">
+                <img src="${safeImg}" class="cart-item-img" alt="${safeName}" width="70" height="70" loading="lazy" referrerpolicy="no-referrer">
                 <div style="flex-grow: 1;">
-                    <p class="font-bold" style="font-size: 0.95rem; margin-bottom: 0.2rem;">${p.nombre}</p>
-                    <p class="text-sm color-gold font-bold mb-2">DOP$ ${p.precio.toLocaleString()} c/u ${minQty > 1 ? `<small style="color: var(--text-muted); font-weight: 600;">(Mín. ${minQty} u.)</small>` : ''}</p>
-                    <button type="button" class="btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.8rem;" aria-label="Añadir ${p.nombre} al pedido" onclick="window.agregarSugerencia('${p.id}')">
+                    <p class="font-bold" style="font-size: 0.95rem; margin-bottom: 0.2rem;">${safeName}</p>
+                    <p class="text-sm color-gold font-bold mb-2">DOP$ ${priceNum.toLocaleString()} c/u ${minQty > 1 ? `<small style="color: var(--text-muted); font-weight: 600;">(Mín. ${minQty} u.)</small>` : ''}</p>
+                    <button type="button" class="btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.8rem;" aria-label="Añadir ${safeName} al pedido" onclick="window.agregarSugerencia('${safeId}')">
                         ${minQty > 1 ? `+ Añadir ${minQty} u. (Mín.)` : '+ Añadir al Pedido'}
                     </button>
                 </div>
@@ -917,15 +978,15 @@ let currentInvoiceFormat = 'a4';
 async function procesarPedido(e) {
     e.preventDefault();
 
-    const nombreCliente = document.getElementById('card-name').value.trim();
-    const telefonoCliente = document.getElementById('customer-phone').value.trim();
+    const nombreCliente = (document.getElementById('card-name')?.value || '').trim().slice(0, 120);
+    const telefonoCliente = (document.getElementById('customer-phone')?.value || '').trim().slice(0, 30);
     const metodoEntregaInput = document.querySelector('input[name="delivery-method"]:checked');
     const metodo = metodoEntregaInput ? metodoEntregaInput.value : 'pickup';
     
     // Obtener la estación seleccionada del Teleférico (desde el input oculto o el selector activo)
-    const estacionTeleferico = (DOM.telefericoStationSelect ? DOM.telefericoStationSelect.value : '') || 'Estación 1: Los Alcarrizos (Entrada / Autopista Duarte)';
-    const direccion = document.getElementById('customer-address').value.trim();
-    const fechaEncargo = DOM.encargoDateInput ? DOM.encargoDateInput.value.trim() : '';
+    const estacionTeleferico = ((DOM.telefericoStationSelect ? DOM.telefericoStationSelect.value : '') || 'Estación 1: Los Alcarrizos (Entrada / Autopista Duarte)').slice(0, 150);
+    const direccion = (document.getElementById('customer-address')?.value || '').trim().slice(0, 250);
+    const fechaEncargo = (DOM.encargoDateInput ? DOM.encargoDateInput.value : '').trim().slice(0, 120);
 
     if (!nombreCliente) {
         showToast("Por favor ingresa tu nombre completo.");
@@ -933,8 +994,9 @@ async function procesarPedido(e) {
         return;
     }
 
-    if (!telefonoCliente) {
-        showToast("Por favor ingresa tu teléfono WhatsApp de Los Alcarrizos / RD.");
+    const phoneDigits = telefonoCliente.replace(/\D/g, '');
+    if (!telefonoCliente || phoneDigits.length < 7) {
+        showToast("Por favor ingresa un teléfono WhatsApp válido (ej: 809-000-0000).");
         document.getElementById('customer-phone')?.focus();
         return;
     }
@@ -968,22 +1030,29 @@ async function procesarPedido(e) {
     const totalFinal = subtotal + costoEnvio;
     const proximoDomingoStr = getProximoDomingoTexto();
     const numeroOrden = 'KB-' + Math.floor(100000 + Math.random() * 900000);
+    const safeItems = carrito.slice(0, 50).map(i => ({
+        id: sanitizeSafeId(i.id),
+        nombre: String(i.nombre || '').slice(0, 120),
+        precio: Number(i.precio) || 0,
+        cantidad: Math.max(1, Math.min(99, Math.floor(Number(i.cantidad) || 1))),
+        categoria: String(i.categoria || 'menu').slice(0, 50)
+    }));
 
     ultimoPedido = {
         numeroOrden,
         cliente: nombreCliente,
         telefono: telefonoCliente,
-        items: carrito.map(i => ({ id: i.id, nombre: i.nombre, precio: i.precio, cantidad: i.cantidad, categoria: i.categoria })),
+        items: safeItems,
         subtotal,
         costoEnvio,
         total: totalFinal,
-        metodoTexto,
-        detalleUbicacion,
-        proximoDomingo: proximoDomingoStr,
+        metodoTexto: metodoTexto.slice(0, 200),
+        detalleUbicacion: detalleUbicacion.slice(0, 300),
+        proximoDomingo: proximoDomingoStr.slice(0, 100),
         fechaOrden: new Date().toLocaleDateString('es-DO', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
     };
 
-    // 1. Guardar en Firestore en segundo plano (SIN bloquear con await para no perder el gesto del usuario y evitar bloqueo de popups)
+    // 1. Guardar en Firestore en segundo plano (sin PII público de lectura gracias a firestore.rules)
     if (db) {
         addDoc(collection(db, "orders"), {
             numeroOrden,
@@ -991,9 +1060,9 @@ async function procesarPedido(e) {
             telefono: telefonoCliente,
             items: ultimoPedido.items,
             total: totalFinal,
-            metodoEntrega: metodoTexto,
-            ubicacionDetalle: detalleUbicacion,
-            proximoDomingo: proximoDomingoStr,
+            metodoEntrega: ultimoPedido.metodoTexto,
+            ubicacionDetalle: ultimoPedido.detalleUbicacion,
+            proximoDomingo: ultimoPedido.proximoDomingo,
             fecha: serverTimestamp(),
             status: "pending",
             ciudad: "Los Alcarrizos"
@@ -1081,17 +1150,22 @@ function getFacturaFallbackOrder() {
 function renderFacturaSheet(format = 'a4') {
     if (!DOM.invoiceSheet) return;
     const pedido = ultimoPedido || getFacturaFallbackOrder();
+    const safeFormat = format === 'ticket' ? 'ticket' : 'a4';
 
-    DOM.invoiceSheet.className = `invoice-sheet format-${format}`;
+    DOM.invoiceSheet.className = `invoice-sheet format-${safeFormat}`;
 
-    const itemsRows = pedido.items.map(item => `
+    const itemsRows = pedido.items.map(item => {
+        const priceNum = Number(item.precio) || 0;
+        const qtyNum = Number(item.cantidad) || 0;
+        return `
         <tr>
-            <td style="font-weight: 600;">${item.nombre}</td>
-            <td style="text-align: center; font-weight: 700;">${item.cantidad}</td>
-            <td style="text-align: right; color: var(--text-muted);">RD$ ${item.precio.toLocaleString()}</td>
-            <td style="text-align: right; font-weight: 800; color: var(--pink-hover);">RD$ ${(item.precio * item.cantidad).toLocaleString()}</td>
+            <td style="font-weight: 600;">${escapeHtml(item.nombre)}</td>
+            <td style="text-align: center; font-weight: 700;">${qtyNum}</td>
+            <td style="text-align: right; color: var(--text-muted);">RD$ ${priceNum.toLocaleString()}</td>
+            <td style="text-align: right; font-weight: 800; color: var(--pink-hover);">RD$ ${(priceNum * qtyNum).toLocaleString()}</td>
         </tr>
-    `).join('');
+    `;
+    }).join('');
 
     DOM.invoiceSheet.innerHTML = `
         <header class="invoice-brand-header">
@@ -1104,21 +1178,21 @@ function renderFacturaSheet(format = 'a4') {
                 </div>
             </div>
             <div class="invoice-tag-pill">
-                <strong style="display: block; font-size: 0.95rem; color: var(--text-dark);">ORDEN #${pedido.numeroOrden}</strong>
+                <strong style="display: block; font-size: 0.95rem; color: var(--text-dark);">ORDEN #${escapeHtml(pedido.numeroOrden)}</strong>
                 <span>ESTADO: CONFIRMADO</span>
             </div>
         </header>
 
         <section class="invoice-meta-grid">
             <div class="invoice-meta-box">
-                <div style="margin-bottom: 0.35rem;"><strong>Cliente:</strong> <span class="val">${pedido.cliente}</span></div>
-                <div style="margin-bottom: 0.35rem;"><strong>Teléfono:</strong> <span class="val">${pedido.telefono}</span></div>
-                <div><strong>Fecha de Emisión:</strong> <span class="val">${pedido.fechaOrden}</span></div>
+                <div style="margin-bottom: 0.35rem;"><strong>Cliente:</strong> <span class="val">${escapeHtml(pedido.cliente)}</span></div>
+                <div style="margin-bottom: 0.35rem;"><strong>Teléfono:</strong> <span class="val">${escapeHtml(pedido.telefono)}</span></div>
+                <div><strong>Fecha de Emisión:</strong> <span class="val">${escapeHtml(pedido.fechaOrden)}</span></div>
             </div>
             <div class="invoice-meta-box">
-                <div style="margin-bottom: 0.35rem;"><strong>Entrega:</strong> <span class="val">${pedido.metodoTexto}</span></div>
-                <div style="margin-bottom: 0.35rem;"><strong>Ubicación:</strong> <span class="val">${pedido.detalleUbicacion || 'Los Alcarrizos'}</span></div>
-                <div><strong>Programado:</strong> <span class="val" style="color: var(--pink); font-weight: 700;">${pedido.proximoDomingo}</span></div>
+                <div style="margin-bottom: 0.35rem;"><strong>Entrega:</strong> <span class="val">${escapeHtml(pedido.metodoTexto)}</span></div>
+                <div style="margin-bottom: 0.35rem;"><strong>Ubicación:</strong> <span class="val">${escapeHtml(pedido.detalleUbicacion || 'Los Alcarrizos')}</span></div>
+                <div><strong>Programado:</strong> <span class="val" style="color: var(--pink); font-weight: 700;">${escapeHtml(pedido.proximoDomingo)}</span></div>
             </div>
         </section>
 
@@ -1139,15 +1213,15 @@ function renderFacturaSheet(format = 'a4') {
         <div class="invoice-totals-box">
             <div class="invoice-total-row">
                 <span style="color: var(--text-muted);">Subtotal Postres:</span>
-                <strong>RD$ ${pedido.subtotal.toLocaleString()}</strong>
+                <strong>RD$ ${(Number(pedido.subtotal) || 0).toLocaleString()}</strong>
             </div>
             <div class="invoice-total-row">
                 <span style="color: var(--text-muted);">Entrega / Teleférico:</span>
-                <strong>${pedido.costoEnvio > 0 ? `RD$ ${pedido.costoEnvio.toLocaleString()}` : 'Gratis (En Taller)'}</strong>
+                <strong>${pedido.costoEnvio > 0 ? `RD$ ${(Number(pedido.costoEnvio) || 0).toLocaleString()}` : 'Gratis (En Taller)'}</strong>
             </div>
             <div class="invoice-total-row invoice-grand-total">
                 <span>TOTAL A PAGAR:</span>
-                <span>RD$ ${pedido.total.toLocaleString()}</span>
+                <span>RD$ ${(Number(pedido.total) || 0).toLocaleString()}</span>
             </div>
         </div>
 
@@ -1592,20 +1666,12 @@ function init() {
     actualizarCarrito();
     initScrollReveal();
 
-    // Conectar botones destacados del Producto de la Semana
+    // Conectar botón destacado del Producto de la Semana
     const btnHeroPorcion = document.getElementById('btn-pedir-porcion-semana');
     if (btnHeroPorcion) {
         btnHeroPorcion.addEventListener('click', (e) => {
             e.preventDefault();
             window.cardAddToCart('prod-brownies', btnHeroPorcion);
-        });
-    }
-
-    const btnHeroCaja = document.getElementById('btn-pedir-caja-semana');
-    if (btnHeroCaja) {
-        btnHeroCaja.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.cardAddToCart('prod-caja-brownies', btnHeroCaja);
         });
     }
 
@@ -1909,9 +1975,9 @@ function init() {
     if (DOM.contactForm) {
         DOM.contactForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const nombre = document.getElementById('contact-name').value.trim();
-            const tel = document.getElementById('contact-phone').value.trim();
-            const msg = document.getElementById('contact-message').value.trim();
+            const nombre = (document.getElementById('contact-name')?.value || '').trim().slice(0, 120);
+            const tel = (document.getElementById('contact-phone')?.value || '').trim().slice(0, 30);
+            const msg = (document.getElementById('contact-message')?.value || '').trim().slice(0, 600);
 
             if (!nombre || !tel || !msg) {
                 showToast("Por favor completa todos los campos del formulario.");
@@ -1919,8 +1985,14 @@ function init() {
             }
 
             let txt = `🎂 *CONSULTA - KEYBAKERY (LOS ALCARRIZOS)*\n\n*Nombre:* ${nombre}\n*Teléfono:* ${tel}\n*Mensaje:*\n${msg}`;
-            const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(txt)}`;
-            window.open(url, '_blank');
+            const url = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(txt)}`;
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
             DOM.contactForm.reset();
             showToast("¡Mensaje preparado para enviar por WhatsApp!");
         });
@@ -2119,19 +2191,24 @@ window.handleReposteraQuickAction = function(key) {
             desc: 'Puro chocolate con textura húmeda fudge y costra craquelada brillante.'
         };
 
+        const safeWeeklyName = escapeHtml(weeklyItem.nombre || '');
+        const safeWeeklyDesc = escapeHtml(weeklyItem.desc || weeklyItem.descripcion || 'Porción individual recién horneada para este domingo.');
+        const safeWeeklyId = escapeHtml(sanitizeSafeId(weeklyItem.id));
+        const weeklyPriceNum = Number(weeklyItem.precio) || 100;
+
         const replyHtml = `
             <p>✨ <strong>Postre Especial de Esta Semana:</strong></p>
-            <p>Nuestro horno está dedicado a: <strong>${weeklyItem.nombre}</strong> (RD$ ${weeklyItem.precio} c/u). Horneado fresco por lotes para entregar este <strong>${domingoTexto}</strong> en Los Alcarrizos.</p>
+            <p>Nuestro horno está dedicado a: <strong>${safeWeeklyName}</strong> (RD$ ${weeklyPriceNum} c/u). Horneado fresco por lotes para entregar este <strong>${escapeHtml(domingoTexto)}</strong> en Los Alcarrizos.</p>
             <p>Agrégalo directamente a tu pedido:</p>
             
             <div class="chat-product-card">
                 <div class="chat-product-header">
-                    <span class="chat-product-title">${weeklyItem.nombre}</span>
-                    <span class="chat-product-price">RD$ ${weeklyItem.precio} c/u</span>
+                    <span class="chat-product-title">${safeWeeklyName}</span>
+                    <span class="chat-product-price">RD$ ${weeklyPriceNum} c/u</span>
                 </div>
-                <p class="chat-product-desc">${weeklyItem.desc || 'Porción individual recién horneada para este domingo.'}</p>
-                <button type="button" class="chat-btn-add" onclick="window.cardAddToCart('${weeklyItem.id}', this)">
-                    <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar Brownies (RD$ 100)
+                <p class="chat-product-desc">${safeWeeklyDesc}</p>
+                <button type="button" class="chat-btn-add" onclick="window.cardAddToCart('${safeWeeklyId}', this)">
+                    <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Agregar Brownies (RD$ ${weeklyPriceNum})
                 </button>
             </div>
         `;
@@ -2188,8 +2265,8 @@ window.handleReposteraQuickAction = function(key) {
         } else {
             const itemsListHtml = carrito.map(item => `
                 <li style="display: flex; justify-content: space-between; margin-bottom: 3px;">
-                    <span>${item.cantidad}x ${item.nombre}</span>
-                    <strong>DOP$ ${(item.precio * item.cantidad).toLocaleString()}</strong>
+                    <span>${item.cantidad}x ${escapeHtml(item.nombre)}</span>
+                    <strong>DOP$ ${((Number(item.precio) || 0) * item.cantidad).toLocaleString()}</strong>
                 </li>
             `).join('');
 
@@ -2236,7 +2313,7 @@ window.handleReposteraSubmit = async function(event) {
     if (event) event.preventDefault();
     if (!DOM.reposteraChatInput) return;
 
-    const rawText = DOM.reposteraChatInput.value.trim();
+    const rawText = DOM.reposteraChatInput.value.trim().slice(0, 500);
     if (!rawText) return;
 
     DOM.reposteraChatInput.value = '';
@@ -2279,7 +2356,7 @@ window.handleReposteraSubmit = async function(event) {
 
         if (response.ok) {
             const data = await response.json();
-            if (data && data.reply) {
+            if (data && typeof data.reply === 'string' && data.reply.trim()) {
                 aiReply = data.reply;
             }
         }
@@ -2290,19 +2367,21 @@ window.handleReposteraSubmit = async function(event) {
     removeTyping();
 
     if (aiReply) {
-        renderReposteraMessage('bot', `<p>${aiReply.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}</p>`);
+        const safeAiHtml = escapeHtml(aiReply)
+            .replace(/\n\n/g, '</p><p>')
+            .replace(/\n/g, '<br>');
+        renderReposteraMessage('bot', `<p>${safeAiHtml}</p>`);
         return;
     }
 
     // 2. Motor de Respuestas Contextuales Local de Chef Keyla
     const q = rawText.toLowerCase();
-    const domingoTexto = getProximoDomingoTexto();
 
     if (q.includes('brownie') || q.includes('semana') || q.includes('lote') || q.includes('que tienen') || q.includes('que hay') || q.includes('postre de la semana') || q.includes('especial de la semana')) {
         renderReposteraMessage('bot', `
             <p>✨ <strong>Brownies Artesanales Melcochosos:</strong></p>
             <p>Horneados con chocolate puro, textura fudge húmeda y corteza brillante.</p>
-            <p>• <strong>Porción individual:</strong> RD$ 100 c/u<br>• <strong>Caja degustación 4x:</strong> RD$ 400</p>
+            <p>• <strong>Porción individual:</strong> RD$ 100 c/u (¡puedes pedir desde 1 unidad!)</p>
             <button type="button" class="chat-btn-add" style="margin-top: 0.3rem;" onclick="window.cardAddToCart('prod-brownies', this)">
                 <i data-lucide="shopping-basket" style="width: 14px; height: 14px;" aria-hidden="true"></i> Pedir Brownie (RD$ 100)
             </button>
@@ -2429,12 +2508,6 @@ function renderReposteraMessage(role, htmlContent) {
     if (window.lucide) {
         lucide.createIcons();
     }
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
 }
 
 // Ejecutar cuando el DOM esté listo
